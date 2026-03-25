@@ -43,7 +43,7 @@ const TOSS_API_BASE = "https://api.tosspayments.com/v1";
  * Client sends paymentKey, orderId, amount after Toss redirect.
  * Server verifies with Toss API and updates booking.
  */
-exports.confirmTossPayment = (0, https_1.onCall)({ secrets: ["TOSS_SECRET_KEY"] }, async (request) => {
+exports.confirmTossPayment = (0, https_1.onCall)({ secrets: ["TOSS_SECRET_KEY"], cors: true, invoker: "public" }, async (request) => {
     if (!request.auth) {
         throw new https_1.HttpsError("unauthenticated", "Must be logged in");
     }

@@ -7,6 +7,7 @@ import {
   PenSquare,
   Star,
   User,
+  Users,
   GraduationCap,
   Settings,
   ArrowLeft,
@@ -24,6 +25,7 @@ const ADMIN_NAV = [
   { key: 'blog', path: '/admin/blog', icon: PenSquare, color: 'bg-sky-50 text-sky-500' },
   { key: 'reviews', path: '/admin/reviews', icon: Star, color: 'bg-amber-50 text-amber-500' },
   { key: 'profile', path: '/admin/profile', icon: User, color: 'bg-rose-50 text-rose-500' },
+  { key: 'users', path: '/admin/users', icon: Users, color: 'bg-orange-50 text-orange-500' },
   { key: 'lessons', path: '/admin/lessons', icon: GraduationCap, color: 'bg-teal-50 text-teal-500' },
   { key: 'settings', path: '/admin/settings', icon: Settings, color: 'bg-zinc-100 text-zinc-500' },
 ] as const;

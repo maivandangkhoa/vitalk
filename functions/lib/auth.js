@@ -40,7 +40,7 @@ const admin = __importStar(require("firebase-admin"));
  * Sets a user's role via custom claims.
  * Can only be called by existing admins or with ADMIN_SETUP_KEY for first-time setup.
  */
-exports.setUserRole = (0, https_1.onCall)(async (request) => {
+exports.setUserRole = (0, https_1.onCall)({ secrets: ["ADMIN_SETUP_KEY"], cors: true, invoker: "public" }, async (request) => {
     const { uid, role, setupKey } = request.data;
     if (!uid || !role) {
         throw new https_1.HttpsError("invalid-argument", "uid and role are required");
@@ -49,28 +49,27 @@ exports.setUserRole = (0, https_1.onCall)(async (request) => {
     if (!validRoles.includes(role)) {
         throw new https_1.HttpsError("invalid-argument", `Invalid role: ${role}`);
     }
-    // Authorization: either admin or setup key
-    if (request.auth) {
-        const callerClaims = request.auth.token;
-        if (callerClaims.role !== "admin") {
-            throw new https_1.HttpsError("permission-denied", "Only admins can set roles");
-        }
-    }
-    else if (setupKey) {
+    // Authorization: setup key OR existing admin
+    if (setupKey) {
         const expectedKey = process.env.ADMIN_SETUP_KEY;
         if (!expectedKey || setupKey !== expectedKey) {
             throw new https_1.HttpsError("permission-denied", "Invalid setup key");
         }
     }
+    else if (request.auth) {
+        const callerClaims = request.auth.token;
+        if (callerClaims.role !== "admin") {
+            throw new https_1.HttpsError("permission-denied", "Only admins can set roles");
+        }
+    }
     else {
         throw new https_1.HttpsError("unauthenticated", "Must be authenticated or provide setup key");
     }
-    await admin.auth().setCustomUserClaims(uid, { role });
-    // Also update user doc
-    await admin.firestore().doc(`users/${uid}`).update({
+    // Update user doc in Firestore (use set+merge in case doc doesn't exist yet)
+    await admin.firestore().doc(`users/${uid}`).set({
         role,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    }, { merge: true });
     return { success: true, uid, role };
 });
 //# sourceMappingURL=auth.js.map

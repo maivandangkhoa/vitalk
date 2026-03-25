@@ -42,8 +42,9 @@ export async function signOut() {
 }
 
 export async function getUserRole(user: User): Promise<UserRole> {
-  const tokenResult = await user.getIdTokenResult();
-  return (tokenResult.claims.role as UserRole) || 'user';
+  const userRef = doc(db, 'users', user.uid);
+  const userSnap = await getDoc(userRef);
+  return (userSnap.data()?.role as UserRole) || 'user';
 }
 
 async function ensureUserDoc(

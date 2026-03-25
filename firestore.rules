@@ -7,7 +7,7 @@ service cloud.firestore {
     }
 
     function hasRole(role) {
-      return isAuthenticated() && request.auth.token.role == role;
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
     }
 
     function isAdmin() {
@@ -30,10 +30,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Availability - public read, admin write
+    // Availability - public read, admin create/delete, auth users can update (for booking slots)
     match /availability/{monthId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAuthenticated() || isAdmin();
     }
 
     // Users - own doc read/write, admin read all

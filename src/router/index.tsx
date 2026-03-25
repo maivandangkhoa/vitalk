@@ -15,6 +15,7 @@ const ReviewsPage = lazy(() => import('@/pages/ReviewsPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const MyBookingsPage = lazy(() => import('@/pages/MyBookingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const AdminSetupPage = lazy(() => import('@/pages/AdminSetupPage'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
@@ -24,6 +25,7 @@ const AdminBlog = lazy(() => import('@/pages/admin/AdminBlog'));
 const AdminBlogEdit = lazy(() => import('@/pages/admin/AdminBlogEdit'));
 const AdminReviews = lazy(() => import('@/pages/admin/AdminReviews'));
 const AdminProfile = lazy(() => import('@/pages/admin/AdminProfile'));
+const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'));
 const AdminLessons = lazy(() => import('@/pages/admin/AdminLessons'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
 
@@ -72,6 +74,10 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/admin-setup',
+        element: <SuspenseWrapper><AdminSetupPage /></SuspenseWrapper>,
+      },
+      {
         path: '*',
         element: <SuspenseWrapper><NotFoundPage /></SuspenseWrapper>,
       },
@@ -112,6 +118,10 @@ export const router = createBrowserRouter([
       {
         path: 'profile',
         element: <SuspenseWrapper><AdminProfile /></SuspenseWrapper>,
+      },
+      {
+        path: 'users',
+        element: <SuspenseWrapper><AdminUsers /></SuspenseWrapper>,
       },
       {
         path: 'lessons',

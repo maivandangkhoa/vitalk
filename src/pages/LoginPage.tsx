@@ -21,8 +21,10 @@ export default function LoginPage() {
       setLoading(true);
       await signInWithGoogle();
       navigate('/');
-    } catch {
-      toast.error(t('common.error'));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('Google login error:', err);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -42,8 +44,10 @@ export default function LoginPage() {
         await signUpWithEmail(email, password);
       }
       navigate('/');
-    } catch {
-      toast.error(t('common.error'));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('Email auth error:', err);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

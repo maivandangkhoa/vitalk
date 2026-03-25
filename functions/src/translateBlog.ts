@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import * as admin from "firebase-admin";
 import Anthropic from "@anthropic-ai/sdk";
 
 interface TranslateRequest {
@@ -22,10 +23,16 @@ export const translateBlogPost = onCall(
     secrets: ["ANTHROPIC_API_KEY"],
     timeoutSeconds: 120,
     memory: "512MiB",
+    cors: true,
+    invoker: "public",
   },
   async (request): Promise<TranslateResult> => {
-    // Verify admin
-    if (!request.auth?.token?.role || request.auth.token.role !== "admin") {
+    // Verify admin via Firestore role
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Must be logged in");
+    }
+    const userDoc = await admin.firestore().doc(`users/${request.auth.uid}`).get();
+    if (userDoc.data()?.role !== "admin") {
       throw new HttpsError("permission-denied", "Admin only");
     }
 

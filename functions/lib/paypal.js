@@ -60,7 +60,7 @@ async function getPaypalAccessToken() {
  * Creates a PayPal order server-side to prevent price manipulation.
  * Called from client before showing PayPal button.
  */
-exports.createPaypalOrder = (0, https_1.onCall)({ secrets: ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"] }, async (request) => {
+exports.createPaypalOrder = (0, https_1.onCall)({ secrets: ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"], cors: true, invoker: "public" }, async (request) => {
     if (!request.auth) {
         throw new https_1.HttpsError("unauthenticated", "Must be logged in");
     }
@@ -113,7 +113,7 @@ exports.createPaypalOrder = (0, https_1.onCall)({ secrets: ["PAYPAL_CLIENT_ID", 
  * Captures a PayPal order after student approves payment.
  * Updates booking payment status on success.
  */
-exports.capturePaypalOrder = (0, https_1.onCall)({ secrets: ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"] }, async (request) => {
+exports.capturePaypalOrder = (0, https_1.onCall)({ secrets: ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"], cors: true, invoker: "public" }, async (request) => {
     if (!request.auth) {
         throw new https_1.HttpsError("unauthenticated", "Must be logged in");
     }

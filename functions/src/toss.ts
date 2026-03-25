@@ -10,7 +10,7 @@ const TOSS_API_BASE = "https://api.tosspayments.com/v1";
  * Server verifies with Toss API and updates booking.
  */
 export const confirmTossPayment = onCall(
-  { secrets: ["TOSS_SECRET_KEY"] },
+  { secrets: ["TOSS_SECRET_KEY"], cors: true, invoker: "public" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
