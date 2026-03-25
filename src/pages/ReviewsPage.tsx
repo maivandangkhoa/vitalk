@@ -18,9 +18,9 @@ const FALLBACK_REVIEWS = [
 function ReviewCard({ name, content, rating }: { name: string; content: string; rating: number }) {
   return (
     <Card className="h-full border-0 bg-white">
-      <CardContent className="pt-6">
-        <Quote className="mb-3 h-5 w-5 text-indigo-200" />
-        <p className="mb-4 text-muted-foreground italic">
+      <CardContent className="p-6">
+        <Quote className="mb-4 h-5 w-5 text-indigo-200" />
+        <p className="mb-5 leading-relaxed text-muted-foreground italic">
           &ldquo;{content}&rdquo;
         </p>
         <div className="flex items-center justify-between">
@@ -52,7 +52,7 @@ export default function ReviewsPage() {
       <div className="container mx-auto">
         <AnimatedSection className="mx-auto max-w-2xl text-center">
           <h1 className="text-4xl font-bold tracking-tight">Student Reviews</h1>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
             What students say about their learning experience
           </p>
           <div className="mt-6 inline-flex items-center gap-3 rounded-2xl bg-white px-6 py-3 shadow-sm">

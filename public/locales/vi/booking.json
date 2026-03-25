@@ -11,7 +11,7 @@
   "selectTime": "Chọn khung giờ",
   "noSlots": "Không có khung giờ trống trong ngày này",
   "yourTimezone": "Múi giờ của bạn",
-  "teacherTimezone": "Múi giờ giáo viên (KST)",
+  "teacherTimezone": "Múi giờ giáo viên",
   "format": {
     "title": "Hình thức học",
     "online": "Học online",

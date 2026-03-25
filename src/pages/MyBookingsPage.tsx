@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useMyBookings } from '@/hooks/useBookings';
 import { useAuthStore } from '@/stores/authStore';
+import { useUserTimezone } from '@/hooks/useTimezone';
+import { convertSlotToUserTz } from '@/lib/timezone';
 import { statusColors } from '@/lib/utils';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import type { Booking } from '@/types';
@@ -21,29 +23,31 @@ function BookingCard({ booking }: { booking: Booking }) {
   const { i18n } = useTranslation();
   const lang = i18n.language as 'en' | 'vi' | 'ko' | 'ja';
   const lessonName = booking.lessonTypeName[lang] || booking.lessonTypeName.en;
+  const { userTz, userTzLabel } = useUserTimezone();
+  const converted = convertSlotToUserTz(booking.startTime, booking.endTime, booking.date, userTz);
 
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="mb-1 flex items-center gap-2">
+            <div className="mb-2 flex items-center gap-2.5">
               <h3 className="truncate font-semibold">{lessonName}</h3>
               <Badge className={statusColors[booking.status] || ''}>
                 {booking.status}
               </Badge>
             </div>
 
-            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
+            <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2.5">
                 <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                <span>{booking.date}</span>
+                <span>{converted.date}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <Clock className="h-3.5 w-3.5 shrink-0" />
-                <span>{booking.startTime} - {booking.endTime} KST</span>
+                <span>{converted.startTime} - {converted.endTime} {userTzLabel}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 {booking.format === 'online' ? (
                   <Monitor className="h-3.5 w-3.5 shrink-0" />
                 ) : (
@@ -58,7 +62,7 @@ function BookingCard({ booking }: { booking: Booking }) {
             </div>
 
             {booking.paymentStatus === 'pending' && (
-              <p className="mt-2 text-xs text-amber-600">Payment pending</p>
+              <p className="mt-3 text-xs text-amber-600">Payment pending</p>
             )}
           </div>
 

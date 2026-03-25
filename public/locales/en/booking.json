@@ -11,7 +11,7 @@
   "selectTime": "Choose a time slot",
   "noSlots": "No available slots on this date",
   "yourTimezone": "Your timezone",
-  "teacherTimezone": "Teacher's timezone (KST)",
+  "teacherTimezone": "Teacher's timezone",
   "format": {
     "title": "Lesson Format",
     "online": "Online Lesson",

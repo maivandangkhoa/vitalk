@@ -55,16 +55,16 @@ export default function HomePage() {
         <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-200/30 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-200/20 blur-3xl" />
         <AnimatedSection className="container relative mx-auto text-center">
-          <Badge variant="secondary" className="mb-4 text-sm">
+          <Badge variant="secondary" className="mb-5 text-sm">
             {t('hero.greeting')}
           </Badge>
-          <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-6xl md:leading-tight">
             {t('hero.title')}
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
             {t('hero.subtitle')}
           </p>
-          <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button size="lg" render={<Link to="/book" />} className="shadow-md hover:shadow-lg">
               {t('hero.cta')}
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -73,7 +73,7 @@ export default function HomePage() {
               {t('cta.button')}
             </Button>
           </div>
-          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="mt-10 flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -101,13 +101,13 @@ export default function HomePage() {
               <StaggerItem key={key}>
                 <Card className="h-full border-0 bg-white">
                   <CardContent className="pt-6">
-                    <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${bg}`}>
+                    <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl ${bg}`}>
                       <Icon className={`h-6 w-6 ${text}`} />
                     </div>
-                    <h3 className="mb-2 text-lg font-semibold">
+                    <h3 className="mb-3 text-lg font-semibold">
                       {t(`highlights.${key}.title`)}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm leading-relaxed text-muted-foreground">
                       {t(`highlights.${key}.description`)}
                     </p>
                   </CardContent>
@@ -159,8 +159,8 @@ export default function HomePage() {
               <StaggerItem key={review.name}>
                 <Card className="h-full border-0 bg-white">
                   <CardContent className="pt-6">
-                    <Quote className="mb-3 h-5 w-5 text-indigo-200" />
-                    <p className="mb-4 text-muted-foreground italic">
+                    <Quote className="mb-4 h-5 w-5 text-indigo-200" />
+                    <p className="mb-5 leading-relaxed text-muted-foreground italic">
                       &ldquo;{review.text}&rdquo;
                     </p>
                     <div className="flex items-center justify-between">
@@ -191,7 +191,7 @@ export default function HomePage() {
           <div className="rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-16 text-white shadow-lg md:py-24">
             <div className="text-center">
               <h2 className="text-3xl font-bold md:text-4xl">{t('cta.title')}</h2>
-              <p className="mx-auto mt-4 max-w-xl text-white/80">
+              <p className="mx-auto mt-5 max-w-xl leading-relaxed text-white/80">
                 {t('cta.subtitle')}
               </p>
               <Button

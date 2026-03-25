@@ -61,10 +61,10 @@ function AdminBookingCard({
 
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <CardContent className="p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1">
-            <div className="mb-1 flex flex-wrap items-center gap-2">
+            <div className="mb-2 flex flex-wrap items-center gap-2.5">
               <h3 className="font-semibold">{lessonName}</h3>
               <Badge className={statusColors[booking.status] || ''}>
                 {booking.status}
@@ -75,20 +75,20 @@ function AdminBookingCard({
               </Badge>
             </div>
 
-            <div className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-              <div className="flex items-center gap-2">
+            <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+              <div className="flex items-center gap-2.5">
                 <Mail className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{booking.studentName} ({booking.studentEmail})</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <CalendarDays className="h-3.5 w-3.5 shrink-0" />
                 <span>{booking.date}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <Clock className="h-3.5 w-3.5 shrink-0" />
                 <span>{booking.startTime} - {booking.endTime} KST</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 {booking.format === 'online' ? (
                   <Monitor className="h-3.5 w-3.5 shrink-0" />
                 ) : (
@@ -103,17 +103,17 @@ function AdminBookingCard({
             </div>
 
             {booking.notes && (
-              <p className="mt-2 text-sm italic text-muted-foreground">
+              <p className="mt-3 text-sm leading-relaxed italic text-muted-foreground">
                 &quot;{booking.notes}&quot;
               </p>
             )}
 
-            <div className="mt-1 text-sm font-medium">
+            <div className="mt-2 text-sm font-medium">
               <span className="font-mono">${booking.amount}</span> {booking.currency} via {booking.paymentMethod.replace('_', ' ')}
             </div>
 
             {booking.meetingLink && (
-              <p className="mt-1 text-xs text-indigo-500">
+              <p className="mt-2 text-xs text-indigo-500">
                 Meeting: {booking.meetingLink}
               </p>
             )}

@@ -11,7 +11,7 @@
   "selectTime": "時間帯を選択",
   "noSlots": "この日は空きがありません",
   "yourTimezone": "あなたのタイムゾーン",
-  "teacherTimezone": "講師のタイムゾーン（KST）",
+  "teacherTimezone": "講師のタイムゾーン",
   "format": {
     "title": "レッスン形式",
     "online": "オンラインレッスン",

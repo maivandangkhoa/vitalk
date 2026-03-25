@@ -21,6 +21,8 @@ import { format } from 'date-fns';
 import { useAvailableSlots } from '@/hooks/useAvailability';
 import { useCreateBooking } from '@/hooks/useBookings';
 import { useAuthStore } from '@/stores/authStore';
+import { useUserTimezone } from '@/hooks/useTimezone';
+import { convertSlotToUserTz } from '@/lib/timezone';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { OnlinePlatform, PaymentMethod } from '@/types';
 import { toast } from 'sonner';
@@ -75,6 +77,7 @@ export default function BookingPage() {
   const yearMonth = format(viewMonth, 'yyyy-MM');
   const { slots: availableSlots, loading: slotsLoading } = useAvailableSlots(yearMonth);
   const { createBooking, loading: bookingLoading } = useCreateBooking();
+  const { userTz, userTzLabel, teacherTzLabel, isSameAsTeacher } = useUserTimezone();
 
   // Handle Toss payment redirect
   const tossRedirect = searchParams.get('toss');
@@ -89,6 +92,11 @@ export default function BookingPage() {
   const step: Step = STEPS[currentStep];
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
   const daySlots = selectedDateStr ? (availableSlots[selectedDateStr] || []) : [];
+
+  const convertedDaySlots = useMemo(() => {
+    if (!selectedDateStr || isSameAsTeacher) return null;
+    return daySlots.map((slot) => convertSlotToUserTz(slot.startTime, slot.endTime, selectedDateStr, userTz));
+  }, [daySlots, selectedDateStr, userTz, isSameAsTeacher]);
 
   const datesWithSlots = useMemo(() => {
     return Object.keys(availableSlots)
@@ -182,7 +190,7 @@ export default function BookingPage() {
                 <CheckCircle className="h-8 w-8 text-emerald-500" />
               </div>
               <h2 className="text-2xl font-bold">{t('confirmation.title')}</h2>
-              <p className="mt-2 text-muted-foreground">{t('confirmation.subtitle')}</p>
+              <p className="mt-3 leading-relaxed text-muted-foreground">{t('confirmation.subtitle')}</p>
               {paymentMethod === 'bank_transfer' && (
                 <p className="mt-2 text-sm text-amber-600">{t('confirmation.pendingPayment')}</p>
               )}
@@ -249,14 +257,14 @@ export default function BookingPage() {
                   onClick={() => setSelectedLesson(opt.id)}
                 >
                   <CardContent className="pt-6">
-                    <Badge className={`mb-2 ${LEVEL_COLORS[opt.level]}`}>{opt.level}</Badge>
+                    <Badge className={`mb-3 ${LEVEL_COLORS[opt.level]}`}>{opt.level}</Badge>
                     <h3 className="font-semibold">{tl(`${opt.level}.name`)}</h3>
-                    <div className="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
+                    <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" />
                         {opt.duration}{tc('common.minutes')}
                       </span>
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1.5">
                         <DollarSign className="h-3.5 w-3.5" />
                         <span className="font-mono">${opt.price}</span>
                       </span>
@@ -298,17 +306,22 @@ export default function BookingPage() {
                 ) : selectedDate ? (
                   daySlots.length > 0 ? (
                     <div className="grid grid-cols-2 gap-2">
-                      {daySlots.map((slot) => (
-                        <Button
-                          key={slot.startTime}
-                          variant={selectedTime === slot.startTime ? 'default' : 'outline'}
-                          size="sm"
-                          className="rounded-xl"
-                          onClick={() => setSelectedTime(slot.startTime)}
-                        >
-                          <span className="font-mono text-xs">{slot.startTime} - {slot.endTime}</span>
-                        </Button>
-                      ))}
+                      {daySlots.map((slot, index) => {
+                        const display = convertedDaySlots?.[index];
+                        const displayStart = display?.startTime ?? slot.startTime;
+                        const displayEnd = display?.endTime ?? slot.endTime;
+                        return (
+                          <Button
+                            key={slot.startTime}
+                            variant={selectedTime === slot.startTime ? 'default' : 'outline'}
+                            size="sm"
+                            className="rounded-xl"
+                            onClick={() => setSelectedTime(slot.startTime)}
+                          >
+                            <span className="font-mono text-xs">{displayStart} - {displayEnd}</span>
+                          </Button>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">{t('noSlots')}</p>
@@ -317,7 +330,9 @@ export default function BookingPage() {
                   <p className="text-sm text-muted-foreground">{t('selectDate')}</p>
                 )}
                 <p className="mt-3 text-xs text-muted-foreground">
-                  {t('teacherTimezone')}
+                  {isSameAsTeacher
+                    ? `${t('yourTimezone')}: ${userTzLabel}`
+                    : `${t('yourTimezone')}: ${userTzLabel} · ${t('teacherTimezone')}: ${teacherTzLabel}`}
                 </p>
               </div>
             </div>
@@ -408,24 +423,30 @@ export default function BookingPage() {
               <CardHeader>
                 <h3 className="font-semibold">{t('confirmation.details')}</h3>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between">
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">Lesson</span>
                   <span>{selectedLesson && tl(`${selectedLesson}.name`)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">Date</span>
                   <span>{selectedDate && format(selectedDate, 'EEE, MMM d, yyyy')}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">Time</span>
-                  <span className="font-mono">{selectedTime} - {selectedSlot?.endTime} KST</span>
+                  <span className="font-mono">
+                    {(() => {
+                      if (!selectedSlot || !selectedDateStr) return '';
+                      const c = convertSlotToUserTz(selectedSlot.startTime, selectedSlot.endTime, selectedDateStr, userTz);
+                      return `${c.startTime} - ${c.endTime} ${userTzLabel}`;
+                    })()}
+                  </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">Format</span>
                   <span>{lessonFormat === 'online' ? `Online (${t(`format.${platform}`)})` : 'In-person'}</span>
                 </div>
-                <div className="mt-3 flex justify-between border-t pt-3 font-semibold">
+                <div className="mt-4 flex justify-between border-t pt-4 font-semibold">
                   <span>{t('payment.total')}</span>
                   <span className="font-mono">${selectedLessonData?.price}.00 USD</span>
                 </div>

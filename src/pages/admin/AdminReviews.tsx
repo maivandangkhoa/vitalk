@@ -47,9 +47,9 @@ export default function AdminReviews() {
           {reviews.map((review) => (
             <StaggerItem key={review.id}>
             <Card>
-              <CardContent className="flex items-start justify-between gap-4 p-4">
+              <CardContent className="flex items-start justify-between gap-4 p-5">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <span className="font-semibold">{review.studentName}</span>
                     <div className="flex">
                       {Array.from({ length: review.rating }).map((_, i) => (
@@ -60,10 +60,10 @@ export default function AdminReviews() {
                       {review.isVisible ? 'Visible' : 'Hidden'}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground italic">
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
                     &ldquo;{review.content}&rdquo;
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     {review.lessonType} · {review.language}
                   </p>
                 </div>

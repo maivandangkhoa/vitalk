@@ -33,24 +33,24 @@ function BlogCard({ post }: { post: BlogPost }) {
             />
           </div>
         )}
-        <CardContent className="p-5">
-          <div className="mb-2 flex flex-wrap gap-1">
+        <CardContent className="p-6">
+          <div className="mb-3 flex flex-wrap gap-1.5">
             {post.tags.map((tag) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>
             ))}
           </div>
-          <h2 className="text-lg font-semibold transition-colors group-hover:text-indigo-500">
+          <h2 className="text-lg font-semibold leading-snug transition-colors group-hover:text-indigo-500">
             {title}
           </h2>
           {excerpt && (
-            <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+            <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
               {excerpt}
             </p>
           )}
           {publishedDate && (
-            <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
               {publishedDate}
             </div>
@@ -70,7 +70,7 @@ export default function BlogListPage() {
       <div className="container mx-auto">
         <AnimatedSection className="mx-auto max-w-2xl text-center">
           <h1 className="text-4xl font-bold tracking-tight">{t('title')}</h1>
-          <p className="mt-4 text-lg text-muted-foreground">{t('subtitle')}</p>
+          <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{t('subtitle')}</p>
         </AnimatedSection>
 
         <div className="mx-auto mt-12 max-w-4xl">

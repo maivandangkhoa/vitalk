@@ -60,9 +60,9 @@ export default function AdminBlog() {
           {posts.map((post) => (
             <StaggerItem key={post.id}>
             <Card>
-              <CardContent className="flex items-center justify-between p-4">
+              <CardContent className="flex items-center justify-between p-5">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <h3 className="truncate font-semibold">
                       {post.title.en || 'Untitled'}
                     </h3>
@@ -70,7 +70,7 @@ export default function AdminBlog() {
                       {post.isPublished ? 'Published' : 'Draft'}
                     </Badge>
                   </div>
-                  <p className="mt-1 truncate text-sm text-muted-foreground">
+                  <p className="mt-2 truncate text-sm text-muted-foreground">
                     /{post.slug}
                     {post.tags.length > 0 && ` · ${post.tags.join(', ')}`}
                   </p>

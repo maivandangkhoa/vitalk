@@ -61,12 +61,12 @@ export default function LoginPage() {
 
       <AnimatedSection className="relative w-full max-w-md">
         <Card className="border-zinc-100 bg-white/80 shadow-lg backdrop-blur-md">
-          <CardHeader className="text-center">
+          <CardHeader className="pb-2 text-center">
             <h1 className="text-2xl font-bold">
               {isLogin ? t('auth.loginTitle') : t('auth.signupTitle')}
             </h1>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5">
             {/* Social logins */}
             <Button
               variant="outline"
@@ -74,7 +74,7 @@ export default function LoginPage() {
               onClick={handleGoogleLogin}
               disabled={loading}
             >
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+              <svg className="mr-2.5 h-4 w-4" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
@@ -101,7 +101,7 @@ export default function LoginPage() {
               onClick={handleKakaoLogin}
               disabled={loading}
             >
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+              <svg className="mr-2.5 h-4 w-4" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
                   d="M12 3C6.477 3 2 6.463 2 10.691c0 2.726 1.8 5.117 4.5 6.473-.2.744-.723 2.694-.828 3.112-.13.517.19.51.398.371.163-.108 2.6-1.767 3.652-2.485.738.109 1.5.166 2.278.166 5.523 0 10-3.463 10-7.637C22 6.463 17.523 3 12 3z"
@@ -110,41 +110,41 @@ export default function LoginPage() {
               {t('auth.loginWithKakao')}
             </Button>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Separator className="flex-1" />
               <span className="text-xs text-zinc-400">or</span>
               <Separator className="flex-1" />
             </div>
 
             {/* Email form */}
-            <form onSubmit={handleEmailSubmit} className="space-y-3">
+            <form onSubmit={handleEmailSubmit} className="space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium">{t('auth.email')}</label>
+                <label className="mb-1.5 block text-sm font-medium">{t('auth.email')}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">{t('auth.password')}</label>
+                <label className="mb-1.5 block text-sm font-medium">{t('auth.password')}</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="mt-1 w-full" disabled={loading}>
                 {isLogin ? t('auth.loginWithEmail') : t('auth.signupWithEmail')}
               </Button>
             </form>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm leading-relaxed text-muted-foreground">
               {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}{' '}
               <button
                 type="button"

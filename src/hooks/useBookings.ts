@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuthStore } from '@/stores/authStore';
+import { getUserTimezone } from '@/lib/timezone';
 import type { Booking, BookingStatus, TimeSlot } from '@/types';
 
 export function useMyBookings() {
@@ -152,7 +153,7 @@ export function useCreateBooking() {
             date: data.date,
             startTime: data.startTime,
             endTime: data.endTime,
-            timezone: 'Asia/Seoul',
+            timezone: getUserTimezone(),
             format: data.format,
             platform: data.platform,
             meetingLink: null,

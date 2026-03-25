@@ -172,10 +172,10 @@ export default function AdminUsers() {
           {filtered.map((user) => (
             <StaggerItem key={user.uid}>
               <Card>
-                <CardContent className="p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <CardContent className="p-5">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2.5">
                         <h3 className="font-semibold">
                           {user.displayName || 'No name'}
                         </h3>
@@ -194,12 +194,12 @@ export default function AdminUsers() {
                         </Badge>
                       </div>
 
-                      <div className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-                        <div className="flex items-center gap-2">
+                      <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                        <div className="flex items-center gap-2.5">
                           <Mail className="h-3.5 w-3.5 shrink-0" />
                           <span className="truncate">{user.email}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2.5">
                           <Calendar className="h-3.5 w-3.5 shrink-0" />
                           <span>
                             {user.createdAt
@@ -209,7 +209,7 @@ export default function AdminUsers() {
                         </div>
                       </div>
 
-                      <p className="mt-1 font-mono text-xs text-muted-foreground">
+                      <p className="mt-2 font-mono text-xs text-muted-foreground">
                         {user.uid}
                       </p>
                     </div>
