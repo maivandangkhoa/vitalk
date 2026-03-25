@@ -28,7 +28,7 @@ function toEmailData(bookingId, data) {
  */
 exports.onBookingCreated = (0, firestore_1.onDocumentCreated)({
     document: "bookings/{bookingId}",
-    secrets: ["RESEND_API_KEY", "TEACHER_EMAIL"],
+    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "TEACHER_EMAIL"],
 }, async (event) => {
     const data = event.data?.data();
     if (!data)
@@ -61,7 +61,7 @@ exports.onBookingCreated = (0, firestore_1.onDocumentCreated)({
  */
 exports.onBookingUpdated = (0, firestore_1.onDocumentUpdated)({
     document: "bookings/{bookingId}",
-    secrets: ["RESEND_API_KEY", "TEACHER_EMAIL"],
+    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "TEACHER_EMAIL"],
 }, async (event) => {
     const before = event.data?.before.data();
     const after = event.data?.after.data();

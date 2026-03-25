@@ -53,7 +53,7 @@ function toEmailData(bookingId: string, data: BookingData) {
 export const onBookingCreated = onDocumentCreated(
   {
     document: "bookings/{bookingId}",
-    secrets: ["RESEND_API_KEY", "TEACHER_EMAIL"],
+    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "TEACHER_EMAIL"],
   },
   async (event) => {
     const data = event.data?.data() as BookingData | undefined;
@@ -90,7 +90,7 @@ export const onBookingCreated = onDocumentCreated(
 export const onBookingUpdated = onDocumentUpdated(
   {
     document: "bookings/{bookingId}",
-    secrets: ["RESEND_API_KEY", "TEACHER_EMAIL"],
+    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "TEACHER_EMAIL"],
   },
   async (event) => {
     const before = event.data?.before.data() as BookingData | undefined;

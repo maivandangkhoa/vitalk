@@ -1,29 +1,58 @@
-import { Resend } from "resend";
+import * as nodemailer from "nodemailer";
+import { google } from "googleapis";
 
-let resendClient: Resend | null = null;
+const OAuth2 = google.auth.OAuth2;
 
-function getResend(): Resend {
-  if (!resendClient) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      throw new Error("RESEND_API_KEY not configured");
-    }
-    resendClient = new Resend(apiKey);
+let transporter: nodemailer.Transporter | null = null;
+
+async function getTransporter(): Promise<nodemailer.Transporter> {
+  if (transporter) return transporter;
+
+  const clientId = process.env.GMAIL_CLIENT_ID;
+  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+  const senderEmail = process.env.TEACHER_EMAIL;
+
+  if (!clientId || !clientSecret || !refreshToken || !senderEmail) {
+    throw new Error("Gmail OAuth2 credentials not configured");
   }
-  return resendClient;
+
+  const oauth2Client = new OAuth2(
+    clientId,
+    clientSecret,
+    "https://developers.google.com/oauthplayground"
+  );
+
+  oauth2Client.setCredentials({ refresh_token: refreshToken });
+
+  const { token } = await oauth2Client.getAccessToken();
+
+  transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      type: "OAuth2",
+      user: senderEmail,
+      clientId,
+      clientSecret,
+      refreshToken,
+      accessToken: token || undefined,
+    },
+  });
+
+  return transporter;
 }
 
-const FROM_EMAIL = "ViTalk <noreply@vietalky.web.app>";
-const TEACHER_EMAIL = process.env.TEACHER_EMAIL || "teacher@vietalky.web.app";
+const TEACHER_EMAIL = process.env.TEACHER_EMAIL || "";
 
 export async function sendEmail(params: {
   to: string;
   subject: string;
   html: string;
 }): Promise<void> {
-  const resend = getResend();
-  await resend.emails.send({
-    from: FROM_EMAIL,
+  const mailer = await getTransporter();
+  const senderEmail = process.env.TEACHER_EMAIL;
+  await mailer.sendMail({
+    from: `ViTalk <${senderEmail}>`,
     to: params.to,
     subject: params.subject,
     html: params.html,

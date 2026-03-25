@@ -12,7 +12,7 @@ export const sendLessonReminders = onSchedule(
   {
     schedule: "0 0 * * *", // midnight UTC = 9 AM KST
     timeZone: "Asia/Seoul",
-    secrets: ["RESEND_API_KEY", "TEACHER_EMAIL"],
+    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "TEACHER_EMAIL"],
   },
   async () => {
     // Calculate tomorrow's date in KST
