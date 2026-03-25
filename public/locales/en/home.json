@@ -1,0 +1,42 @@
+{
+  "hero": {
+    "greeting": "Xin chào!",
+    "title": "Learn Vietnamese Naturally",
+    "subtitle": "With Win, a native Vietnamese speaker based in Seoul. 5-star rated teacher with 362+ positive reviews.",
+    "cta": "Book Your First Lesson",
+    "trialNote": "Start your Vietnamese journey today"
+  },
+  "highlights": {
+    "title": "Why Learn With Me?",
+    "native": {
+      "title": "Native Vietnamese Speaker",
+      "description": "From Central Vietnam, I bring authentic pronunciation and cultural insights to every lesson."
+    },
+    "experience": {
+      "title": "Proven Track Record",
+      "description": "5/5 rating with 362+ reviews. My students consistently achieve their learning goals."
+    },
+    "multilingual": {
+      "title": "Korean & English Fluent",
+      "description": "I can explain Vietnamese grammar and nuances in Korean or English for better understanding."
+    },
+    "flexible": {
+      "title": "Online & Offline Lessons",
+      "description": "Choose between online lessons via Zoom/Meet or in-person sessions in Seoul."
+    }
+  },
+  "about": {
+    "title": "About Me",
+    "description": "Hi! I'm Nguyên (Win/윈), a Vietnamese teacher living in Seoul since 2016. I hold a graduate degree in Tourism Science and I'm passionate about helping people discover the beauty of the Vietnamese language. I focus on speaking practice with lots of repetition to help you build real conversational confidence.",
+    "location": "Based in Seoul, South Korea",
+    "from": "Originally from Central Vietnam"
+  },
+  "testimonials": {
+    "title": "What My Students Say"
+  },
+  "cta": {
+    "title": "Ready to Start Learning?",
+    "subtitle": "Choose from beginner, intermediate, or conversation lessons. Online or in-person in Seoul.",
+    "button": "View Lessons & Book"
+  }
+}

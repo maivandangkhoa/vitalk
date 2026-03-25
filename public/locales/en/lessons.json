@@ -1,0 +1,39 @@
+{
+  "title": "Lesson Types",
+  "subtitle": "Choose the lesson that matches your level and goals",
+  "bookNow": "Book This Lesson",
+  "duration": "{{minutes}} min",
+  "beginner": {
+    "name": "Beginner Vietnamese",
+    "description": "Perfect for those starting their Vietnamese journey. Learn the alphabet, tones, basic grammar, and essential vocabulary step by step.",
+    "features": [
+      "Vietnamese alphabet & tones",
+      "Basic greetings & self-introduction",
+      "Essential grammar patterns",
+      "Numbers, time & everyday vocabulary",
+      "Pronunciation practice with native feedback"
+    ]
+  },
+  "intermediate": {
+    "name": "Intermediate Vietnamese",
+    "description": "Enhance your listening and reading comprehension on specific topics. Build more complex sentences and expand your vocabulary.",
+    "features": [
+      "Topic-based listening exercises",
+      "Reading comprehension practice",
+      "Complex grammar structures",
+      "Vocabulary expansion by theme",
+      "Cultural context & expressions"
+    ]
+  },
+  "conversation": {
+    "name": "Daily Conversation",
+    "description": "Practice real Vietnamese through free-topic conversations. Improve your fluency, natural expressions, and confidence in speaking.",
+    "features": [
+      "Free-topic conversation practice",
+      "Pronunciation & tone correction",
+      "Natural expressions & slang",
+      "Real-life scenario role-play",
+      "Confidence building through repetition"
+    ]
+  }
+}

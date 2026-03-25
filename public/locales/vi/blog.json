@@ -1,0 +1,11 @@
+{
+  "title": "Blog",
+  "subtitle": "Mẹo, hướng dẫn và kiến thức về việc học tiếng Việt",
+  "readMore": "Đọc thêm",
+  "backToBlog": "Quay lại Blog",
+  "noPostsYet": "Chưa có bài viết nào. Hãy quay lại sau!",
+  "tags": "Thẻ",
+  "allPosts": "Tất cả bài viết",
+  "publishedOn": "Đăng ngày {{date}}",
+  "minuteRead": "{{minutes}} phút đọc"
+}

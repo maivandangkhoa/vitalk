@@ -1,0 +1,50 @@
+{
+  "title": "Đặt lịch học",
+  "steps": {
+    "lessonType": "Chọn lớp",
+    "dateTime": "Chọn ngày & giờ",
+    "details": "Chi tiết",
+    "payment": "Thanh toán"
+  },
+  "selectLesson": "Chọn loại lớp học",
+  "selectDate": "Chọn ngày",
+  "selectTime": "Chọn khung giờ",
+  "noSlots": "Không có khung giờ trống trong ngày này",
+  "yourTimezone": "Múi giờ của bạn",
+  "teacherTimezone": "Múi giờ giáo viên (KST)",
+  "format": {
+    "title": "Hình thức học",
+    "online": "Học online",
+    "offline": "Học trực tiếp",
+    "selectPlatform": "Chọn nền tảng",
+    "selectLocation": "Chọn địa điểm",
+    "zoom": "Zoom",
+    "googleMeet": "Google Meet",
+    "teams": "Microsoft Teams"
+  },
+  "notes": {
+    "label": "Ghi chú cho giáo viên",
+    "placeholder": "Bạn muốn tập trung vào phần nào? Có chủ đề hay mục tiêu cụ thể nào không?"
+  },
+  "payment": {
+    "title": "Phương thức thanh toán",
+    "paypal": "Thanh toán qua PayPal",
+    "toss": "Thanh toán qua Toss",
+    "bankTransfer": "Chuyển khoản ngân hàng",
+    "bankInfo": "Vui lòng chuyển khoản đến tài khoản sau:",
+    "bankName": "Ngân hàng",
+    "accountNumber": "Số tài khoản",
+    "accountHolder": "Chủ tài khoản",
+    "reference": "Nội dung chuyển khoản",
+    "bankNote": "Vui lòng ghi mã đặt lịch trong nội dung chuyển khoản. Đặt lịch sẽ được xác nhận sau khi xác minh thanh toán.",
+    "total": "Tổng cộng"
+  },
+  "confirmation": {
+    "title": "Đặt lịch thành công!",
+    "subtitle": "Email xác nhận sẽ được gửi trong giây lát.",
+    "details": "Chi tiết đặt lịch",
+    "pendingPayment": "Đang chờ xác nhận thanh toán.",
+    "viewBookings": "Xem lịch học của tôi",
+    "bookAnother": "Đặt buổi học khác"
+  }
+}

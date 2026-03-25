@@ -1,0 +1,11 @@
+{
+  "title": "ブログ",
+  "subtitle": "ベトナム語学習のヒント、ガイド、インサイト",
+  "readMore": "もっと読む",
+  "backToBlog": "ブログに戻る",
+  "noPostsYet": "まだ投稿がありません。もうすぐ掲載されます！",
+  "tags": "タグ",
+  "allPosts": "すべての投稿",
+  "publishedOn": "{{date}} 公開",
+  "minuteRead": "{{minutes}}分で読めます"
+}

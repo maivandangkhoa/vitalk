@@ -1,0 +1,11 @@
+{
+  "title": "Blog",
+  "subtitle": "Tips, guides, and insights for learning Vietnamese",
+  "readMore": "Read More",
+  "backToBlog": "Back to Blog",
+  "noPostsYet": "No blog posts yet. Check back soon!",
+  "tags": "Tags",
+  "allPosts": "All Posts",
+  "publishedOn": "Published on {{date}}",
+  "minuteRead": "{{minutes}} min read"
+}

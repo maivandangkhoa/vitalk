@@ -1,0 +1,62 @@
+{
+  "dashboard": {
+    "title": "Bảng điều khiển",
+    "upcomingLessons": "Buổi học sắp tới",
+    "totalBookings": "Tổng đặt lịch",
+    "pendingPayments": "Thanh toán chờ xử lý",
+    "totalStudents": "Tổng số học viên",
+    "recentBookings": "Đặt lịch gần đây",
+    "noUpcoming": "Không có buổi học sắp tới"
+  },
+  "nav": {
+    "dashboard": "Bảng điều khiển",
+    "availability": "Lịch rảnh",
+    "bookings": "Quản lý đặt lịch",
+    "blog": "Blog",
+    "reviews": "Đánh giá",
+    "profile": "Hồ sơ",
+    "lessons": "Quản lý lớp học",
+    "settings": "Cài đặt"
+  },
+  "availability": {
+    "title": "Quản lý lịch rảnh",
+    "weeklyTemplate": "Mẫu hàng tuần",
+    "calendarOverride": "Tùy chỉnh lịch",
+    "addSlot": "Thêm khung giờ",
+    "removeSlot": "Xóa",
+    "markUnavailable": "Đánh dấu không có lịch",
+    "generateSlots": "Tạo khung giờ",
+    "saveChanges": "Lưu thay đổi",
+    "from": "Từ",
+    "to": "Đến"
+  },
+  "bookings": {
+    "title": "Quản lý đặt lịch",
+    "all": "Tất cả",
+    "pending": "Chờ xử lý",
+    "confirmed": "Đã xác nhận",
+    "completed": "Hoàn thành",
+    "cancelled": "Đã hủy",
+    "confirmPayment": "Xác nhận thanh toán",
+    "cancelBooking": "Hủy đặt lịch",
+    "addMeetingLink": "Thêm link họp",
+    "noBookings": "Không có đặt lịch nào"
+  },
+  "blog": {
+    "title": "Quản lý Blog",
+    "newPost": "Bài viết mới",
+    "editPost": "Sửa bài viết",
+    "publish": "Đăng bài",
+    "unpublish": "Gỡ bài",
+    "saveDraft": "Lưu nháp",
+    "autoTranslate": "Tự động dịch",
+    "translating": "Đang dịch...",
+    "deletePost": "Xóa bài viết"
+  },
+  "reviews": {
+    "title": "Quản lý đánh giá",
+    "hide": "Ẩn",
+    "show": "Hiển thị",
+    "deleteReview": "Xóa đánh giá"
+  }
+}

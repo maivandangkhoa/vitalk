@@ -1,0 +1,11 @@
+{
+  "title": "블로그",
+  "subtitle": "베트남어 학습을 위한 팁, 가이드, 인사이트",
+  "readMore": "더 읽기",
+  "backToBlog": "블로그로 돌아가기",
+  "noPostsYet": "아직 게시물이 없습니다. 곧 돌아와 주세요!",
+  "tags": "태그",
+  "allPosts": "전체 게시물",
+  "publishedOn": "{{date}} 게시",
+  "minuteRead": "{{minutes}}분 읽기"
+}

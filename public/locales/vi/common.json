@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "Trang chủ",
+    "lessons": "Lớp học",
+    "book": "Đặt lịch học",
+    "blog": "Blog",
+    "reviews": "Đánh giá",
+    "login": "Đăng nhập",
+    "signup": "Đăng ký",
+    "logout": "Đăng xuất",
+    "myBookings": "Lịch học của tôi",
+    "admin": "Quản trị"
+  },
+  "footer": {
+    "copyright": "© {{year}} ViTalk. Bản quyền thuộc về ViTalk.",
+    "tagline": "Học tiếng Việt cùng giáo viên bản ngữ tại Seoul",
+    "contact": "Liên hệ",
+    "followUs": "Theo dõi"
+  },
+  "auth": {
+    "loginTitle": "Chào mừng trở lại",
+    "signupTitle": "Tạo tài khoản",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "loginWithGoogle": "Tiếp tục với Google",
+    "loginWithKakao": "Tiếp tục với Kakao",
+    "loginWithEmail": "Đăng nhập bằng email",
+    "signupWithEmail": "Đăng ký bằng email",
+    "noAccount": "Chưa có tài khoản?",
+    "hasAccount": "Đã có tài khoản?",
+    "forgotPassword": "Quên mật khẩu?"
+  },
+  "common": {
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "submit": "Gửi",
+    "confirm": "Xác nhận",
+    "close": "Đóng",
+    "search": "Tìm kiếm",
+    "viewAll": "Xem tất cả",
+    "perLesson": "mỗi buổi",
+    "minutes": "phút",
+    "online": "Online",
+    "offline": "Trực tiếp"
+  }
+}

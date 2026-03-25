@@ -1,0 +1,39 @@
+{
+  "title": "Các lớp học",
+  "subtitle": "Chọn lớp phù hợp với trình độ và mục tiêu của bạn",
+  "bookNow": "Đặt lịch ngay",
+  "duration": "{{minutes}} phút",
+  "beginner": {
+    "name": "Tiếng Việt sơ cấp",
+    "description": "Phù hợp cho người mới bắt đầu. Học bảng chữ cái, thanh điệu, ngữ pháp cơ bản và từ vựng thiết yếu từng bước.",
+    "features": [
+      "Bảng chữ cái & thanh điệu",
+      "Chào hỏi & tự giới thiệu",
+      "Mẫu ngữ pháp cơ bản",
+      "Số đếm, thời gian & từ vựng hàng ngày",
+      "Luyện phát âm với phản hồi từ giáo viên bản ngữ"
+    ]
+  },
+  "intermediate": {
+    "name": "Tiếng Việt trung cấp",
+    "description": "Nâng cao kỹ năng nghe và đọc hiểu theo chủ đề. Xây dựng câu phức tạp hơn và mở rộng vốn từ vựng.",
+    "features": [
+      "Bài tập nghe theo chủ đề",
+      "Luyện đọc hiểu",
+      "Cấu trúc ngữ pháp nâng cao",
+      "Mở rộng từ vựng theo chủ đề",
+      "Ngữ cảnh văn hóa & thành ngữ"
+    ]
+  },
+  "conversation": {
+    "name": "Hội thoại hàng ngày",
+    "description": "Luyện tiếng Việt thực tế qua hội thoại tự do. Cải thiện sự lưu loát, cách diễn đạt tự nhiên và tự tin khi nói.",
+    "features": [
+      "Hội thoại tự do theo chủ đề",
+      "Sửa phát âm & thanh điệu",
+      "Cách nói tự nhiên & tiếng lóng",
+      "Đóng vai tình huống thực tế",
+      "Xây dựng tự tin qua lặp lại"
+    ]
+  }
+}

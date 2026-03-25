@@ -1,0 +1,42 @@
+{
+  "hero": {
+    "greeting": "Xin chào!",
+    "title": "Học tiếng Việt một cách tự nhiên",
+    "subtitle": "Cùng Win, giáo viên bản ngữ người Việt tại Seoul. Đánh giá 5 sao với hơn 362 lượt đánh giá tích cực.",
+    "cta": "Đặt buổi học đầu tiên",
+    "trialNote": "Bắt đầu hành trình tiếng Việt ngay hôm nay"
+  },
+  "highlights": {
+    "title": "Tại sao nên học cùng tôi?",
+    "native": {
+      "title": "Giáo viên bản ngữ",
+      "description": "Đến từ miền Trung Việt Nam, tôi mang đến phát âm chuẩn xác và hiểu biết văn hóa trong mỗi buổi học."
+    },
+    "experience": {
+      "title": "Thành tích đã được chứng minh",
+      "description": "Đánh giá 5/5 với hơn 362 lượt đánh giá. Học viên của tôi luôn đạt được mục tiêu học tập."
+    },
+    "multilingual": {
+      "title": "Thông thạo tiếng Hàn & Anh",
+      "description": "Tôi có thể giải thích ngữ pháp tiếng Việt bằng tiếng Hàn hoặc tiếng Anh để bạn dễ hiểu hơn."
+    },
+    "flexible": {
+      "title": "Học online & trực tiếp",
+      "description": "Chọn học online qua Zoom/Meet hoặc học trực tiếp tại Seoul."
+    }
+  },
+  "about": {
+    "title": "Về tôi",
+    "description": "Xin chào! Tôi là Nguyên (Win/윈), giáo viên tiếng Việt sống tại Seoul từ 2016. Tôi có bằng Thạc sĩ Khoa học Du lịch và đam mê giúp mọi người khám phá vẻ đẹp của tiếng Việt. Tôi tập trung vào luyện nói với nhiều bài tập lặp lại để giúp bạn xây dựng sự tự tin trong giao tiếp.",
+    "location": "Hiện tại sống ở Seoul, Hàn Quốc",
+    "from": "Quê quán miền Trung Việt Nam"
+  },
+  "testimonials": {
+    "title": "Học viên nói gì"
+  },
+  "cta": {
+    "title": "Sẵn sàng bắt đầu?",
+    "subtitle": "Chọn lớp sơ cấp, trung cấp hoặc hội thoại. Online hoặc trực tiếp tại Seoul.",
+    "button": "Xem lớp học & Đặt lịch"
+  }
+}

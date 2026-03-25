@@ -1,0 +1,50 @@
+{
+  "title": "レッスン予約",
+  "steps": {
+    "lessonType": "レッスン選択",
+    "dateTime": "日時選択",
+    "details": "詳細",
+    "payment": "お支払い"
+  },
+  "selectLesson": "レッスンタイプを選択",
+  "selectDate": "日付を選択",
+  "selectTime": "時間帯を選択",
+  "noSlots": "この日は空きがありません",
+  "yourTimezone": "あなたのタイムゾーン",
+  "teacherTimezone": "講師のタイムゾーン（KST）",
+  "format": {
+    "title": "レッスン形式",
+    "online": "オンラインレッスン",
+    "offline": "対面レッスン",
+    "selectPlatform": "プラットフォームを選択",
+    "selectLocation": "場所を選択",
+    "zoom": "Zoom",
+    "googleMeet": "Google Meet",
+    "teams": "Microsoft Teams"
+  },
+  "notes": {
+    "label": "講師へのメモ",
+    "placeholder": "何に集中したいですか？特定のトピックや目標はありますか？"
+  },
+  "payment": {
+    "title": "お支払い方法",
+    "paypal": "PayPalで支払う",
+    "toss": "Tossで支払う",
+    "bankTransfer": "銀行振込",
+    "bankInfo": "以下の口座にお振込みください：",
+    "bankName": "銀行名",
+    "accountNumber": "口座番号",
+    "accountHolder": "口座名義",
+    "reference": "振込備考",
+    "bankNote": "振込時に予約番号を備考欄に記載してください。入金確認後、予約が確定されます。",
+    "total": "合計"
+  },
+  "confirmation": {
+    "title": "予約完了！",
+    "subtitle": "確認メールが間もなく届きます。",
+    "details": "予約詳細",
+    "pendingPayment": "お支払い確認待ちです。",
+    "viewBookings": "予約履歴を見る",
+    "bookAnother": "別のレッスンを予約"
+  }
+}

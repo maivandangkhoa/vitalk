@@ -1,0 +1,50 @@
+{
+  "title": "수업 예약",
+  "steps": {
+    "lessonType": "수업 선택",
+    "dateTime": "날짜 & 시간",
+    "details": "수업 상세",
+    "payment": "결제"
+  },
+  "selectLesson": "수업 유형을 선택하세요",
+  "selectDate": "날짜를 선택하세요",
+  "selectTime": "시간대를 선택하세요",
+  "noSlots": "해당 날짜에 가능한 시간이 없습니다",
+  "yourTimezone": "내 시간대",
+  "teacherTimezone": "선생님 시간대 (KST)",
+  "format": {
+    "title": "수업 형식",
+    "online": "온라인 수업",
+    "offline": "대면 수업",
+    "selectPlatform": "플랫폼 선택",
+    "selectLocation": "장소 선택",
+    "zoom": "Zoom",
+    "googleMeet": "Google Meet",
+    "teams": "Microsoft Teams"
+  },
+  "notes": {
+    "label": "선생님에게 메모",
+    "placeholder": "어떤 부분에 집중하고 싶으신가요? 특정 주제나 목표가 있나요?"
+  },
+  "payment": {
+    "title": "결제 방법",
+    "paypal": "PayPal로 결제",
+    "toss": "토스로 결제",
+    "bankTransfer": "계좌이체",
+    "bankInfo": "다음 계좌로 이체해 주세요:",
+    "bankName": "은행",
+    "accountNumber": "계좌번호",
+    "accountHolder": "예금주",
+    "reference": "입금자명",
+    "bankNote": "이체 시 예약 번호를 입금자명에 포함해 주세요. 입금 확인 후 예약이 확정됩니다.",
+    "total": "합계"
+  },
+  "confirmation": {
+    "title": "예약 완료!",
+    "subtitle": "확인 이메일이 곧 발송됩니다.",
+    "details": "예약 상세",
+    "pendingPayment": "결제 확인 대기 중입니다.",
+    "viewBookings": "내 예약 보기",
+    "bookAnother": "다른 수업 예약하기"
+  }
+}

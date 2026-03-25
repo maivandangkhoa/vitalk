@@ -1,0 +1,50 @@
+{
+  "title": "Book a Lesson",
+  "steps": {
+    "lessonType": "Choose Lesson",
+    "dateTime": "Select Date & Time",
+    "details": "Lesson Details",
+    "payment": "Payment"
+  },
+  "selectLesson": "Select your lesson type",
+  "selectDate": "Pick a date",
+  "selectTime": "Choose a time slot",
+  "noSlots": "No available slots on this date",
+  "yourTimezone": "Your timezone",
+  "teacherTimezone": "Teacher's timezone (KST)",
+  "format": {
+    "title": "Lesson Format",
+    "online": "Online Lesson",
+    "offline": "In-Person Lesson",
+    "selectPlatform": "Choose platform",
+    "selectLocation": "Choose location",
+    "zoom": "Zoom",
+    "googleMeet": "Google Meet",
+    "teams": "Microsoft Teams"
+  },
+  "notes": {
+    "label": "Notes for teacher",
+    "placeholder": "What would you like to focus on? Any specific topics or goals?"
+  },
+  "payment": {
+    "title": "Payment Method",
+    "paypal": "Pay with PayPal",
+    "toss": "Pay with Toss",
+    "bankTransfer": "Bank Transfer",
+    "bankInfo": "Please transfer to the following account:",
+    "bankName": "Bank",
+    "accountNumber": "Account Number",
+    "accountHolder": "Account Holder",
+    "reference": "Reference",
+    "bankNote": "Please include your booking reference in the transfer description. Your booking will be confirmed once payment is verified.",
+    "total": "Total"
+  },
+  "confirmation": {
+    "title": "Booking Confirmed!",
+    "subtitle": "You will receive a confirmation email shortly.",
+    "details": "Booking Details",
+    "pendingPayment": "Your booking is pending payment confirmation.",
+    "viewBookings": "View My Bookings",
+    "bookAnother": "Book Another Lesson"
+  }
+}

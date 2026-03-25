@@ -1,0 +1,62 @@
+{
+  "dashboard": {
+    "title": "ダッシュボード",
+    "upcomingLessons": "今後のレッスン",
+    "totalBookings": "総予約数",
+    "pendingPayments": "未確認の支払い",
+    "totalStudents": "総生徒数",
+    "recentBookings": "最近の予約",
+    "noUpcoming": "今後のレッスンはありません"
+  },
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "availability": "空き時間",
+    "bookings": "予約管理",
+    "blog": "ブログ",
+    "reviews": "レビュー",
+    "profile": "プロフィール",
+    "lessons": "レッスン管理",
+    "settings": "設定"
+  },
+  "availability": {
+    "title": "空き時間管理",
+    "weeklyTemplate": "週間テンプレート",
+    "calendarOverride": "カレンダー個別設定",
+    "addSlot": "時間帯を追加",
+    "removeSlot": "削除",
+    "markUnavailable": "不可に設定",
+    "generateSlots": "スロット生成",
+    "saveChanges": "変更を保存",
+    "from": "開始",
+    "to": "終了"
+  },
+  "bookings": {
+    "title": "予約管理",
+    "all": "すべて",
+    "pending": "保留中",
+    "confirmed": "確定",
+    "completed": "完了",
+    "cancelled": "キャンセル",
+    "confirmPayment": "支払い確認",
+    "cancelBooking": "予約キャンセル",
+    "addMeetingLink": "ミーティングリンクを追加",
+    "noBookings": "予約はありません"
+  },
+  "blog": {
+    "title": "ブログ管理",
+    "newPost": "新規投稿",
+    "editPost": "投稿を編集",
+    "publish": "公開",
+    "unpublish": "非公開",
+    "saveDraft": "下書き保存",
+    "autoTranslate": "自動翻訳",
+    "translating": "翻訳中...",
+    "deletePost": "投稿を削除"
+  },
+  "reviews": {
+    "title": "レビュー管理",
+    "hide": "非表示",
+    "show": "表示",
+    "deleteReview": "レビューを削除"
+  }
+}

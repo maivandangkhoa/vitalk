@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "Home",
+    "lessons": "Lessons",
+    "book": "Book a Lesson",
+    "blog": "Blog",
+    "reviews": "Reviews",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "myBookings": "My Bookings",
+    "admin": "Admin"
+  },
+  "footer": {
+    "copyright": "© {{year}} ViTalk. All rights reserved.",
+    "tagline": "Learn Vietnamese with a native speaker in Seoul",
+    "contact": "Contact",
+    "followUs": "Follow Us"
+  },
+  "auth": {
+    "loginTitle": "Welcome Back",
+    "signupTitle": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "loginWithGoogle": "Continue with Google",
+    "loginWithKakao": "Continue with Kakao",
+    "loginWithEmail": "Login with Email",
+    "signupWithEmail": "Sign Up with Email",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "forgotPassword": "Forgot password?"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "viewAll": "View All",
+    "perLesson": "per lesson",
+    "minutes": "minutes",
+    "online": "Online",
+    "offline": "Offline"
+  }
+}

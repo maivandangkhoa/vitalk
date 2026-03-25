@@ -1,0 +1,62 @@
+{
+  "dashboard": {
+    "title": "대시보드",
+    "upcomingLessons": "예정된 수업",
+    "totalBookings": "총 예약",
+    "pendingPayments": "대기 중인 결제",
+    "totalStudents": "총 학생 수",
+    "recentBookings": "최근 예약",
+    "noUpcoming": "예정된 수업이 없습니다"
+  },
+  "nav": {
+    "dashboard": "대시보드",
+    "availability": "가능 시간",
+    "bookings": "예약 관리",
+    "blog": "블로그",
+    "reviews": "후기",
+    "profile": "프로필",
+    "lessons": "수업 관리",
+    "settings": "설정"
+  },
+  "availability": {
+    "title": "가능 시간 관리",
+    "weeklyTemplate": "주간 템플릿",
+    "calendarOverride": "캘린더 개별 설정",
+    "addSlot": "시간대 추가",
+    "removeSlot": "삭제",
+    "markUnavailable": "불가능으로 표시",
+    "generateSlots": "시간대 생성",
+    "saveChanges": "변경사항 저장",
+    "from": "시작",
+    "to": "종료"
+  },
+  "bookings": {
+    "title": "예약 관리",
+    "all": "전체",
+    "pending": "대기 중",
+    "confirmed": "확정",
+    "completed": "완료",
+    "cancelled": "취소",
+    "confirmPayment": "결제 확인",
+    "cancelBooking": "예약 취소",
+    "addMeetingLink": "회의 링크 추가",
+    "noBookings": "예약이 없습니다"
+  },
+  "blog": {
+    "title": "블로그 관리",
+    "newPost": "새 게시물",
+    "editPost": "게시물 수정",
+    "publish": "게시",
+    "unpublish": "게시 취소",
+    "saveDraft": "임시 저장",
+    "autoTranslate": "자동 번역",
+    "translating": "번역 중...",
+    "deletePost": "게시물 삭제"
+  },
+  "reviews": {
+    "title": "후기 관리",
+    "hide": "숨기기",
+    "show": "표시",
+    "deleteReview": "후기 삭제"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "upcomingLessons": "Upcoming Lessons",
+    "totalBookings": "Total Bookings",
+    "pendingPayments": "Pending Payments",
+    "totalStudents": "Total Students",
+    "recentBookings": "Recent Bookings",
+    "noUpcoming": "No upcoming lessons"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "availability": "Availability",
+    "bookings": "Bookings",
+    "blog": "Blog",
+    "reviews": "Reviews",
+    "profile": "Profile",
+    "lessons": "Lessons",
+    "settings": "Settings"
+  },
+  "availability": {
+    "title": "Manage Availability",
+    "weeklyTemplate": "Weekly Template",
+    "calendarOverride": "Calendar Override",
+    "addSlot": "Add Time Slot",
+    "removeSlot": "Remove",
+    "markUnavailable": "Mark as Unavailable",
+    "generateSlots": "Generate Slots",
+    "saveChanges": "Save Changes",
+    "from": "From",
+    "to": "To"
+  },
+  "bookings": {
+    "title": "Manage Bookings",
+    "all": "All",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "confirmPayment": "Confirm Payment",
+    "cancelBooking": "Cancel Booking",
+    "addMeetingLink": "Add Meeting Link",
+    "noBookings": "No bookings found"
+  },
+  "blog": {
+    "title": "Manage Blog Posts",
+    "newPost": "New Post",
+    "editPost": "Edit Post",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "saveDraft": "Save Draft",
+    "autoTranslate": "Auto-Translate",
+    "translating": "Translating...",
+    "deletePost": "Delete Post"
+  },
+  "reviews": {
+    "title": "Manage Reviews",
+    "hide": "Hide",
+    "show": "Show",
+    "deleteReview": "Delete Review"
+  }
+}

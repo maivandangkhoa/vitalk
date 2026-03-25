@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function hasRole(role) {
+      return isAuthenticated() && request.auth.token.role == role;
+    }
+
+    function isAdmin() {
+      return hasRole("admin");
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Profile - public read, admin write
+    match /profile/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Lesson Types - public read, admin write
+    match /lessonTypes/{lessonId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Availability - public read, admin write
+    match /availability/{monthId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Users - own doc read/write, admin read all
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Bookings - students create + read own, admin full access
+    match /bookings/{bookingId} {
+      allow create: if isAuthenticated();
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.studentId == request.auth.uid);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Reviews - public read visible, auth create, admin manage
+    match /reviews/{reviewId} {
+      allow read: if resource.data.isVisible == true || isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    // Blog Posts - public read published, admin write
+    match /blogPosts/{postId} {
+      allow read: if resource.data.isPublished == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Blog Post Summaries - public read, only Cloud Functions write
+    match /blogPostSummaries/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Site Config - public read, admin write
+    match /siteConfig/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Mail - only Cloud Functions (deny all client access)
+    match /mail/{mailId} {
+      allow read, write: if false;
+    }
+  }
+}
