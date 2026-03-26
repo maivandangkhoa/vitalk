@@ -61,10 +61,21 @@ export default function AdminAvailability() {
   const selectedDaySlots = selectedDateStr ? (currentSlots[selectedDateStr] || []) : [];
 
   const addSlot = (day: string) => {
-    setWeeklySlots((prev) => ({
-      ...prev,
-      [day]: [...(prev[day] || []), { from: '09:00', to: '10:00' }],
-    }));
+    setWeeklySlots((prev) => {
+      const existing = prev[day] || [];
+      // Find the next available time that doesn't overlap
+      let fromMinutes = 9 * 60; // default 09:00
+      if (existing.length > 0) {
+        const lastSlot = existing[existing.length - 1];
+        const [h, m] = lastSlot.to.split(':').map(Number);
+        fromMinutes = h * 60 + m;
+      }
+      if (fromMinutes >= 23 * 60) fromMinutes = 9 * 60; // wrap if too late
+      const toMinutes = fromMinutes + 60;
+      const from = `${String(Math.floor(fromMinutes / 60)).padStart(2, '0')}:${String(fromMinutes % 60).padStart(2, '0')}`;
+      const to = `${String(Math.floor(toMinutes / 60)).padStart(2, '0')}:${String(toMinutes % 60).padStart(2, '0')}`;
+      return { ...prev, [day]: [...existing, { from, to }] };
+    });
   };
 
   const removeSlot = (day: string, index: number) => {
@@ -107,9 +118,16 @@ export default function AdminAvailability() {
   };
 
   const handleSave = async () => {
-    const slotsToSave = Object.keys(overrideSlots).length > 0 ? overrideSlots : currentSlots;
+    // Auto-generate slots if template has data but no override slots yet
+    let slotsToSave = Object.keys(overrideSlots).length > 0 ? overrideSlots : currentSlots;
+    const hasTemplate = Object.values(weeklySlots).some((ranges) => ranges.length > 0);
+    if (Object.keys(slotsToSave).length === 0 && hasTemplate) {
+      const year = viewMonth.getFullYear();
+      const month = viewMonth.getMonth();
+      slotsToSave = generateMonthSlots(year, month, weeklySlots);
+    }
     if (Object.keys(slotsToSave).length === 0) {
-      toast.error('No slots to save. Generate slots first.');
+      toast.error('No slots to save. Add time slots first.');
       return;
     }
     setSaving(true);
