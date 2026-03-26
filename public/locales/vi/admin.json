@@ -75,7 +75,8 @@
     "translateSuccess": "Đã dịch! Kiểm tra trước khi đăng.",
     "translateFailed": "Dịch thất bại. Thử lại.",
     "published": "Đã đăng bài!",
-    "draftSaved": "Đã lưu nháp!"
+    "draftSaved": "Đã lưu nháp!",
+    "previewPublish": "Xem trước & Đăng"
   },
   "reviews": {
     "title": "Quản lý đánh giá",

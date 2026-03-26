@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Quote, Loader2 } from 'lucide-react';
 import { usePublicReviews } from '@/hooks/useReviews';
@@ -37,6 +38,7 @@ function ReviewCard({ name, content, rating }: { name: string; content: string; 
 }
 
 export default function ReviewsPage() {
+  const { t } = useTranslation('common');
   const { reviews, loading } = usePublicReviews();
 
   const displayReviews = reviews.length > 0
@@ -51,9 +53,9 @@ export default function ReviewsPage() {
     <div className="px-4 py-16 md:py-24">
       <div className="container mx-auto">
         <AnimatedSection className="mx-auto max-w-2xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight">Student Reviews</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{t('reviews.title')}</h1>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-            What students say about their learning experience
+            {t('reviews.subtitle')}
           </p>
           <div className="mt-6 inline-flex items-center gap-3 rounded-2xl bg-white px-6 py-3 shadow-sm">
             <div className="flex">
@@ -62,7 +64,7 @@ export default function ReviewsPage() {
               ))}
             </div>
             <span className="font-mono text-lg font-semibold">{avgRating}</span>
-            <span className="text-muted-foreground">(362+ reviews)</span>
+            <span className="text-muted-foreground">{t('reviews.reviewCount', { count: 362 })}</span>
           </div>
         </AnimatedSection>
 

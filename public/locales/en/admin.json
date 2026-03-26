@@ -75,7 +75,8 @@
     "translateSuccess": "Translated! Review before publishing.",
     "translateFailed": "Translation failed. Try again.",
     "published": "Post published!",
-    "draftSaved": "Draft saved!"
+    "draftSaved": "Draft saved!",
+    "previewPublish": "Preview & Publish"
   },
   "reviews": {
     "title": "Manage Reviews",

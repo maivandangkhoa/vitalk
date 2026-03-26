@@ -51,7 +51,16 @@
     "online": "オンライン",
     "offline": "対面"
   },
+  "blog": {
+    "preview": "プレビュー",
+    "previewMode": "この投稿をプレビュー中です。まだ公開されていません。",
+    "confirmPublish": "公開を確認",
+    "backToEdit": "編集に戻る"
+  },
   "reviews": {
+    "title": "受講生の声",
+    "subtitle": "受講生が語る学習体験",
+    "reviewCount": "({{count}}件以上のレビュー)",
     "writeReview": "レビューを書く",
     "yourRating": "評価",
     "yourReview": "レビュー内容",

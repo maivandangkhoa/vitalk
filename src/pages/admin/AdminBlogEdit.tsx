@@ -70,7 +70,7 @@ export default function AdminBlogEdit() {
     }
   }, [isNew, title.en, title.ko]);
 
-  const handleSave = async (publish: boolean) => {
+  const handleSave = async () => {
     const hasTitle = LANGUAGES.some((l) => title[l.code].trim());
     if (!hasTitle) {
       toast.error(t('blog.titleRequired'));
@@ -89,18 +89,45 @@ export default function AdminBlogEdit() {
         content,
         coverImageUrl,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-        isPublished: publish,
-        publishedAt: publish ? (post?.publishedAt || new Date()) : null,
+        isPublished,
+        publishedAt: isPublished ? (post?.publishedAt || null) : null,
       };
 
       const savedId = await saveBlogPost(isNew ? null : id!, postData);
-      toast.success(publish ? t('blog.published') : t('blog.draftSaved'));
-      if (publish) {
-        // Navigate to public blog post for preview
-        navigate(`/blog/${slug}`);
-      } else if (isNew) {
+      toast.success(t('blog.draftSaved'));
+      if (isNew) {
         navigate(`/admin/blog/${savedId}/edit`, { replace: true });
       }
+    } catch {
+      toast.error('Failed to save');
+    }
+  };
+
+  const handlePreviewPublish = async () => {
+    const hasTitle = LANGUAGES.some((l) => title[l.code].trim());
+    if (!hasTitle) {
+      toast.error(t('blog.titleRequired'));
+      return;
+    }
+    if (!slug.trim()) {
+      toast.error(t('blog.slugRequired'));
+      return;
+    }
+
+    try {
+      const postData = {
+        slug,
+        title,
+        excerpt,
+        content,
+        coverImageUrl,
+        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+        isPublished: false,
+        publishedAt: null,
+      };
+
+      await saveBlogPost(isNew ? null : id!, postData);
+      navigate(`/blog/${slug}?preview=true`);
     } catch {
       toast.error('Failed to save');
     }
@@ -162,7 +189,7 @@ export default function AdminBlogEdit() {
           </h1>
           {!isNew && (
             <Badge variant={isPublished ? 'default' : 'secondary'}>
-              {isPublished ? 'Published' : 'Draft'}
+              {isPublished ? t('blog.publish') : t('blog.saveDraft')}
             </Badge>
           )}
         </div>
@@ -175,14 +202,15 @@ export default function AdminBlogEdit() {
             )}
             {translating ? t('blog.translating') : t('blog.autoTranslate')}
           </Button>
-          <Button variant="outline" onClick={() => handleSave(false)} disabled={saving}>
+          <Button variant="outline" onClick={handleSave} disabled={saving}>
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Save className="mr-2 h-4 w-4" />
             {t('blog.saveDraft')}
           </Button>
-          <Button onClick={() => handleSave(true)} disabled={saving}>
+          <Button onClick={handlePreviewPublish} disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Eye className="mr-2 h-4 w-4" />
-            {t('blog.publish')}
+            {t('blog.previewPublish')}
           </Button>
         </div>
       </div>

@@ -51,7 +51,16 @@
     "online": "온라인",
     "offline": "오프라인"
   },
+  "blog": {
+    "preview": "미리보기",
+    "previewMode": "이 게시물을 미리보기 중입니다. 아직 공개되지 않았습니다.",
+    "confirmPublish": "게시 확인",
+    "backToEdit": "편집으로 돌아가기"
+  },
   "reviews": {
+    "title": "수강생 후기",
+    "subtitle": "수강생들이 전하는 학습 경험",
+    "reviewCount": "({{count}}+ 후기)",
     "writeReview": "후기 작성",
     "yourRating": "평점",
     "yourReview": "후기 내용",

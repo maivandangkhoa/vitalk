@@ -75,7 +75,8 @@
     "translateSuccess": "翻訳完了！公開前に確認してください。",
     "translateFailed": "翻訳に失敗しました。もう一度お試しください。",
     "published": "投稿を公開しました！",
-    "draftSaved": "下書きを保存しました！"
+    "draftSaved": "下書きを保存しました！",
+    "previewPublish": "プレビュー & 公開"
   },
   "reviews": {
     "title": "レビュー管理",

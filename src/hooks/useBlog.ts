@@ -75,6 +75,38 @@ export function useBlogPost(slug: string) {
   return { post, loading };
 }
 
+/** Admin: fetch single blog post by slug (preview, no isPublished filter) */
+export function useBlogPostPreview(slug: string) {
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const fetchPost = async () => {
+      setLoading(true);
+      try {
+        const q = query(
+          collection(db, 'blogPosts'),
+          where('slug', '==', slug)
+        );
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const d = snap.docs[0];
+          setPost({ id: d.id, ...d.data() } as BlogPost);
+        } else {
+          setPost(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPost();
+  }, [slug]);
+
+  return { post, loading };
+}
+
 /** Admin: fetch all blog posts */
 export function useAdminBlogPosts() {
   const [posts, setPosts] = useState<BlogPost[]>([]);

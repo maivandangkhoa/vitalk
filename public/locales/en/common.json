@@ -51,7 +51,16 @@
     "online": "Online",
     "offline": "Offline"
   },
+  "blog": {
+    "preview": "Preview",
+    "previewMode": "You are previewing this post. It is not visible to the public yet.",
+    "confirmPublish": "Confirm Publish",
+    "backToEdit": "Back to Edit"
+  },
   "reviews": {
+    "title": "Student Reviews",
+    "subtitle": "What students say about their learning experience",
+    "reviewCount": "({{count}}+ reviews)",
     "writeReview": "Write Review",
     "yourRating": "Your Rating",
     "yourReview": "Your Review",

@@ -75,7 +75,8 @@
     "translateSuccess": "번역 완료! 게시 전에 확인하세요.",
     "translateFailed": "번역 실패. 다시 시도하세요.",
     "published": "게시물이 게시되었습니다!",
-    "draftSaved": "임시 저장되었습니다!"
+    "draftSaved": "임시 저장되었습니다!",
+    "previewPublish": "미리보기 & 게시"
   },
   "reviews": {
     "title": "후기 관리",

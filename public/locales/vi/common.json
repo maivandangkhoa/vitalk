@@ -51,7 +51,16 @@
     "online": "Online",
     "offline": "Trực tiếp"
   },
+  "blog": {
+    "preview": "Xem trước",
+    "previewMode": "Bạn đang xem trước bài viết này. Bài viết chưa hiển thị công khai.",
+    "confirmPublish": "Xác nhận đăng bài",
+    "backToEdit": "Quay lại chỉnh sửa"
+  },
   "reviews": {
+    "title": "Đánh giá từ học viên",
+    "subtitle": "Cảm nhận của học viên về trải nghiệm học tập",
+    "reviewCount": "({{count}}+ đánh giá)",
     "writeReview": "Viết đánh giá",
     "yourRating": "Đánh giá của bạn",
     "yourReview": "Nhận xét của bạn",

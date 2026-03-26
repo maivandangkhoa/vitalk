@@ -1,17 +1,47 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Loader2 } from 'lucide-react';
-import { useBlogPost } from '@/hooks/useBlog';
+import { ArrowLeft, Calendar, Loader2, Eye, CheckCircle, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import { useBlogPost, useBlogPostPreview, togglePublish } from '@/hooks/useBlog';
+import { useAuthStore } from '@/stores/authStore';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { Language } from '@/types';
 
 export default function BlogPostPage() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('common');
+  const { t: ta } = useTranslation('admin');
   const { slug } = useParams<{ slug: string }>();
-  const { post, loading } = useBlogPost(slug || '');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { isAdmin } = useAuthStore();
   const lang = i18n.language as Language;
+
+  const isPreview = searchParams.get('preview') === 'true' && isAdmin();
+
+  // Use preview hook (no isPublished filter) for admin preview, normal hook otherwise
+  const publicResult = useBlogPost(isPreview ? '' : (slug || ''));
+  const previewResult = useBlogPostPreview(isPreview ? (slug || '') : '');
+  const { post, loading } = isPreview ? previewResult : publicResult;
+
+  const [publishing, setPublishing] = useState(false);
+
+  const handleConfirmPublish = async () => {
+    if (!post) return;
+    setPublishing(true);
+    try {
+      await togglePublish(post.id, true);
+      toast.success(ta('blog.published'));
+      // Remove preview param
+      setSearchParams({});
+    } catch {
+      toast.error(ta('blog.translateFailed'));
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -46,7 +76,46 @@ export default function BlogPostPage() {
 
   return (
     <div className="px-4 py-16">
-      <AnimatedSection className="container mx-auto max-w-3xl">
+      {/* Admin Preview Bar */}
+      {isPreview && !post.isPublished && (
+        <div className="fixed inset-x-0 top-0 z-50 border-b border-amber-200 bg-amber-50 px-4 py-3">
+          <div className="container mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Badge className="bg-amber-100 text-amber-700">
+                <Eye className="mr-1 h-3 w-3" />
+                {t('blog.preview')}
+              </Badge>
+              <span className="text-sm text-amber-700">
+                {t('blog.previewMode')}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(`/admin/blog/${post.id}/edit`)}
+              >
+                <Pencil className="mr-1 h-3.5 w-3.5" />
+                {t('blog.backToEdit')}
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleConfirmPublish}
+                disabled={publishing}
+              >
+                {publishing ? (
+                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                )}
+                {t('blog.confirmPublish')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AnimatedSection className={`container mx-auto max-w-3xl ${isPreview && !post.isPublished ? 'mt-12' : ''}`}>
         <Button variant="ghost" size="sm" className="mb-6" render={<Link to="/blog" />}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back to Blog
