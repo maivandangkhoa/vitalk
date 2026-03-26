@@ -94,8 +94,11 @@ export default function AdminBlogEdit() {
       };
 
       const savedId = await saveBlogPost(isNew ? null : id!, postData);
-      toast.success(publish ? 'Post published!' : 'Draft saved!');
-      if (isNew) {
+      toast.success(publish ? t('blog.published') : t('blog.draftSaved'));
+      if (publish) {
+        // Navigate to public blog post for preview
+        navigate(`/blog/${slug}`);
+      } else if (isNew) {
         navigate(`/admin/blog/${savedId}/edit`, { replace: true });
       }
     } catch {

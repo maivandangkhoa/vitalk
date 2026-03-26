@@ -54,7 +54,7 @@ const PLATFORM_MAP: Record<string, OnlinePlatform> = {
 };
 
 export default function BookingPage() {
-  const { t } = useTranslation('booking');
+  const { t, i18n } = useTranslation('booking');
   const { t: tl } = useTranslation('lessons');
   const { t: tc } = useTranslation('common');
   const navigate = useNavigate();
@@ -130,10 +130,10 @@ export default function BookingPage() {
       const bookingId = await createBooking({
         lessonTypeId: selectedLessonData.id,
         lessonTypeName: {
-          en: tl(`${selectedLessonData.level}.name`),
-          vi: tl(`${selectedLessonData.level}.name`),
-          ko: tl(`${selectedLessonData.level}.name`),
-          ja: tl(`${selectedLessonData.level}.name`),
+          en: i18n.getFixedT('en', 'lessons')(`${selectedLessonData.level}.name`),
+          vi: i18n.getFixedT('vi', 'lessons')(`${selectedLessonData.level}.name`),
+          ko: i18n.getFixedT('ko', 'lessons')(`${selectedLessonData.level}.name`),
+          ja: i18n.getFixedT('ja', 'lessons')(`${selectedLessonData.level}.name`),
         },
         date: selectedDateStr,
         startTime: selectedSlot.startTime,

@@ -73,7 +73,9 @@
     "slugRequired": "Slug là bắt buộc",
     "writeContentFirst": "Hãy viết nội dung bằng ít nhất một ngôn ngữ trước",
     "translateSuccess": "Đã dịch! Kiểm tra trước khi đăng.",
-    "translateFailed": "Dịch thất bại. Thử lại."
+    "translateFailed": "Dịch thất bại. Thử lại.",
+    "published": "Đã đăng bài!",
+    "draftSaved": "Đã lưu nháp!"
   },
   "reviews": {
     "title": "Quản lý đánh giá",

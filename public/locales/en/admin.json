@@ -73,7 +73,9 @@
     "slugRequired": "Slug is required",
     "writeContentFirst": "Write content in at least one language first",
     "translateSuccess": "Translated! Review before publishing.",
-    "translateFailed": "Translation failed. Try again."
+    "translateFailed": "Translation failed. Try again.",
+    "published": "Post published!",
+    "draftSaved": "Draft saved!"
   },
   "reviews": {
     "title": "Manage Reviews",

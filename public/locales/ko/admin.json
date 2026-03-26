@@ -73,7 +73,9 @@
     "slugRequired": "Slug는 필수입니다",
     "writeContentFirst": "먼저 하나의 언어로 내용을 작성하세요",
     "translateSuccess": "번역 완료! 게시 전에 확인하세요.",
-    "translateFailed": "번역 실패. 다시 시도하세요."
+    "translateFailed": "번역 실패. 다시 시도하세요.",
+    "published": "게시물이 게시되었습니다!",
+    "draftSaved": "임시 저장되었습니다!"
   },
   "reviews": {
     "title": "후기 관리",
