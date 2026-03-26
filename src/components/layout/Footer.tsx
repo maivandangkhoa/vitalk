@@ -35,7 +35,7 @@ export function Footer() {
 
           <div>
             <h3 className="mb-3 text-sm font-semibold">{t('footer.contact')}</h3>
-            <p className="text-sm text-muted-foreground">Seoul, South Korea</p>
+            <p className="text-sm text-muted-foreground">{t('footer.location')}</p>
           </div>
         </div>
 

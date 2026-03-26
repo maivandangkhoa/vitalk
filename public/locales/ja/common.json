@@ -12,9 +12,10 @@
     "admin": "管理画面"
   },
   "footer": {
-    "copyright": "© {{year}} ViTalk. All rights reserved.",
+    "copyright": "© {{year}} ViTalk. 無断転載禁止。",
     "tagline": "ソウルでネイティブスピーカーとベトナム語を学ぼう",
     "contact": "お問い合わせ",
+    "location": "ソウル、韓国",
     "followUs": "フォロー"
   },
   "auth": {

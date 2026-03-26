@@ -5,6 +5,8 @@ import type { MonthlyAvailability, TimeSlot } from '@/types';
 import { LESSON_DURATION_MINUTES, BREAK_DURATION_MINUTES, TEACHER_TIMEZONE } from '@/lib/constants';
 import { format } from 'date-fns';
 
+export type WeeklyTemplate = Record<string, { from: string; to: string }[]>;
+
 function generateSlotsFromRange(from: string, to: string): TimeSlot[] {
   const slots: TimeSlot[] = [];
   const [fromH, fromM] = from.split(':').map(Number);
@@ -60,6 +62,38 @@ export function generateMonthSlots(
   }
 
   return slots;
+}
+
+export function useWeeklyTemplate() {
+  const [template, setTemplate] = useState<WeeklyTemplate | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTemplate = async () => {
+      setLoading(true);
+      try {
+        const snap = await getDoc(doc(db, 'availability', 'weeklyTemplate'));
+        if (snap.exists()) {
+          setTemplate(snap.data().template as WeeklyTemplate);
+        } else {
+          setTemplate(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTemplate();
+  }, []);
+
+  const saveTemplate = useCallback(async (newTemplate: WeeklyTemplate) => {
+    await setDoc(doc(db, 'availability', 'weeklyTemplate'), {
+      template: newTemplate,
+      updatedAt: serverTimestamp(),
+    });
+    setTemplate(newTemplate);
+  }, []);
+
+  return { template, loading: loading, saveTemplate };
 }
 
 export function useAvailability(yearMonth: string) {

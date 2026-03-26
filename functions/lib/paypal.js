@@ -36,8 +36,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
-const PAYPAL_API_BASE = "https://api-m.paypal.com"; // Change to sandbox for testing
-// const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
+// const PAYPAL_API_BASE = "https://api-m.paypal.com"; // Production
+const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com"; // Sandbox for testing
 async function getPaypalAccessToken() {
     const clientId = process.env.PAYPAL_CLIENT_ID;
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET;

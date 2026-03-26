@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Trash2, Save, Loader2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { useAvailability, generateMonthSlots } from '@/hooks/useAvailability';
+import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/useAvailability';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { TimeSlot } from '@/types';
 
@@ -26,14 +26,22 @@ export default function AdminAvailability() {
   const yearMonth = format(viewMonth, 'yyyy-MM');
 
   const { availability, loading, saveAvailability } = useAvailability(yearMonth);
+  const { template: savedTemplate, loading: templateLoading, saveTemplate } = useWeeklyTemplate();
   const [saving, setSaving] = useState(false);
+  const [templateInitialized, setTemplateInitialized] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [weeklySlots, setWeeklySlots] = useState<Record<string, TimeRange[]>>({
-    Monday: [{ from: '09:00', to: '12:00' }],
-    Wednesday: [{ from: '14:00', to: '18:00' }],
-    Friday: [{ from: '09:00', to: '12:00' }],
-  });
+  const [weeklySlots, setWeeklySlots] = useState<Record<string, TimeRange[]>>({});
+
+  // Initialize weeklySlots from Firestore template once loaded
+  useEffect(() => {
+    if (!templateLoading && !templateInitialized) {
+      if (savedTemplate && Object.keys(savedTemplate).length > 0) {
+        setWeeklySlots(savedTemplate);
+      }
+      setTemplateInitialized(true);
+    }
+  }, [templateLoading, savedTemplate, templateInitialized]);
 
   // Editable override slots for the currently loaded month
   const [overrideSlots, setOverrideSlots] = useState<Record<string, TimeSlot[]>>({});
@@ -106,7 +114,10 @@ export default function AdminAvailability() {
     }
     setSaving(true);
     try {
-      await saveAvailability(slotsToSave);
+      await Promise.all([
+        saveAvailability(slotsToSave),
+        saveTemplate(weeklySlots),
+      ]);
       setOverrideSlots({});
       toast.success('Availability saved!');
     } catch {
