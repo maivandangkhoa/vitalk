@@ -30,7 +30,8 @@
     "signupWithEmail": "メールで登録",
     "noAccount": "アカウントをお持ちでないですか？",
     "hasAccount": "すでにアカウントをお持ちですか？",
-    "forgotPassword": "パスワードをお忘れですか？"
+    "forgotPassword": "パスワードをお忘れですか？",
+    "or": "または"
   },
   "common": {
     "loading": "読み込み中...",
@@ -49,13 +50,41 @@
     "perLesson": "レッスンごと",
     "minutes": "分",
     "online": "オンライン",
-    "offline": "対面"
+    "offline": "対面",
+    "pageNotFound": "404 - ページが見つかりません",
+    "comingSoon": "近日公開..."
   },
   "blog": {
     "preview": "プレビュー",
     "previewMode": "この投稿をプレビュー中です。まだ公開されていません。",
     "confirmPublish": "公開を確認",
-    "backToEdit": "編集に戻る"
+    "backToEdit": "編集に戻る",
+    "postNotFound": "記事が見つかりません",
+    "postNotFoundDesc": "お探しのブログ記事は存在しないか、削除されました。",
+    "backToBlog": "ブログに戻る"
+  },
+  "payment": {
+    "createOrderFailed": "注文の作成に失敗しました",
+    "capturePaymentFailed": "決済処理に失敗しました",
+    "paypalError": "PayPalエラー",
+    "paymentCancelled": "決済がキャンセルされました",
+    "paypalNotConfigured": "PayPalはまだ設定されていません。",
+    "paypalSetEnv": ".envにVITE_PAYPAL_CLIENT_IDを設定してください",
+    "confirmedAfterVerification": "お支払いの確認後、予約が確定されます",
+    "tossLoadFailed": "Toss SDKの読み込みに失敗しました",
+    "tossNotConfigured": "Toss Paymentsはまだ設定されていません。",
+    "tossSetEnv": ".envにVITE_TOSS_CLIENT_KEYを設定してください",
+    "tossNotReady": "Toss Paymentsの準備ができていません",
+    "tossHelperText": "韓国カード、口座振替、モバイル決済に対応",
+    "processing": "処理中...",
+    "confirmingPayment": "決済確認中...",
+    "pleaseWaitVerify": "お支払いを確認しています。しばらくお待ちください。",
+    "paymentSuccessful": "決済完了！",
+    "lessonBookedConfirmed": "レッスンが予約・確認されました。",
+    "viewMyBookings": "予約を確認",
+    "bookAnotherLesson": "別のレッスンを予約",
+    "paymentFailed": "決済失敗",
+    "tryAgain": "再試行"
   },
   "reviews": {
     "title": "受講生の声",
@@ -70,5 +99,11 @@
     "thankYou": "レビューありがとうございます！",
     "ratingRequired": "評価を選択してください",
     "contentMin": "レビューは10文字以上必要です"
+  },
+  "myBookings": {
+    "paymentPending": "お支払い待ち - 振込を完了してください",
+    "joinMeeting": "参加",
+    "loginRequired": "予約を確認するにはログインしてください。",
+    "noBookings": "まだ予約がありません。"
   }
 }

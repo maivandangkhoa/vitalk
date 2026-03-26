@@ -65,6 +65,7 @@ function SidebarNav({ onItemClick }: { onItemClick?: () => void }) {
 }
 
 export function AdminLayout() {
+  const { t } = useTranslation('admin');
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -83,7 +84,7 @@ export function AdminLayout() {
         <div className="absolute bottom-4 left-4">
           <Button variant="ghost" size="sm" render={<Link to="/" />} className="flex items-center gap-2 text-muted-foreground hover:text-indigo-600">
             <ArrowLeft className="h-4 w-4" />
-            Back to site
+            {t('nav.backToSite')}
           </Button>
         </div>
       </aside>

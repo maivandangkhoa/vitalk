@@ -37,8 +37,16 @@
     "accountHolder": "예금주",
     "reference": "입금자명",
     "bankNote": "이체 시 예약 번호를 입금자명에 포함해 주세요. 입금 확인 후 예약이 확정됩니다.",
-    "total": "합계"
+    "total": "합계",
+    "confirmTransfer": "이체를 완료했습니다"
   },
+  "summary": {
+    "lesson": "수업",
+    "date": "날짜",
+    "time": "시간",
+    "format": "형식"
+  },
+  "bookingFailed": "예약에 실패했습니다. 다시 시도해 주세요.",
   "confirmation": {
     "title": "예약 완료!",
     "subtitle": "확인 이메일이 곧 발송됩니다.",

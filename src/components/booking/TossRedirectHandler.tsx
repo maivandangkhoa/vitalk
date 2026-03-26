@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
@@ -12,6 +13,7 @@ import { useTossPayment } from '@/hooks/usePayment';
 export default function TossRedirectHandler() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const { confirmPayment } = useTossPayment();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
@@ -51,8 +53,8 @@ export default function TossRedirectHandler() {
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-8">
             <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-indigo-500" />
-            <h2 className="text-xl font-bold">Confirming payment...</h2>
-            <p className="mt-2 text-muted-foreground">Please wait while we verify your payment.</p>
+            <h2 className="text-xl font-bold">{t('payment.confirmingPayment')}</h2>
+            <p className="mt-2 text-muted-foreground">{t('payment.pleaseWaitVerify')}</p>
           </CardContent>
         </Card>
       </div>
@@ -65,11 +67,11 @@ export default function TossRedirectHandler() {
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-8">
             <CheckCircle className="mx-auto mb-4 h-16 w-16 text-emerald-500" />
-            <h2 className="text-2xl font-bold">Payment Successful!</h2>
-            <p className="mt-2 text-muted-foreground">Your lesson has been booked and confirmed.</p>
+            <h2 className="text-2xl font-bold">{t('payment.paymentSuccessful')}</h2>
+            <p className="mt-2 text-muted-foreground">{t('payment.lessonBookedConfirmed')}</p>
             <div className="mt-6 flex flex-col gap-2">
-              <Button onClick={() => navigate('/my-bookings')}>View My Bookings</Button>
-              <Button variant="outline" onClick={() => navigate('/book')}>Book Another Lesson</Button>
+              <Button onClick={() => navigate('/my-bookings')}>{t('payment.viewMyBookings')}</Button>
+              <Button variant="outline" onClick={() => navigate('/book')}>{t('payment.bookAnotherLesson')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -82,11 +84,11 @@ export default function TossRedirectHandler() {
       <Card className="w-full max-w-md text-center">
         <CardContent className="pt-8">
           <XCircle className="mx-auto mb-4 h-16 w-16 text-rose-500" />
-          <h2 className="text-2xl font-bold">Payment Failed</h2>
+          <h2 className="text-2xl font-bold">{t('payment.paymentFailed')}</h2>
           <p className="mt-2 text-muted-foreground">{errorMsg}</p>
           <div className="mt-6 flex flex-col gap-2">
-            <Button onClick={() => navigate('/book')}>Try Again</Button>
-            <Button variant="outline" onClick={() => navigate('/my-bookings')}>View My Bookings</Button>
+            <Button onClick={() => navigate('/book')}>{t('payment.tryAgain')}</Button>
+            <Button variant="outline" onClick={() => navigate('/my-bookings')}>{t('payment.viewMyBookings')}</Button>
           </div>
         </CardContent>
       </Card>

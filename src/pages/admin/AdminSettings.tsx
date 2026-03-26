@@ -58,9 +58,9 @@ export default function AdminSettings() {
         ...config,
         updatedAt: serverTimestamp(),
       }, { merge: true });
-      toast.success('Settings saved!');
+      toast.success(t('settings.saved'));
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('settings.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -80,16 +80,16 @@ export default function AdminSettings() {
         <h1 className="text-2xl font-bold">{t('nav.settings')}</h1>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save
+          {t('settings.save')}
         </Button>
       </AnimatedSection>
 
       <div className="space-y-6">
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50"><CreditCard className="h-4 w-4 text-indigo-500" /></div>PayPal</h3>
+            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50"><CreditCard className="h-4 w-4 text-indigo-500" /></div>{t('settings.paypal')}</h3>
             <div>
-              <label className="mb-1 block text-sm font-medium">PayPal Email</label>
+              <label className="mb-1 block text-sm font-medium">{t('settings.paypalEmail')}</label>
               <input
                 value={config.paypal.email}
                 onChange={(e) => setConfig((c) => ({ ...c, paypal: { email: e.target.value } }))}
@@ -102,9 +102,9 @@ export default function AdminSettings() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50"><Building2 className="h-4 w-4 text-purple-500" /></div>Toss Payments</h3>
+            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50"><Building2 className="h-4 w-4 text-purple-500" /></div>{t('settings.tossPayments')}</h3>
             <div>
-              <label className="mb-1 block text-sm font-medium">Merchant ID</label>
+              <label className="mb-1 block text-sm font-medium">{t('settings.merchantId')}</label>
               <input
                 value={config.toss.merchantId}
                 onChange={(e) => setConfig((c) => ({ ...c, toss: { merchantId: e.target.value } }))}
@@ -116,10 +116,10 @@ export default function AdminSettings() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50"><Landmark className="h-4 w-4 text-emerald-500" /></div>Bank Transfer</h3>
+            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50"><Landmark className="h-4 w-4 text-emerald-500" /></div>{t('settings.bankTransfer')}</h3>
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <label className="mb-1 block text-sm font-medium">Bank Name</label>
+                <label className="mb-1 block text-sm font-medium">{t('settings.bankName')}</label>
                 <input
                   value={config.bankTransfer.bankName}
                   onChange={(e) =>
@@ -132,7 +132,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">Account Number</label>
+                <label className="mb-1 block text-sm font-medium">{t('settings.accountNumber')}</label>
                 <input
                   value={config.bankTransfer.accountNumber}
                   onChange={(e) =>
@@ -145,7 +145,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium">Account Holder</label>
+                <label className="mb-1 block text-sm font-medium">{t('settings.accountHolder')}</label>
                 <input
                   value={config.bankTransfer.accountHolder}
                   onChange={(e) =>
@@ -163,13 +163,13 @@ export default function AdminSettings() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50"><FileText className="h-4 w-4 text-amber-500" /></div>Cancellation Policy</h3>
+            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50"><FileText className="h-4 w-4 text-amber-500" /></div>{t('settings.cancellationPolicy')}</h3>
             <textarea
               value={config.cancellationPolicy}
               onChange={(e) => setConfig((c) => ({ ...c, cancellationPolicy: e.target.value }))}
               rows={4}
               className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-              placeholder="Describe your cancellation policy..."
+              placeholder={t('settings.cancellationPolicyPlaceholder')}
             />
           </CardContent>
         </Card>

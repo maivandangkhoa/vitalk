@@ -26,6 +26,7 @@ import type { Booking } from '@/types';
 
 function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Booking; isReviewed: boolean; onReviewSubmitted: () => void }) {
   const { t, i18n } = useTranslation();
+  const { t: tc } = useTranslation('common');
   const lang = i18n.language as 'en' | 'vi' | 'ko' | 'ja';
   const lessonName = booking.lessonTypeName[lang] || booking.lessonTypeName.en;
   const { userTz, userTzLabel } = useUserTimezone();
@@ -61,14 +62,14 @@ function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Book
                 )}
                 <span>
                   {booking.format === 'online'
-                    ? `Online${booking.platform ? ` (${booking.platform.replace('_', ' ')})` : ''}`
-                    : 'In-person'}
+                    ? `${tc('common.online')}${booking.platform ? ` (${booking.platform.replace('_', ' ')})` : ''}`
+                    : tc('common.offline')}
                 </span>
               </div>
             </div>
 
             {booking.paymentStatus === 'pending' && (
-              <p className="mt-3 text-xs text-amber-600">Payment pending</p>
+              <p className="mt-3 text-xs text-amber-600">{t('myBookings.paymentPending')}</p>
             )}
 
             {booking.status === 'completed' && (
@@ -97,7 +98,7 @@ function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Book
                 rel="noopener noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-xs text-indigo-500 hover:underline"
               >
-                Join <ExternalLink className="h-3 w-3" />
+                {t('myBookings.joinMeeting')} <ExternalLink className="h-3 w-3" />
               </a>
             )}
           </div>
@@ -125,7 +126,7 @@ export default function MyBookingsPage() {
     return (
       <div className="px-4 py-16">
         <AnimatedSection className="container mx-auto max-w-3xl text-center">
-          <p className="mb-4 text-muted-foreground">Please log in to view your bookings.</p>
+          <p className="mb-4 text-muted-foreground">{t('myBookings.loginRequired')}</p>
           <Button render={<Link to="/login" />}>{t('nav.login')}</Button>
         </AnimatedSection>
       </div>
@@ -164,7 +165,7 @@ export default function MyBookingsPage() {
                   <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
                 </div>
                 <p className="mb-4 text-muted-foreground">
-                  You don&apos;t have any bookings yet.
+                  {t('myBookings.noBookings')}
                 </p>
                 <Button render={<Link to="/book" />}>{t('nav.book')}</Button>
               </CardContent>

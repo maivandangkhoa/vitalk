@@ -63,7 +63,7 @@ export default function AdminUsers() {
       setUsers(list);
     } catch (err) {
       console.error('Failed to fetch users:', err);
-      toast.error('Failed to load users');
+      toast.error(t('users.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -83,10 +83,10 @@ export default function AdminUsers() {
       setUsers((prev) =>
         prev.map((u) => (u.uid === uid ? { ...u, role: newRole } : u))
       );
-      toast.success(`Role updated to ${newRole}`);
+      toast.success(t('users.roleUpdated', { role: newRole }));
     } catch (err) {
       console.error('Failed to update role:', err);
-      toast.error('Failed to update role');
+      toast.error(t('users.roleUpdateFailed'));
     } finally {
       setActionLoading(null);
     }
@@ -122,7 +122,7 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold font-mono">{users.length}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="text-xs text-muted-foreground">{t('users.total')}</p>
             </div>
           </CardContent>
         </Card>
@@ -133,7 +133,7 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold font-mono">{adminCount}</p>
-              <p className="text-xs text-muted-foreground">Admins</p>
+              <p className="text-xs text-muted-foreground">{t('users.admins')}</p>
             </div>
           </CardContent>
         </Card>
@@ -144,7 +144,7 @@ export default function AdminUsers() {
             </div>
             <div>
               <p className="text-2xl font-bold font-mono">{userCount}</p>
-              <p className="text-xs text-muted-foreground">Users</p>
+              <p className="text-xs text-muted-foreground">{t('users.users')}</p>
             </div>
           </CardContent>
         </Card>
@@ -155,7 +155,7 @@ export default function AdminUsers() {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Search by name, email, or UID..."
+          placeholder={t('users.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-xl border border-input bg-background py-2 pl-10 pr-3 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
@@ -177,7 +177,7 @@ export default function AdminUsers() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2.5">
                         <h3 className="font-semibold">
-                          {user.displayName || 'No name'}
+                          {user.displayName || t('users.noName')}
                         </h3>
                         <Badge
                           className={
@@ -226,7 +226,7 @@ export default function AdminUsers() {
                           ) : (
                             <Shield className="mr-1 h-3.5 w-3.5" />
                           )}
-                          Make Admin
+                          {t('users.makeAdmin')}
                         </Button>
                       ) : (
                         <Button
@@ -240,7 +240,7 @@ export default function AdminUsers() {
                           ) : (
                             <UserCircle className="mr-1 h-3.5 w-3.5" />
                           )}
-                          Remove Admin
+                          {t('users.removeAdmin')}
                         </Button>
                       )}
                     </div>
@@ -257,7 +257,7 @@ export default function AdminUsers() {
               <Users className="h-8 w-8 text-indigo-300" />
             </div>
             <p className="text-muted-foreground">
-              {searchQuery ? 'No users found' : 'No users yet'}
+              {searchQuery ? t('users.noUsersFound') : t('users.noUsersYet')}
             </p>
           </CardContent>
         </Card>

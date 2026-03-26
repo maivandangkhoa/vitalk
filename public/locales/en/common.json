@@ -30,7 +30,8 @@
     "signupWithEmail": "Sign Up with Email",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
-    "forgotPassword": "Forgot password?"
+    "forgotPassword": "Forgot password?",
+    "or": "or"
   },
   "common": {
     "loading": "Loading...",
@@ -49,13 +50,41 @@
     "perLesson": "per lesson",
     "minutes": "minutes",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "pageNotFound": "404 - Page Not Found",
+    "comingSoon": "Coming soon..."
   },
   "blog": {
     "preview": "Preview",
     "previewMode": "You are previewing this post. It is not visible to the public yet.",
     "confirmPublish": "Confirm Publish",
-    "backToEdit": "Back to Edit"
+    "backToEdit": "Back to Edit",
+    "postNotFound": "Post Not Found",
+    "postNotFoundDesc": "The blog post you're looking for doesn't exist or has been removed.",
+    "backToBlog": "Back to Blog"
+  },
+  "payment": {
+    "createOrderFailed": "Failed to create order",
+    "capturePaymentFailed": "Payment capture failed",
+    "paypalError": "PayPal error",
+    "paymentCancelled": "Payment cancelled",
+    "paypalNotConfigured": "PayPal is not configured yet.",
+    "paypalSetEnv": "Set VITE_PAYPAL_CLIENT_ID in .env",
+    "confirmedAfterVerification": "Your booking will be confirmed after payment verification",
+    "tossLoadFailed": "Failed to load Toss SDK",
+    "tossNotConfigured": "Toss Payments is not configured yet.",
+    "tossSetEnv": "Set VITE_TOSS_CLIENT_KEY in .env",
+    "tossNotReady": "Toss Payments not ready",
+    "tossHelperText": "Supports Korean cards, bank transfer, and mobile payments",
+    "processing": "Processing...",
+    "confirmingPayment": "Confirming payment...",
+    "pleaseWaitVerify": "Please wait while we verify your payment.",
+    "paymentSuccessful": "Payment Successful!",
+    "lessonBookedConfirmed": "Your lesson has been booked and confirmed.",
+    "viewMyBookings": "View My Bookings",
+    "bookAnotherLesson": "Book Another Lesson",
+    "paymentFailed": "Payment Failed",
+    "tryAgain": "Try Again"
   },
   "reviews": {
     "title": "Student Reviews",
@@ -70,5 +99,11 @@
     "thankYou": "Thank you for your review!",
     "ratingRequired": "Please select a rating",
     "contentMin": "Review must be at least 10 characters"
+  },
+  "myBookings": {
+    "paymentPending": "Payment pending - please complete your transfer",
+    "joinMeeting": "Join",
+    "loginRequired": "Please log in to view your bookings.",
+    "noBookings": "You don't have any bookings yet."
   }
 }

@@ -4,7 +4,9 @@
     "title": "Learn Vietnamese Naturally",
     "subtitle": "With Win, a native Vietnamese speaker based in Seoul. 5-star rated teacher with 362+ positive reviews.",
     "cta": "Book Your First Lesson",
-    "trialNote": "Start your Vietnamese journey today"
+    "trialNote": "Start your Vietnamese journey today",
+    "reviewCount": "362+ reviews",
+    "pricePerLesson": "$14 / lesson"
   },
   "highlights": {
     "title": "Why Learn With Me?",
@@ -29,10 +31,12 @@
     "title": "About Me",
     "description": "Hi! I'm Nguyên (Win/윈), a Vietnamese teacher living in Seoul since 2016. I hold a graduate degree in Tourism Science and I'm passionate about helping people discover the beauty of the Vietnamese language. I focus on speaking practice with lots of repetition to help you build real conversational confidence.",
     "location": "Based in Seoul, South Korea",
-    "from": "Originally from Central Vietnam"
+    "from": "Originally from Central Vietnam",
+    "education": "Tourism Science, Seoul"
   },
   "testimonials": {
-    "title": "What My Students Say"
+    "title": "What My Students Say",
+    "viewAll": "View All Reviews"
   },
   "cta": {
     "title": "Ready to Start Learning?",

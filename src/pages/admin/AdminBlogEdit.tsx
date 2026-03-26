@@ -99,7 +99,7 @@ export default function AdminBlogEdit() {
         navigate(`/admin/blog/${savedId}/edit`, { replace: true });
       }
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('blog.saveFailed'));
     }
   };
 
@@ -129,7 +129,7 @@ export default function AdminBlogEdit() {
       await saveBlogPost(isNew ? null : id!, postData);
       navigate(`/blog/${slug}?preview=true`);
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('blog.saveFailed'));
     }
   };
 
@@ -182,7 +182,7 @@ export default function AdminBlogEdit() {
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate('/admin/blog')}>
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Back
+            {t('blog.back')}
           </Button>
           <h1 className="text-2xl font-bold">
             {isNew ? t('blog.newPost') : t('blog.editPost')}
@@ -220,7 +220,7 @@ export default function AdminBlogEdit() {
         <CardContent className="space-y-4 pt-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium">Slug</label>
+              <label className="mb-1 block text-sm font-medium">{t('blog.slug')}</label>
               <input
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
@@ -229,7 +229,7 @@ export default function AdminBlogEdit() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Cover Image URL</label>
+              <label className="mb-1 block text-sm font-medium">{t('blog.coverImageUrl')}</label>
               <input
                 value={coverImageUrl}
                 onChange={(e) => setCoverImageUrl(e.target.value)}
@@ -239,7 +239,7 @@ export default function AdminBlogEdit() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Tags (comma separated)</label>
+            <label className="mb-1 block text-sm font-medium">{t('blog.tags')}</label>
             <input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
@@ -267,7 +267,7 @@ export default function AdminBlogEdit() {
           <TabsContent key={lang.code} value={lang.code} className="mt-4 space-y-4">
             <div>
               <label className="mb-1 block text-sm font-medium">
-                Title ({lang.label})
+                {t('blog.titleLabel')} ({lang.label})
               </label>
               <input
                 value={title[lang.code]}
@@ -279,7 +279,7 @@ export default function AdminBlogEdit() {
 
             <div>
               <label className="mb-1 block text-sm font-medium">
-                Excerpt ({lang.label})
+                {t('blog.excerptLabel')} ({lang.label})
               </label>
               <textarea
                 value={excerpt[lang.code]}
@@ -292,7 +292,7 @@ export default function AdminBlogEdit() {
 
             <div>
               <label className="mb-1 block text-sm font-medium">
-                Content ({lang.label})
+                {t('blog.contentLabel')} ({lang.label})
               </label>
               <Suspense fallback={<div className="flex h-[200px] items-center justify-center rounded-lg border"><Loader2 className="h-6 w-6 animate-spin" /></div>}>
                 <BlogEditor

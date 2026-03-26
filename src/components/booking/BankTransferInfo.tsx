@@ -24,6 +24,7 @@ export default function BankTransferInfo({
   currency,
 }: BankTransferInfoProps) {
   const { t } = useTranslation('booking');
+  const { t: tc } = useTranslation('common');
   const [copied, setCopied] = useState('');
 
   const copyToClipboard = (text: string, label: string) => {
@@ -72,7 +73,7 @@ export default function BankTransferInfo({
       </Card>
 
       <Badge variant="outline" className="w-full justify-center rounded-xl border-amber-200 bg-amber-50 py-2 text-amber-600">
-        Your booking will be confirmed after payment verification
+        {tc('payment.confirmedAfterVerification')}
       </Badge>
     </div>
   );

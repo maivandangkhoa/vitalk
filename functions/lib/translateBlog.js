@@ -40,6 +40,12 @@ exports.translateBlogPost = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const sdk_1 = __importDefault(require("@anthropic-ai/sdk"));
+const LANG_NAMES = {
+    en: "English",
+    vi: "Vietnamese",
+    ko: "Korean",
+    ja: "Japanese",
+};
 /**
  * Translates a blog post from English to Vietnamese, Korean, and Japanese
  * using Claude API. Admin-only function.
@@ -59,7 +65,7 @@ exports.translateBlogPost = (0, https_1.onCall)({
     if (userDoc.data()?.role !== "admin") {
         throw new https_1.HttpsError("permission-denied", "Admin only");
     }
-    const { title, excerpt, content } = request.data;
+    const { title, excerpt, content, sourceLang = "en" } = request.data;
     if (!title || !content) {
         throw new https_1.HttpsError("invalid-argument", "title and content are required");
     }
@@ -67,18 +73,21 @@ exports.translateBlogPost = (0, https_1.onCall)({
     if (!apiKey) {
         throw new https_1.HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
     }
+    const targetLangs = ["en", "vi", "ko", "ja"].filter((l) => l !== sourceLang);
+    const targetNames = targetLangs.map((l) => `${LANG_NAMES[l]} (${l})`).join(", ");
+    const jsonFields = targetLangs.map((l) => `"${l}": "..."`).join(", ");
     const client = new sdk_1.default({ apiKey });
     const prompt = `You are a professional translator for a Vietnamese language learning blog.
-Translate the following blog post from English into 3 languages: Vietnamese (vi), Korean (ko), and Japanese (ja).
+Translate the following blog post from ${LANG_NAMES[sourceLang] || sourceLang} into ${targetNames}.
 
 The blog is written by a Vietnamese teacher based in Seoul who teaches Vietnamese to international students.
 Keep the translations natural and appropriate for language learners. Preserve all HTML formatting tags.
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks):
 {
-  "title": { "vi": "...", "ko": "...", "ja": "..." },
-  "excerpt": { "vi": "...", "ko": "...", "ja": "..." },
-  "content": { "vi": "...", "ko": "...", "ja": "..." }
+  "title": { ${jsonFields} },
+  "excerpt": { ${jsonFields} },
+  "content": { ${jsonFields} }
 }
 
 ---
@@ -101,9 +110,9 @@ ${content}`;
         // Parse the JSON response
         const translations = JSON.parse(responseText);
         return {
-            title: { en: title, ...translations.title },
-            excerpt: { en: excerpt || "", ...translations.excerpt },
-            content: { en: content, ...translations.content },
+            title: { en: "", vi: "", ko: "", ja: "", [sourceLang]: title, ...translations.title },
+            excerpt: { en: "", vi: "", ko: "", ja: "", [sourceLang]: excerpt || "", ...translations.excerpt },
+            content: { en: "", vi: "", ko: "", ja: "", [sourceLang]: content, ...translations.content },
         };
     }
     catch (err) {

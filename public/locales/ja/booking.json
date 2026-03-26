@@ -37,8 +37,16 @@
     "accountHolder": "口座名義",
     "reference": "振込備考",
     "bankNote": "振込時に予約番号を備考欄に記載してください。入金確認後、予約が確定されます。",
-    "total": "合計"
+    "total": "合計",
+    "confirmTransfer": "振込を完了しました"
   },
+  "summary": {
+    "lesson": "レッスン",
+    "date": "日付",
+    "time": "時間",
+    "format": "形式"
+  },
+  "bookingFailed": "予約に失敗しました。もう一度お試しください。",
   "confirmation": {
     "title": "予約完了！",
     "subtitle": "確認メールが間もなく届きます。",

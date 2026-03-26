@@ -1,5 +1,6 @@
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { usePaypalPayment } from '@/hooks/usePayment';
 
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || '';
@@ -18,6 +19,7 @@ function PaypalButtonWrapper({
   onError,
 }: Omit<PaypalCheckoutProps, 'amount' | 'currency'>) {
   const { createOrder, captureOrder } = usePaypalPayment();
+  const { t } = useTranslation('common');
 
   return (
     <PayPalButtons
@@ -27,7 +29,7 @@ function PaypalButtonWrapper({
           const orderId = await createOrder(bookingId);
           return orderId;
         } catch (err) {
-          const msg = err instanceof Error ? err.message : 'Failed to create order';
+          const msg = err instanceof Error ? err.message : t('payment.createOrderFailed');
           onError(msg);
           throw err;
         }
@@ -37,16 +39,16 @@ function PaypalButtonWrapper({
           await captureOrder(data.orderID, bookingId);
           onSuccess();
         } catch (err) {
-          const msg = err instanceof Error ? err.message : 'Payment capture failed';
+          const msg = err instanceof Error ? err.message : t('payment.capturePaymentFailed');
           onError(msg);
         }
       }}
       onError={(err) => {
-        toast.error('PayPal error');
+        toast.error(t('payment.paypalError'));
         onError(String(err));
       }}
       onCancel={() => {
-        toast.info('Payment cancelled');
+        toast.info(t('payment.paymentCancelled'));
       }}
     />
   );
@@ -59,11 +61,13 @@ export default function PaypalCheckout({
   onSuccess,
   onError,
 }: PaypalCheckoutProps) {
+  const { t } = useTranslation('common');
+
   if (!PAYPAL_CLIENT_ID || PAYPAL_CLIENT_ID === 'your_paypal_client_id') {
     return (
       <div className="rounded-xl border border-dashed border-zinc-200 p-4 text-center text-sm text-muted-foreground">
-        <p>PayPal is not configured yet.</p>
-        <p className="mt-1 text-xs">Set VITE_PAYPAL_CLIENT_ID in .env</p>
+        <p>{t('payment.paypalNotConfigured')}</p>
+        <p className="mt-1 text-xs">{t('payment.paypalSetEnv')}</p>
       </div>
     );
   }

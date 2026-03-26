@@ -82,8 +82,8 @@ export default function HomePage() {
               </div>
               <span className="ml-1 font-mono font-medium">5.0</span>
             </div>
-            <span>362+ reviews</span>
-            <span className="font-mono">$14 / lesson</span>
+            <span>{t('hero.reviewCount')}</span>
+            <span className="font-mono">{t('hero.pricePerLesson')}</span>
           </div>
         </AnimatedSection>
       </section>
@@ -138,7 +138,7 @@ export default function HomePage() {
                 </Badge>
                 <Badge variant="outline" className="gap-2 rounded-xl border-zinc-200 px-3 py-1.5">
                   <Award className="h-3.5 w-3.5" />
-                  Tourism Science, Seoul
+                  {t('about.education')}
                 </Badge>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function HomePage() {
           </StaggerContainer>
           <div className="mt-8 text-center">
             <Button variant="outline" render={<Link to="/reviews" />}>
-              View All Reviews
+              {t('testimonials.viewAll')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>

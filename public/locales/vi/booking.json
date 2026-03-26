@@ -37,8 +37,16 @@
     "accountHolder": "Chủ tài khoản",
     "reference": "Nội dung chuyển khoản",
     "bankNote": "Vui lòng ghi mã đặt lịch trong nội dung chuyển khoản. Đặt lịch sẽ được xác nhận sau khi xác minh thanh toán.",
-    "total": "Tổng cộng"
+    "total": "Tổng cộng",
+    "confirmTransfer": "Tôi đã hoàn tất chuyển khoản"
   },
+  "summary": {
+    "lesson": "Buổi học",
+    "date": "Ngày",
+    "time": "Giờ",
+    "format": "Hình thức"
+  },
+  "bookingFailed": "Đặt lịch thất bại. Vui lòng thử lại.",
   "confirmation": {
     "title": "Đặt lịch thành công!",
     "subtitle": "Email xác nhận sẽ được gửi trong giây lát.",

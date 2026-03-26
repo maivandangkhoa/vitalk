@@ -54,11 +54,11 @@ export default function BlogPostPage() {
   if (!post) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
-        <h1 className="text-2xl font-bold">Post not found</h1>
-        <p className="mt-2 text-muted-foreground">This blog post doesn't exist or has been removed.</p>
+        <h1 className="text-2xl font-bold">{t('blog.postNotFound')}</h1>
+        <p className="mt-2 text-muted-foreground">{t('blog.postNotFoundDesc')}</p>
         <Button className="mt-4" render={<Link to="/blog" />}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Blog
+          {t('blog.backToBlog')}
         </Button>
       </div>
     );
@@ -118,7 +118,7 @@ export default function BlogPostPage() {
       <AnimatedSection className={`container mx-auto max-w-3xl ${isPreview && !post.isPublished ? 'mt-12' : ''}`}>
         <Button variant="ghost" size="sm" className="mb-6" render={<Link to="/blog" />}>
           <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to Blog
+          {t('blog.backToBlog')}
         </Button>
 
         {post.coverImageUrl && (

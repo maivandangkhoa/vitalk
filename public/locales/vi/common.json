@@ -30,7 +30,8 @@
     "signupWithEmail": "Đăng ký bằng email",
     "noAccount": "Chưa có tài khoản?",
     "hasAccount": "Đã có tài khoản?",
-    "forgotPassword": "Quên mật khẩu?"
+    "forgotPassword": "Quên mật khẩu?",
+    "or": "hoặc"
   },
   "common": {
     "loading": "Đang tải...",
@@ -49,13 +50,41 @@
     "perLesson": "mỗi buổi",
     "minutes": "phút",
     "online": "Online",
-    "offline": "Trực tiếp"
+    "offline": "Trực tiếp",
+    "pageNotFound": "404 - Không tìm thấy trang",
+    "comingSoon": "Sắp ra mắt..."
   },
   "blog": {
     "preview": "Xem trước",
     "previewMode": "Bạn đang xem trước bài viết này. Bài viết chưa hiển thị công khai.",
     "confirmPublish": "Xác nhận đăng bài",
-    "backToEdit": "Quay lại chỉnh sửa"
+    "backToEdit": "Quay lại chỉnh sửa",
+    "postNotFound": "Không tìm thấy bài viết",
+    "postNotFoundDesc": "Bài viết bạn đang tìm không tồn tại hoặc đã bị xóa.",
+    "backToBlog": "Quay lại Blog"
+  },
+  "payment": {
+    "createOrderFailed": "Không thể tạo đơn hàng",
+    "capturePaymentFailed": "Xử lý thanh toán thất bại",
+    "paypalError": "Lỗi PayPal",
+    "paymentCancelled": "Thanh toán đã bị hủy",
+    "paypalNotConfigured": "PayPal chưa được cấu hình.",
+    "paypalSetEnv": "Cài đặt VITE_PAYPAL_CLIENT_ID trong .env",
+    "confirmedAfterVerification": "Lịch đặt của bạn sẽ được xác nhận sau khi xác minh thanh toán",
+    "tossLoadFailed": "Không thể tải Toss SDK",
+    "tossNotConfigured": "Toss Payments chưa được cấu hình.",
+    "tossSetEnv": "Cài đặt VITE_TOSS_CLIENT_KEY trong .env",
+    "tossNotReady": "Toss Payments chưa sẵn sàng",
+    "tossHelperText": "Hỗ trợ thẻ Hàn Quốc, chuyển khoản ngân hàng và thanh toán di động",
+    "processing": "Đang xử lý...",
+    "confirmingPayment": "Đang xác nhận thanh toán...",
+    "pleaseWaitVerify": "Vui lòng chờ trong khi chúng tôi xác minh thanh toán của bạn.",
+    "paymentSuccessful": "Thanh toán thành công!",
+    "lessonBookedConfirmed": "Buổi học của bạn đã được đặt và xác nhận.",
+    "viewMyBookings": "Xem lịch đặt của tôi",
+    "bookAnotherLesson": "Đặt buổi học khác",
+    "paymentFailed": "Thanh toán thất bại",
+    "tryAgain": "Thử lại"
   },
   "reviews": {
     "title": "Đánh giá từ học viên",
@@ -70,5 +99,11 @@
     "thankYou": "Cảm ơn bạn đã đánh giá!",
     "ratingRequired": "Vui lòng chọn số sao",
     "contentMin": "Đánh giá phải có ít nhất 10 ký tự"
+  },
+  "myBookings": {
+    "paymentPending": "Đang chờ thanh toán - vui lòng hoàn tất chuyển khoản",
+    "joinMeeting": "Tham gia",
+    "loginRequired": "Vui lòng đăng nhập để xem lịch học.",
+    "noBookings": "Bạn chưa có lịch đặt nào."
   }
 }

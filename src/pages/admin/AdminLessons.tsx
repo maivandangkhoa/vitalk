@@ -114,9 +114,9 @@ export default function AdminLessons() {
           updatedAt: serverTimestamp(),
         });
       }
-      toast.success('Lessons saved!');
+      toast.success(t('lessons.saved'));
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('lessons.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -137,11 +137,11 @@ export default function AdminLessons() {
         <div className="flex gap-2">
           <Button variant="outline" onClick={addLesson}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Lesson Type
+            {t('lessons.addLessonType')}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save All
+            {t('lessons.saveAll')}
           </Button>
         </div>
       </AnimatedSection>
@@ -159,8 +159,8 @@ export default function AdminLessons() {
                     lesson.level === 'intermediate' ? 'bg-sky-50 text-sky-600 border-sky-200' :
                     lesson.level === 'conversation' ? 'bg-purple-50 text-purple-600 border-purple-200' :
                     'bg-amber-50 text-amber-600 border-amber-200'
-                  }>{lesson.level}</Badge>
-                  {!lesson.isActive && <Badge variant="secondary">Inactive</Badge>}
+                  }>{t(`lessons.${lesson.level}`)}</Badge>
+                  {!lesson.isActive && <Badge variant="secondary">{t('lessons.inactive')}</Badge>}
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="flex items-center gap-1 text-sm">
@@ -169,7 +169,7 @@ export default function AdminLessons() {
                       checked={lesson.isActive}
                       onChange={(e) => updateLesson(lesson.id, 'isActive', e.target.checked)}
                     />
-                    Active
+                    {t('lessons.active')}
                   </label>
                   <Button variant="ghost" size="sm" onClick={() => removeLesson(lesson.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
@@ -179,20 +179,20 @@ export default function AdminLessons() {
 
               <div className="grid gap-3 sm:grid-cols-3">
                 <div>
-                  <label className="mb-1 block text-xs font-medium">Level</label>
+                  <label className="mb-1 block text-xs font-medium">{t('lessons.level')}</label>
                   <select
                     value={lesson.level}
                     onChange={(e) => updateLesson(lesson.id, 'level', e.target.value)}
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                   >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="conversation">Conversation</option>
-                    <option value="advanced">Advanced</option>
+                    <option value="beginner">{t('lessons.beginner')}</option>
+                    <option value="intermediate">{t('lessons.intermediate')}</option>
+                    <option value="conversation">{t('lessons.conversation')}</option>
+                    <option value="advanced">{t('lessons.advanced')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium">Duration (min)</label>
+                  <label className="mb-1 block text-xs font-medium">{t('lessons.duration')}</label>
                   <input
                     type="number"
                     value={lesson.duration}
@@ -201,7 +201,7 @@ export default function AdminLessons() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium">Price (USD)</label>
+                  <label className="mb-1 block text-xs font-medium">{t('lessons.priceUsd')}</label>
                   <input
                     type="number"
                     value={lesson.price}
@@ -212,7 +212,7 @@ export default function AdminLessons() {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium">Title</label>
+                <label className="mb-1 block text-xs font-medium">{t('lessons.titleLabel')}</label>
                 <div className="grid gap-2 sm:grid-cols-4">
                   {LANGS.map((lang) => (
                     <div key={lang} className="relative">
@@ -230,7 +230,7 @@ export default function AdminLessons() {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium">Description (EN)</label>
+                <label className="mb-1 block text-xs font-medium">{t('lessons.descriptionEn')}</label>
                 <textarea
                   value={lesson.description.en}
                   onChange={(e) =>

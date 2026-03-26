@@ -4,7 +4,9 @@
     "title": "Học tiếng Việt một cách tự nhiên",
     "subtitle": "Cùng Win, giáo viên bản ngữ người Việt tại Seoul. Đánh giá 5 sao với hơn 362 lượt đánh giá tích cực.",
     "cta": "Đặt buổi học đầu tiên",
-    "trialNote": "Bắt đầu hành trình tiếng Việt ngay hôm nay"
+    "trialNote": "Bắt đầu hành trình tiếng Việt ngay hôm nay",
+    "reviewCount": "362+ đánh giá",
+    "pricePerLesson": "$14 / buổi"
   },
   "highlights": {
     "title": "Tại sao nên học cùng tôi?",
@@ -29,10 +31,12 @@
     "title": "Về tôi",
     "description": "Xin chào! Tôi là Nguyên (Win/윈), giáo viên tiếng Việt sống tại Seoul từ 2016. Tôi có bằng Thạc sĩ Khoa học Du lịch và đam mê giúp mọi người khám phá vẻ đẹp của tiếng Việt. Tôi tập trung vào luyện nói với nhiều bài tập lặp lại để giúp bạn xây dựng sự tự tin trong giao tiếp.",
     "location": "Hiện tại sống ở Seoul, Hàn Quốc",
-    "from": "Quê quán miền Trung Việt Nam"
+    "from": "Quê quán miền Trung Việt Nam",
+    "education": "Khoa học Du lịch, Seoul"
   },
   "testimonials": {
-    "title": "Học viên nói gì"
+    "title": "Học viên nói gì",
+    "viewAll": "Xem tất cả đánh giá"
   },
   "cta": {
     "title": "Sẵn sàng bắt đầu?",

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { useTossPayment } from '@/hooks/usePayment';
 
 const TOSS_CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY || '';
@@ -33,6 +34,7 @@ export default function TossCheckout({
   const [paying, setPaying] = useState(false);
   const tossPaymentsRef = useRef<unknown>(null);
   const { confirmPayment } = useTossPayment();
+  const { t } = useTranslation('common');
 
   const krwAmount = Math.round(amount * USD_TO_KRW_RATE);
 
@@ -49,7 +51,7 @@ export default function TossCheckout({
     const script = document.createElement('script');
     script.src = TOSS_SDK_URL;
     script.onload = () => setSdkLoaded(true);
-    script.onerror = () => toast.error('Failed to load Toss SDK');
+    script.onerror = () => toast.error(t('payment.tossLoadFailed'));
     document.head.appendChild(script);
   }, []);
 
@@ -67,8 +69,8 @@ export default function TossCheckout({
   if (!TOSS_CLIENT_KEY || TOSS_CLIENT_KEY === 'your_toss_client_key') {
     return (
       <div className="rounded-xl border border-dashed border-zinc-200 p-4 text-center text-sm text-muted-foreground">
-        <p>Toss Payments is not configured yet.</p>
-        <p className="mt-1 text-xs">Set VITE_TOSS_CLIENT_KEY in .env</p>
+        <p>{t('payment.tossNotConfigured')}</p>
+        <p className="mt-1 text-xs">{t('payment.tossSetEnv')}</p>
       </div>
     );
   }
@@ -82,7 +84,7 @@ export default function TossCheckout({
     } | null;
 
     if (!tp) {
-      toast.error('Toss Payments not ready');
+      toast.error(t('payment.tossNotReady'));
       return;
     }
 
@@ -127,7 +129,7 @@ export default function TossCheckout({
         Pay <span className="font-mono">₩{krwAmount.toLocaleString()}</span> KRW (≈ <span className="font-mono">${amount}</span> USD) with Toss
       </p>
       <p className="mb-3 text-xs text-muted-foreground">
-        Supports Korean cards, bank transfer, and mobile payments
+        {t('payment.tossHelperText')}
       </p>
       <Button
         onClick={handlePayment}
@@ -139,7 +141,7 @@ export default function TossCheckout({
         ) : (
           <CreditCard className="mr-2 h-4 w-4" />
         )}
-        {paying ? 'Processing...' : `Pay with Toss ₩${krwAmount.toLocaleString()}`}
+        {paying ? t('payment.processing') : `Pay with Toss ₩${krwAmount.toLocaleString()}`}
       </Button>
     </div>
   );

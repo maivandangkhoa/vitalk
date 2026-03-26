@@ -155,7 +155,7 @@ export default function BookingPage() {
         setShowPaymentUI(true);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Booking failed');
+      toast.error(err instanceof Error ? err.message : t('bookingFailed'));
     }
   };
 
@@ -425,15 +425,15 @@ export default function BookingPage() {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between py-0.5">
-                  <span className="text-muted-foreground">Lesson</span>
+                  <span className="text-muted-foreground">{t('summary.lesson')}</span>
                   <span>{selectedLesson && tl(`${selectedLesson}.name`)}</span>
                 </div>
                 <div className="flex justify-between py-0.5">
-                  <span className="text-muted-foreground">Date</span>
+                  <span className="text-muted-foreground">{t('summary.date')}</span>
                   <span>{selectedDate && format(selectedDate, 'EEE, MMM d, yyyy')}</span>
                 </div>
                 <div className="flex justify-between py-0.5">
-                  <span className="text-muted-foreground">Time</span>
+                  <span className="text-muted-foreground">{t('summary.time')}</span>
                   <span className="font-mono">
                     {(() => {
                       if (!selectedSlot || !selectedDateStr) return '';
@@ -443,8 +443,8 @@ export default function BookingPage() {
                   </span>
                 </div>
                 <div className="flex justify-between py-0.5">
-                  <span className="text-muted-foreground">Format</span>
-                  <span>{lessonFormat === 'online' ? `Online (${t(`format.${platform}`)})` : 'In-person'}</span>
+                  <span className="text-muted-foreground">{t('summary.format')}</span>
+                  <span>{lessonFormat === 'online' ? `${t('format.online')} (${t(`format.${platform}`)})` : t('format.offline')}</span>
                 </div>
                 <div className="mt-4 flex justify-between border-t pt-4 font-semibold">
                   <span>{t('payment.total')}</span>
@@ -510,7 +510,7 @@ export default function BookingPage() {
                       onClick={handlePaymentSuccess}
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
-                      I will transfer the payment
+                      {t('payment.confirmTransfer')}
                     </Button>
                   </div>
                 )}

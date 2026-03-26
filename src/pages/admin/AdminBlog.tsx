@@ -41,27 +41,27 @@ export default function AdminBlog() {
   const handleTogglePublish = async (id: string, isPublished: boolean) => {
     try {
       await togglePublish(id, !isPublished);
-      toast.success(isPublished ? 'Unpublished' : 'Published');
+      toast.success(isPublished ? t('blog.unpublished') : t('blog.published'));
       refetch();
     } catch {
-      toast.error('Failed to update');
+      toast.error(t('blog.updateFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+    if (!window.confirm(t('blog.deleteConfirm'))) return;
     try {
       await deleteBlogPost(id);
-      toast.success('Post deleted');
+      toast.success(t('blog.postDeleted'));
       refetch();
     } catch {
-      toast.error('Failed to delete');
+      toast.error(t('blog.deleteFailed'));
     }
   };
 
   const handleNaverImport = async () => {
     if (!naverUrl.trim()) {
-      toast.error('Please paste a Naver blog URL');
+      toast.error(t('blog.pasteNaverUrl'));
       return;
     }
 
@@ -136,10 +136,10 @@ export default function AdminBlog() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2.5">
                     <h3 className="truncate font-semibold">
-                      {post.title.ko || post.title.en || 'Untitled'}
+                      {post.title.ko || post.title.en || t('blog.untitled')}
                     </h3>
                     <Badge className={post.isPublished ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''} variant={post.isPublished ? 'default' : 'secondary'}>
-                      {post.isPublished ? 'Published' : 'Draft'}
+                      {post.isPublished ? t('blog.publishedBadge') : t('blog.draftBadge')}
                     </Badge>
                   </div>
                   <p className="mt-2 truncate text-sm text-muted-foreground">
@@ -185,7 +185,7 @@ export default function AdminBlog() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
               <PenSquare className="h-8 w-8 text-indigo-300" />
             </div>
-            <p className="text-muted-foreground">No blog posts yet. Create your first post!</p>
+            <p className="text-muted-foreground">{t('blog.noPosts')}</p>
           </CardContent>
         </Card>
       )}

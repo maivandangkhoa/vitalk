@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Save, Loader2 } from 'lucide-react';
@@ -12,6 +13,7 @@ const LANGS: Language[] = ['en', 'vi', 'ko', 'ja'];
 const LANG_LABELS: Record<Language, string> = { en: 'English', vi: 'Tiếng Việt', ko: '한국어', ja: '日本語' };
 
 export default function AdminProfile() {
+  const { t } = useTranslation('admin');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
@@ -57,9 +59,9 @@ export default function AdminProfile() {
         teachingStyle,
         updatedAt: serverTimestamp(),
       }, { merge: true });
-      toast.success('Profile saved!');
+      toast.success(t('profile.saved'));
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('profile.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -76,32 +78,32 @@ export default function AdminProfile() {
   return (
     <div>
       <AnimatedSection className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Edit Profile</h1>
+        <h1 className="text-2xl font-bold">{t('profile.title')}</h1>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save
+          {t('profile.save')}
         </Button>
       </AnimatedSection>
 
       <div className="space-y-6">
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />Basic Info</h3>
+            <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />{t('profile.basicInfo')}</h3>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Name" value={name} onChange={setName} />
-              <Field label="Age" value={age} onChange={setAge} />
-              <Field label="Location" value={location} onChange={setLocation} />
+              <Field label={t('profile.name')} value={name} onChange={setName} />
+              <Field label={t('profile.age')} value={age} onChange={setAge} />
+              <Field label={t('profile.location')} value={location} onChange={setLocation} />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Profile Image URL" value={profileImageUrl} onChange={setProfileImageUrl} placeholder="https://..." />
-              <Field label="Video Intro URL" value={videoIntroUrl} onChange={setVideoIntroUrl} placeholder="https://youtube.com/..." />
+              <Field label={t('profile.profileImageUrl')} value={profileImageUrl} onChange={setProfileImageUrl} placeholder="https://..." />
+              <Field label={t('profile.videoIntroUrl')} value={videoIntroUrl} onChange={setVideoIntroUrl} placeholder="https://youtube.com/..." />
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />Bio (multilingual)</h3>
+            <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />{t('profile.bio')}</h3>
             {LANGS.map((lang) => (
               <div key={lang}>
                 <label className="mb-1 block text-sm font-medium">{LANG_LABELS[lang]}</label>
@@ -118,7 +120,7 @@ export default function AdminProfile() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />Teaching Style (multilingual)</h3>
+            <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />{t('profile.teachingStyle')}</h3>
             {LANGS.map((lang) => (
               <div key={lang}>
                 <label className="mb-1 block text-sm font-medium">{LANG_LABELS[lang]}</label>

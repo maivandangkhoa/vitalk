@@ -251,11 +251,92 @@ function cleanTitle(title) {
     return title.replace(/\s*:\s*네이버\s*블로그\s*$/, "").trim();
 }
 /**
+ * Download images from Naver and upload to Firebase Storage.
+ * Returns content with replaced image URLs.
+ */
+async function uploadNaverImages(contentHtml, coverImageUrl, blogId, logNo) {
+    const bucket = admin.storage().bucket();
+    const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
+    const naverDomains = [
+        "postfiles.pstatic.net",
+        "blogfiles.pstatic.net",
+        "mblogthumb-phinf.pstatic.net",
+        "phinf.pstatic.net",
+        "storep-phinf.pstatic.net",
+        "ssl.pstatic.net",
+    ];
+    const isNaverImage = (url) => {
+        try {
+            const u = new URL(url);
+            return naverDomains.some((d) => u.hostname.includes(d));
+        }
+        catch {
+            return false;
+        }
+    };
+    const uploadImage = async (imageUrl, index) => {
+        try {
+            const res = await fetch(imageUrl, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    Referer: `https://blog.naver.com/${blogId}/${logNo}`,
+                },
+            });
+            if (!res.ok)
+                return null;
+            const contentType = res.headers.get("content-type") || "image/jpeg";
+            const ext = contentType.includes("png") ? "png" : contentType.includes("gif") ? "gif" : contentType.includes("webp") ? "webp" : "jpg";
+            const buffer = Buffer.from(await res.arrayBuffer());
+            const filePath = `blog-images/${blogId}-${logNo}/${index}.${ext}`;
+            const file = bucket.file(filePath);
+            await file.save(buffer, {
+                metadata: { contentType },
+                public: true,
+            });
+            return `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+        }
+        catch (err) {
+            console.error(`Failed to upload image ${index}:`, err);
+            return null;
+        }
+    };
+    // Collect all Naver image URLs from content
+    const matches = [];
+    let match;
+    let idx = 0;
+    while ((match = imgRegex.exec(contentHtml)) !== null) {
+        const src = match[1];
+        if (isNaverImage(src)) {
+            matches.push({ original: src, index: idx++ });
+        }
+    }
+    // Upload images in parallel (max 5 concurrent)
+    let updatedContent = contentHtml;
+    const batchSize = 5;
+    for (let i = 0; i < matches.length; i += batchSize) {
+        const batch = matches.slice(i, i + batchSize);
+        const results = await Promise.all(batch.map((m) => uploadImage(m.original, m.index)));
+        results.forEach((newUrl, j) => {
+            if (newUrl) {
+                updatedContent = updatedContent.split(batch[j].original).join(newUrl);
+            }
+        });
+    }
+    // Upload cover image if it's from Naver
+    let updatedCover = coverImageUrl;
+    if (coverImageUrl && isNaverImage(coverImageUrl)) {
+        const newCoverUrl = await uploadImage(coverImageUrl, 999);
+        if (newCoverUrl)
+            updatedCover = newCoverUrl;
+    }
+    return { content: updatedContent, coverImageUrl: updatedCover };
+}
+/**
  * Scrapes a Naver blog post using multiple strategies.
  */
 exports.scrapeNaverBlog = (0, https_1.onCall)({
-    timeoutSeconds: 30,
-    memory: "256MiB",
+    timeoutSeconds: 60,
+    memory: "512MiB",
     cors: true,
     invoker: "public",
 }, async (request) => {
@@ -281,49 +362,65 @@ exports.scrapeNaverBlog = (0, https_1.onCall)({
     const { blogId, logNo } = parsed;
     console.log(`Scraping Naver blog: blogId=${blogId}, logNo=${logNo}`);
     try {
+        let result = null;
         // Strategy 1: Desktop iframe (most reliable for full content)
         console.log("Trying Strategy 1: Desktop iframe...");
         const desktopResult = await fetchDesktopIframe(blogId, logNo);
         if (desktopResult && desktopResult.content.length > 50) {
             console.log(`Strategy 1 success: title="${desktopResult.title}", content length=${desktopResult.content.length}`);
-            return desktopResult;
+            result = desktopResult;
         }
         // Strategy 2: Mobile page with __NEXT_DATA__
-        console.log("Trying Strategy 2: Mobile __NEXT_DATA__...");
-        const mobileResult = await fetchMobileNextData(blogId, logNo);
-        if (mobileResult && mobileResult.content.length > 50) {
-            console.log(`Strategy 2 success: title="${mobileResult.title}", content length=${mobileResult.content.length}`);
-            return mobileResult;
-        }
-        // Strategy 3: Use whatever partial content we got
-        const partialResult = desktopResult || mobileResult;
-        if (partialResult && partialResult.content) {
-            console.log(`Using partial result: content length=${partialResult.content.length}`);
-            return partialResult;
-        }
-        // Final fallback: og:description from mobile page
-        console.log("All strategies failed, trying og:description fallback...");
-        const fallbackResponse = await fetch(`https://m.blog.naver.com/${blogId}/${logNo}`, {
-            headers: {
-                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)",
-                "Accept-Language": "ko-KR,ko;q=0.9",
-            },
-        });
-        if (fallbackResponse.ok) {
-            const fallbackHtml = await fallbackResponse.text();
-            const $fb = cheerio.load(fallbackHtml);
-            const ogTitle = $fb("meta[property='og:title']").attr("content")?.trim() || "";
-            const ogDesc = $fb("meta[property='og:description']").attr("content")?.trim() || "";
-            const ogImage = $fb("meta[property='og:image']").attr("content")?.trim() || "";
-            if (ogDesc) {
-                return {
-                    title: cleanTitle(ogTitle),
-                    content: `<p>${ogDesc}</p>`,
-                    coverImageUrl: ogImage,
-                };
+        if (!result) {
+            console.log("Trying Strategy 2: Mobile __NEXT_DATA__...");
+            const mobileResult = await fetchMobileNextData(blogId, logNo);
+            if (mobileResult && mobileResult.content.length > 50) {
+                console.log(`Strategy 2 success: title="${mobileResult.title}", content length=${mobileResult.content.length}`);
+                result = mobileResult;
             }
         }
-        throw new https_1.HttpsError("not-found", "Could not extract content. The post may be private or use an unsupported format.");
+        // Strategy 3: Use whatever partial content we got
+        if (!result) {
+            const partialResult = desktopResult;
+            if (partialResult && partialResult.content) {
+                console.log(`Using partial result: content length=${partialResult.content.length}`);
+                result = partialResult;
+            }
+        }
+        // Final fallback: og:description from mobile page
+        if (!result) {
+            console.log("All strategies failed, trying og:description fallback...");
+            const fallbackResponse = await fetch(`https://m.blog.naver.com/${blogId}/${logNo}`, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)",
+                    "Accept-Language": "ko-KR,ko;q=0.9",
+                },
+            });
+            if (fallbackResponse.ok) {
+                const fallbackHtml = await fallbackResponse.text();
+                const $fb = cheerio.load(fallbackHtml);
+                const ogTitle = $fb("meta[property='og:title']").attr("content")?.trim() || "";
+                const ogDesc = $fb("meta[property='og:description']").attr("content")?.trim() ||
+                    "";
+                const ogImage = $fb("meta[property='og:image']").attr("content")?.trim() || "";
+                if (ogDesc) {
+                    result = {
+                        title: cleanTitle(ogTitle),
+                        content: `<p>${ogDesc}</p>`,
+                        coverImageUrl: ogImage,
+                    };
+                }
+            }
+        }
+        if (!result) {
+            throw new https_1.HttpsError("not-found", "Could not extract content. The post may be private or use an unsupported format.");
+        }
+        // Upload Naver images to Firebase Storage
+        console.log("Uploading images to Firebase Storage...");
+        const uploaded = await uploadNaverImages(result.content, result.coverImageUrl, blogId, logNo);
+        result.content = uploaded.content;
+        result.coverImageUrl = uploaded.coverImageUrl;
+        return result;
     }
     catch (err) {
         if (err instanceof https_1.HttpsError)

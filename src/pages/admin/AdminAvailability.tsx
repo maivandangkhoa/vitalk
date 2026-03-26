@@ -12,6 +12,7 @@ import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/
 import { AnimatedSection } from '@/components/shared/motion';
 import type { TimeSlot } from '@/types';
 
+const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 interface TimeRange {
@@ -114,7 +115,7 @@ export default function AdminAvailability() {
     }
 
     setOverrideSlots(generated);
-    toast.success(`Generated slots for ${yearMonth}`);
+    toast.success(t('availability.generatedSlots', { yearMonth }));
   };
 
   const handleSave = async () => {
@@ -127,7 +128,7 @@ export default function AdminAvailability() {
       slotsToSave = generateMonthSlots(year, month, weeklySlots);
     }
     if (Object.keys(slotsToSave).length === 0) {
-      toast.error('No slots to save. Add time slots first.');
+      toast.error(t('availability.noSlotsToSave'));
       return;
     }
     setSaving(true);
@@ -137,9 +138,9 @@ export default function AdminAvailability() {
         saveTemplate(weeklySlots),
       ]);
       setOverrideSlots({});
-      toast.success('Availability saved!');
+      toast.success(t('availability.saved'));
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('availability.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -204,11 +205,11 @@ export default function AdminAvailability() {
           </div>
 
           <div className="space-y-4">
-            {DAYS.map((day) => (
+            {DAYS.map((day, idx) => (
               <Card key={day}>
                 <CardHeader className="py-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-medium">{day}</h3>
+                    <h3 className="font-medium">{t(`availability.${DAY_KEYS[idx]}`)}</h3>
                     <Button variant="outline" size="sm" onClick={() => addSlot(day)}>
                       <Plus className="mr-1 h-3.5 w-3.5" />
                       {t('availability.addSlot')}
@@ -258,7 +259,7 @@ export default function AdminAvailability() {
                 className="rounded-xl border"
               />
               <p className="mt-2 text-xs text-muted-foreground">
-                Highlighted dates have available slots.
+                {t('availability.highlightedDates')}
               </p>
             </div>
 
@@ -268,7 +269,7 @@ export default function AdminAvailability() {
                   <h3 className="font-medium">
                     {selectedDate
                       ? format(selectedDate, 'EEEE, MMM d, yyyy')
-                      : 'Select a date'}
+                      : t('availability.selectDate')}
                   </h3>
                   {selectedDateStr && (
                     <Button variant="outline" size="sm" onClick={() => addOverrideSlot(selectedDateStr)}>
@@ -288,7 +289,7 @@ export default function AdminAvailability() {
                             {slot.startTime} - {slot.endTime}
                           </span>
                           {slot.isBooked && (
-                            <Badge variant="secondary" className="text-xs">Booked</Badge>
+                            <Badge variant="secondary" className="text-xs">{t('availability.booked')}</Badge>
                           )}
                         </div>
                         {!slot.isBooked && (
@@ -305,7 +306,7 @@ export default function AdminAvailability() {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {selectedDate ? 'No slots for this date.' : 'Select a date to manage slots.'}
+                    {selectedDate ? t('availability.noSlotsForDate') : t('availability.selectDateToManage')}
                   </p>
                 )}
               </CardContent>

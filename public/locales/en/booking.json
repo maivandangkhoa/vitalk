@@ -37,8 +37,16 @@
     "accountHolder": "Account Holder",
     "reference": "Reference",
     "bankNote": "Please include your booking reference in the transfer description. Your booking will be confirmed once payment is verified.",
-    "total": "Total"
+    "total": "Total",
+    "confirmTransfer": "I have completed the transfer"
   },
+  "summary": {
+    "lesson": "Lesson",
+    "date": "Date",
+    "time": "Time",
+    "format": "Format"
+  },
+  "bookingFailed": "Booking failed. Please try again.",
   "confirmation": {
     "title": "Booking Confirmed!",
     "subtitle": "You will receive a confirmation email shortly.",

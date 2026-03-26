@@ -30,7 +30,8 @@
     "signupWithEmail": "이메일로 가입",
     "noAccount": "계정이 없으신가요?",
     "hasAccount": "이미 계정이 있으신가요?",
-    "forgotPassword": "비밀번호를 잊으셨나요?"
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "or": "또는"
   },
   "common": {
     "loading": "로딩 중...",
@@ -49,13 +50,41 @@
     "perLesson": "수업 당",
     "minutes": "분",
     "online": "온라인",
-    "offline": "오프라인"
+    "offline": "오프라인",
+    "pageNotFound": "404 - 페이지를 찾을 수 없습니다",
+    "comingSoon": "곧 출시됩니다..."
   },
   "blog": {
     "preview": "미리보기",
     "previewMode": "이 게시물을 미리보기 중입니다. 아직 공개되지 않았습니다.",
     "confirmPublish": "게시 확인",
-    "backToEdit": "편집으로 돌아가기"
+    "backToEdit": "편집으로 돌아가기",
+    "postNotFound": "게시물을 찾을 수 없습니다",
+    "postNotFoundDesc": "찾고 계신 블로그 게시물이 존재하지 않거나 삭제되었습니다.",
+    "backToBlog": "블로그로 돌아가기"
+  },
+  "payment": {
+    "createOrderFailed": "주문 생성에 실패했습니다",
+    "capturePaymentFailed": "결제 처리에 실패했습니다",
+    "paypalError": "PayPal 오류",
+    "paymentCancelled": "결제가 취소되었습니다",
+    "paypalNotConfigured": "PayPal이 아직 설정되지 않았습니다.",
+    "paypalSetEnv": ".env에 VITE_PAYPAL_CLIENT_ID를 설정하세요",
+    "confirmedAfterVerification": "결제 확인 후 예약이 확정됩니다",
+    "tossLoadFailed": "토스 SDK 로드에 실패했습니다",
+    "tossNotConfigured": "토스페이먼츠가 아직 설정되지 않았습니다.",
+    "tossSetEnv": ".env에 VITE_TOSS_CLIENT_KEY를 설정하세요",
+    "tossNotReady": "토스페이먼츠가 준비되지 않았습니다",
+    "tossHelperText": "한국 카드, 계좌이체, 모바일 결제를 지원합니다",
+    "processing": "처리 중...",
+    "confirmingPayment": "결제 확인 중...",
+    "pleaseWaitVerify": "결제를 확인하는 동안 잠시 기다려 주세요.",
+    "paymentSuccessful": "결제 완료!",
+    "lessonBookedConfirmed": "수업이 예약되고 확인되었습니다.",
+    "viewMyBookings": "내 예약 보기",
+    "bookAnotherLesson": "다른 수업 예약",
+    "paymentFailed": "결제 실패",
+    "tryAgain": "다시 시도"
   },
   "reviews": {
     "title": "수강생 후기",
@@ -70,5 +99,11 @@
     "thankYou": "후기를 남겨주셔서 감사합니다!",
     "ratingRequired": "평점을 선택해 주세요",
     "contentMin": "후기는 최소 10자 이상이어야 합니다"
+  },
+  "myBookings": {
+    "paymentPending": "결제 대기 중 - 이체를 완료해 주세요",
+    "joinMeeting": "참여",
+    "loginRequired": "예약을 확인하려면 로그인해 주세요.",
+    "noBookings": "아직 예약 내역이 없습니다."
   }
 }

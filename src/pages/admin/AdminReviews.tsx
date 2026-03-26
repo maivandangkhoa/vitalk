@@ -14,21 +14,21 @@ export default function AdminReviews() {
   const handleToggle = async (id: string, visible: boolean) => {
     try {
       await toggleReviewVisibility(id, !visible);
-      toast.success(visible ? 'Review hidden' : 'Review visible');
+      toast.success(visible ? t('reviews.reviewHidden') : t('reviews.reviewVisible'));
       refetch();
     } catch {
-      toast.error('Failed to update');
+      toast.error(t('reviews.updateFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this review?')) return;
+    if (!window.confirm(t('reviews.deleteConfirm'))) return;
     try {
       await deleteReview(id);
-      toast.success('Review deleted');
+      toast.success(t('reviews.reviewDeleted'));
       refetch();
     } catch {
-      toast.error('Failed to delete');
+      toast.error(t('reviews.deleteFailed'));
     }
   };
 
@@ -57,7 +57,7 @@ export default function AdminReviews() {
                       ))}
                     </div>
                     <Badge className={review.isVisible ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''} variant={review.isVisible ? 'default' : 'secondary'}>
-                      {review.isVisible ? 'Visible' : 'Hidden'}
+                      {review.isVisible ? t('reviews.visible') : t('reviews.hidden')}
                     </Badge>
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
@@ -98,7 +98,7 @@ export default function AdminReviews() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
               <MessageSquare className="h-8 w-8 text-indigo-300" />
             </div>
-            <p className="text-muted-foreground">No reviews yet.</p>
+            <p className="text-muted-foreground">{t('reviews.noReviews')}</p>
           </CardContent>
         </Card>
       )}
