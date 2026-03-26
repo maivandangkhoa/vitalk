@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,21 +11,26 @@ import {
   MapPin,
   Loader2,
   ExternalLink,
+  Star,
+  CheckCircle2,
 } from 'lucide-react';
 import { useMyBookings } from '@/hooks/useBookings';
+import { useBookingReviewStatus } from '@/hooks/useReviews';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
 import { convertSlotToUserTz } from '@/lib/timezone';
 import { statusColors } from '@/lib/utils';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
+import { ReviewDialog } from '@/components/reviews/ReviewDialog';
 import type { Booking } from '@/types';
 
-function BookingCard({ booking }: { booking: Booking }) {
-  const { i18n } = useTranslation();
+function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Booking; isReviewed: boolean; onReviewSubmitted: () => void }) {
+  const { t, i18n } = useTranslation();
   const lang = i18n.language as 'en' | 'vi' | 'ko' | 'ja';
   const lessonName = booking.lessonTypeName[lang] || booking.lessonTypeName.en;
   const { userTz, userTzLabel } = useUserTimezone();
   const converted = convertSlotToUserTz(booking.startTime, booking.endTime, booking.date, userTz);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   return (
     <Card>
@@ -64,6 +70,22 @@ function BookingCard({ booking }: { booking: Booking }) {
             {booking.paymentStatus === 'pending' && (
               <p className="mt-3 text-xs text-amber-600">Payment pending</p>
             )}
+
+            {booking.status === 'completed' && (
+              <div className="mt-3">
+                {isReviewed ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {t('reviews.reviewed')}
+                  </span>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => setReviewOpen(true)}>
+                    <Star className="mr-1.5 h-3.5 w-3.5" />
+                    {t('reviews.writeReview')}
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="text-right text-sm">
@@ -81,6 +103,13 @@ function BookingCard({ booking }: { booking: Booking }) {
           </div>
         </div>
       </CardContent>
+
+      <ReviewDialog
+        booking={booking}
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        onSuccess={onReviewSubmitted}
+      />
     </Card>
   );
 }
@@ -89,6 +118,8 @@ export default function MyBookingsPage() {
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const { bookings, loading } = useMyBookings();
+  const bookingIds = useMemo(() => bookings.map((b) => b.id), [bookings]);
+  const { reviewedIds, refetch: refetchReviews } = useBookingReviewStatus(bookingIds);
 
   if (!user) {
     return (
@@ -117,7 +148,11 @@ export default function MyBookingsPage() {
           <StaggerContainer className="space-y-3">
             {bookings.map((booking) => (
               <StaggerItem key={booking.id}>
-                <BookingCard booking={booking} />
+                <BookingCard
+                  booking={booking}
+                  isReviewed={reviewedIds.has(booking.id)}
+                  onReviewSubmitted={refetchReviews}
+                />
               </StaggerItem>
             ))}
           </StaggerContainer>

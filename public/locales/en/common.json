@@ -50,5 +50,16 @@
     "minutes": "minutes",
     "online": "Online",
     "offline": "Offline"
+  },
+  "reviews": {
+    "writeReview": "Write Review",
+    "yourRating": "Your Rating",
+    "yourReview": "Your Review",
+    "placeholder": "Share your experience with this lesson...",
+    "submit": "Submit Review",
+    "reviewed": "Reviewed",
+    "thankYou": "Thank you for your review!",
+    "ratingRequired": "Please select a rating",
+    "contentMin": "Review must be at least 10 characters"
   }
 }

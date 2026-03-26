@@ -75,6 +75,18 @@ export function Header() {
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 {t('nav.logout')}
               </Button>
+              <Link to="/my-bookings" className="flex items-center gap-2 rounded-full border border-zinc-200 py-1 pr-3 pl-1 transition-colors hover:bg-zinc-50">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-600">
+                    {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span className="max-w-[100px] truncate text-sm font-medium">
+                  {user.displayName || user.email?.split('@')[0]}
+                </span>
+              </Link>
             </div>
           ) : (
             <Button size="sm" render={<Link to="/login" />} className="hidden md:inline-flex">
@@ -93,6 +105,22 @@ export function Header() {
                 <div className="my-2 h-px bg-zinc-100" />
                 {user ? (
                   <>
+                    <div className="flex items-center gap-2.5 px-3 py-2">
+                      {user.photoURL ? (
+                        <img src={user.photoURL} alt="" className="h-8 w-8 rounded-full object-cover" />
+                      ) : (
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600">
+                          {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{user.displayName || user.email?.split('@')[0]}</p>
+                        {user.displayName && user.email && (
+                          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="my-1 h-px bg-zinc-100" />
                     {role === 'admin' && (
                       <Link
                         to="/admin"

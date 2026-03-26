@@ -52,7 +52,13 @@
     "saveDraft": "Lưu nháp",
     "autoTranslate": "Tự động dịch",
     "translating": "Đang dịch...",
-    "deletePost": "Xóa bài viết"
+    "deletePost": "Xóa bài viết",
+    "importNaver": "Nhập từ Naver",
+    "importNaverDesc": "Dán link bài viết Naver blog để nhập nội dung",
+    "importButton": "Nhập bài",
+    "importing": "Đang nhập...",
+    "importSuccess": "Đã nhập bài viết! Chỉnh sửa và dịch trước khi đăng.",
+    "importFailed": "Nhập thất bại. Kiểm tra lại link và thử lại."
   },
   "reviews": {
     "title": "Quản lý đánh giá",

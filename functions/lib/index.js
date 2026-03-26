@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.translateBlogPost = exports.sendLessonReminders = exports.onBookingUpdated = exports.onBookingCreated = exports.setUserRole = exports.confirmTossPayment = exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
+exports.scrapeNaverBlog = exports.translateBlogPost = exports.sendLessonReminders = exports.onBookingUpdated = exports.onBookingCreated = exports.setUserRole = exports.confirmTossPayment = exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
 const admin = __importStar(require("firebase-admin"));
 admin.initializeApp();
 // Payment functions
@@ -55,4 +55,7 @@ Object.defineProperty(exports, "sendLessonReminders", { enumerable: true, get: f
 // Blog AI translation
 var translateBlog_1 = require("./translateBlog");
 Object.defineProperty(exports, "translateBlogPost", { enumerable: true, get: function () { return translateBlog_1.translateBlogPost; } });
+// Naver blog import
+var scrapeNaver_1 = require("./scrapeNaver");
+Object.defineProperty(exports, "scrapeNaverBlog", { enumerable: true, get: function () { return scrapeNaver_1.scrapeNaverBlog; } });
 //# sourceMappingURL=index.js.map

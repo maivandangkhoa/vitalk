@@ -52,7 +52,13 @@
     "saveDraft": "Save Draft",
     "autoTranslate": "Auto-Translate",
     "translating": "Translating...",
-    "deletePost": "Delete Post"
+    "deletePost": "Delete Post",
+    "importNaver": "Import from Naver",
+    "importNaverDesc": "Paste a Naver blog URL to import the post content",
+    "importButton": "Import",
+    "importing": "Importing...",
+    "importSuccess": "Blog post imported! Edit and translate before publishing.",
+    "importFailed": "Failed to import. Check the URL and try again."
   },
   "reviews": {
     "title": "Manage Reviews",

@@ -9,6 +9,7 @@ export interface Review {
   content: string;
   lessonType: string;
   language: Language;
+  bookingId?: string;
   isVisible: boolean;
   createdAt: Date;
 }

@@ -50,5 +50,16 @@
     "minutes": "分",
     "online": "オンライン",
     "offline": "対面"
+  },
+  "reviews": {
+    "writeReview": "レビューを書く",
+    "yourRating": "評価",
+    "yourReview": "レビュー内容",
+    "placeholder": "レッスンの感想を共有してください...",
+    "submit": "レビューを送信",
+    "reviewed": "レビュー済み",
+    "thankYou": "レビューありがとうございます！",
+    "ratingRequired": "評価を選択してください",
+    "contentMin": "レビューは10文字以上必要です"
   }
 }

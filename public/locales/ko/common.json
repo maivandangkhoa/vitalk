@@ -50,5 +50,16 @@
     "minutes": "분",
     "online": "온라인",
     "offline": "오프라인"
+  },
+  "reviews": {
+    "writeReview": "후기 작성",
+    "yourRating": "평점",
+    "yourReview": "후기 내용",
+    "placeholder": "수업 경험을 공유해 주세요...",
+    "submit": "후기 제출",
+    "reviewed": "후기 작성 완료",
+    "thankYou": "후기를 남겨주셔서 감사합니다!",
+    "ratingRequired": "평점을 선택해 주세요",
+    "contentMin": "후기는 최소 10자 이상이어야 합니다"
   }
 }

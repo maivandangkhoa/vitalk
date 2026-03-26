@@ -1,8 +1,17 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   Plus,
   PenSquare,
@@ -11,14 +20,23 @@ import {
   Eye,
   EyeOff,
   Edit,
+  Globe,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAdminBlogPosts, deleteBlogPost, togglePublish } from '@/hooks/useBlog';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
+import { useAdminBlogPosts, deleteBlogPost, togglePublish, useSaveBlogPost } from '@/hooks/useBlog';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 
 export default function AdminBlog() {
   const { t } = useTranslation('admin');
+  const navigate = useNavigate();
   const { posts, loading, refetch } = useAdminBlogPosts();
+  const { saveBlogPost } = useSaveBlogPost();
+
+  const [naverOpen, setNaverOpen] = useState(false);
+  const [naverUrl, setNaverUrl] = useState('');
+  const [importing, setImporting] = useState(false);
 
   const handleTogglePublish = async (id: string, isPublished: boolean) => {
     try {
@@ -41,14 +59,68 @@ export default function AdminBlog() {
     }
   };
 
+  const handleNaverImport = async () => {
+    if (!naverUrl.trim()) {
+      toast.error('Please paste a Naver blog URL');
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const fn = httpsCallable<
+        { url: string },
+        { title: string; content: string; coverImageUrl: string }
+      >(functions, 'scrapeNaverBlog');
+
+      const result = await fn({ url: naverUrl.trim() });
+      const { title, content, coverImageUrl } = result.data;
+
+      // Create slug from title
+      const slug = title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/-+/g, '-')
+        .trim() || `naver-import-${Date.now()}`;
+
+      // Save as draft with Korean content (from Naver)
+      const savedId = await saveBlogPost(null, {
+        slug,
+        title: { en: '', vi: '', ko: title, ja: '' },
+        excerpt: { en: '', vi: '', ko: '', ja: '' },
+        content: { en: '', vi: '', ko: content, ja: '' },
+        coverImageUrl: coverImageUrl || '',
+        tags: [],
+        isPublished: false,
+        publishedAt: null,
+      });
+
+      toast.success(t('blog.importSuccess'));
+      setNaverOpen(false);
+      setNaverUrl('');
+      navigate(`/admin/blog/${savedId}/edit`);
+    } catch (err) {
+      console.error('Naver import error:', err);
+      toast.error(t('blog.importFailed'));
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div>
       <AnimatedSection className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('blog.title')}</h1>
-        <Button render={<Link to="/admin/blog/new/edit" />}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('blog.newPost')}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setNaverOpen(true)}>
+            <Globe className="mr-2 h-4 w-4" />
+            {t('blog.importNaver')}
+          </Button>
+          <Button render={<Link to="/admin/blog/new/edit" />}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('blog.newPost')}
+          </Button>
+        </div>
       </AnimatedSection>
 
       {loading ? (
@@ -64,7 +136,7 @@ export default function AdminBlog() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2.5">
                     <h3 className="truncate font-semibold">
-                      {post.title.en || 'Untitled'}
+                      {post.title.en || post.title.ko || 'Untitled'}
                     </h3>
                     <Badge className={post.isPublished ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''} variant={post.isPublished ? 'default' : 'secondary'}>
                       {post.isPublished ? 'Published' : 'Draft'}
@@ -117,6 +189,35 @@ export default function AdminBlog() {
           </CardContent>
         </Card>
       )}
+
+      {/* Naver Blog Import Dialog */}
+      <Dialog open={naverOpen} onOpenChange={setNaverOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('blog.importNaver')}</DialogTitle>
+            <DialogDescription>{t('blog.importNaverDesc')}</DialogDescription>
+          </DialogHeader>
+
+          <div>
+            <input
+              value={naverUrl}
+              onChange={(e) => setNaverUrl(e.target.value)}
+              placeholder="https://blog.naver.com/..."
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !importing) handleNaverImport();
+              }}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button onClick={handleNaverImport} disabled={importing}>
+              {importing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {importing ? t('blog.importing') : t('blog.importButton')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

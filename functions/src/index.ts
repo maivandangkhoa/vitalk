@@ -17,3 +17,6 @@ export { sendLessonReminders } from "./reminders";
 
 // Blog AI translation
 export { translateBlogPost } from "./translateBlog";
+
+// Naver blog import
+export { scrapeNaverBlog } from "./scrapeNaver";
