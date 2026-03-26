@@ -42,6 +42,7 @@ async function getPaypalAccessToken() {
     const clientId = process.env.PAYPAL_CLIENT_ID;
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
     if (!clientId || !clientSecret) {
+        console.error("PayPal credentials missing:", { hasClientId: !!clientId, hasSecret: !!clientSecret });
         throw new https_1.HttpsError("failed-precondition", "PayPal credentials not configured");
     }
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
@@ -53,7 +54,16 @@ async function getPaypalAccessToken() {
         },
         body: "grant_type=client_credentials",
     });
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("PayPal token error:", response.status, errorText);
+        throw new https_1.HttpsError("internal", `PayPal auth failed: ${response.status}`);
+    }
     const data = await response.json();
+    if (!data.access_token) {
+        console.error("PayPal token response missing access_token:", data);
+        throw new https_1.HttpsError("internal", "PayPal auth returned no token");
+    }
     return data.access_token;
 }
 /**
@@ -80,28 +90,49 @@ exports.createPaypalOrder = (0, https_1.onCall)({ secrets: ["PAYPAL_CLIENT_ID", 
     if (booking.paymentStatus === "confirmed") {
         throw new https_1.HttpsError("already-exists", "Already paid");
     }
-    const accessToken = await getPaypalAccessToken();
+    let accessToken;
+    try {
+        accessToken = await getPaypalAccessToken();
+    }
+    catch (err) {
+        console.error("Failed to get PayPal access token:", err);
+        if (err instanceof https_1.HttpsError)
+            throw err;
+        throw new https_1.HttpsError("internal", "PayPal authentication failed");
+    }
+    const orderPayload = {
+        intent: "CAPTURE",
+        purchase_units: [
+            {
+                reference_id: bookingId,
+                amount: {
+                    currency_code: booking.currency || "USD",
+                    value: String(booking.amount),
+                },
+                description: `ViTalk Lesson - ${booking.date} ${booking.startTime}`,
+            },
+        ],
+    };
+    console.log("Creating PayPal order:", JSON.stringify(orderPayload));
     const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-            intent: "CAPTURE",
-            purchase_units: [
-                {
-                    reference_id: bookingId,
-                    amount: {
-                        currency_code: booking.currency || "USD",
-                        value: String(booking.amount),
-                    },
-                    description: `ViTalk Lesson - ${booking.date} ${booking.startTime}`,
-                },
-            ],
-        }),
+        body: JSON.stringify(orderPayload),
     });
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("PayPal create order error:", response.status, errorText);
+        throw new https_1.HttpsError("internal", `PayPal order creation failed: ${response.status}`);
+    }
     const order = await response.json();
+    console.log("PayPal order created:", order.id, order.status);
+    if (!order.id) {
+        console.error("PayPal order response missing id:", order);
+        throw new https_1.HttpsError("internal", "PayPal returned no order ID");
+    }
     // Save PayPal order ID to booking
     await admin.firestore().doc(`bookings/${bookingId}`).update({
         paymentReference: order.id,
