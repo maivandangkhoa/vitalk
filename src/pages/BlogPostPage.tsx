@@ -34,8 +34,8 @@ export default function BlogPostPage() {
     );
   }
 
-  const title = post.title[lang] || post.title.en;
-  const content = post.content[lang] || post.content.en;
+  const title = post.title[lang] || post.title.ko || post.title.en;
+  const content = post.content[lang] || post.content.ko || post.content.en;
   const publishedDate = post.publishedAt
     ? new Date(
         typeof post.publishedAt === 'object' && 'seconds' in post.publishedAt

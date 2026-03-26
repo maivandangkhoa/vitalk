@@ -136,7 +136,7 @@ export default function AdminBlog() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2.5">
                     <h3 className="truncate font-semibold">
-                      {post.title.en || post.title.ko || 'Untitled'}
+                      {post.title.ko || post.title.en || 'Untitled'}
                     </h3>
                     <Badge className={post.isPublished ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''} variant={post.isPublished ? 'default' : 'secondary'}>
                       {post.isPublished ? 'Published' : 'Draft'}

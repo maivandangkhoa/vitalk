@@ -10,8 +10,8 @@ import type { BlogPost, Language } from '@/types';
 function BlogCard({ post }: { post: BlogPost }) {
   const { i18n } = useTranslation();
   const lang = i18n.language as Language;
-  const title = post.title[lang] || post.title.en;
-  const excerpt = post.excerpt[lang] || post.excerpt.en;
+  const title = post.title[lang] || post.title.ko || post.title.en;
+  const excerpt = post.excerpt[lang] || post.excerpt.ko || post.excerpt.en;
 
   const publishedDate = post.publishedAt
     ? new Date(
