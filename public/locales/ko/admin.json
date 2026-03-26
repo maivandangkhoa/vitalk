@@ -6,6 +6,10 @@
     "pendingPayments": "대기 중인 결제",
     "totalStudents": "총 학생 수",
     "recentBookings": "최근 예약",
+    "monthlyBookings": "월별 예약",
+    "statusDistribution": "상태 분포",
+    "noData": "예약 데이터가 없습니다",
+    "viewAllBookings": "전체 예약 보기",
     "noUpcoming": "예정된 수업이 없습니다"
   },
   "nav": {
@@ -41,6 +45,12 @@
     "confirmPayment": "결제 확인",
     "cancelBooking": "예약 취소",
     "addMeetingLink": "회의 링크 추가",
+    "markCompleted": "완료 처리",
+    "save": "저장",
+    "online": "온라인",
+    "inPerson": "대면",
+    "actionSuccess": "처리 완료",
+    "actionFailed": "처리 실패",
     "noBookings": "예약이 없습니다"
   },
   "blog": {
@@ -58,7 +68,12 @@
     "importButton": "가져오기",
     "importing": "가져오는 중...",
     "importSuccess": "게시물을 가져왔습니다! 게시 전에 수정하고 번역하세요.",
-    "importFailed": "가져오기 실패. URL을 확인하고 다시 시도하세요."
+    "importFailed": "가져오기 실패. URL을 확인하고 다시 시도하세요.",
+    "titleRequired": "최소 하나의 언어로 제목을 입력하세요",
+    "slugRequired": "Slug는 필수입니다",
+    "writeContentFirst": "먼저 하나의 언어로 내용을 작성하세요",
+    "translateSuccess": "번역 완료! 게시 전에 확인하세요.",
+    "translateFailed": "번역 실패. 다시 시도하세요."
   },
   "reviews": {
     "title": "후기 관리",

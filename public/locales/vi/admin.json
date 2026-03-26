@@ -6,6 +6,10 @@
     "pendingPayments": "Thanh toán chờ xử lý",
     "totalStudents": "Tổng số học viên",
     "recentBookings": "Đặt lịch gần đây",
+    "monthlyBookings": "Đặt lịch theo tháng",
+    "statusDistribution": "Phân bố trạng thái",
+    "noData": "Chưa có dữ liệu đặt lịch",
+    "viewAllBookings": "Xem tất cả đặt lịch",
     "noUpcoming": "Không có buổi học sắp tới"
   },
   "nav": {
@@ -41,6 +45,12 @@
     "confirmPayment": "Xác nhận thanh toán",
     "cancelBooking": "Hủy đặt lịch",
     "addMeetingLink": "Thêm link họp",
+    "markCompleted": "Hoàn thành",
+    "save": "Lưu",
+    "online": "Online",
+    "inPerson": "Trực tiếp",
+    "actionSuccess": "Thao tác thành công",
+    "actionFailed": "Thao tác thất bại",
     "noBookings": "Không có đặt lịch nào"
   },
   "blog": {
@@ -58,7 +68,12 @@
     "importButton": "Nhập bài",
     "importing": "Đang nhập...",
     "importSuccess": "Đã nhập bài viết! Chỉnh sửa và dịch trước khi đăng.",
-    "importFailed": "Nhập thất bại. Kiểm tra lại link và thử lại."
+    "importFailed": "Nhập thất bại. Kiểm tra lại link và thử lại.",
+    "titleRequired": "Cần ít nhất một tiêu đề bằng ngôn ngữ bất kỳ",
+    "slugRequired": "Slug là bắt buộc",
+    "writeContentFirst": "Hãy viết nội dung bằng ít nhất một ngôn ngữ trước",
+    "translateSuccess": "Đã dịch! Kiểm tra trước khi đăng.",
+    "translateFailed": "Dịch thất bại. Thử lại."
   },
   "reviews": {
     "title": "Quản lý đánh giá",

@@ -6,6 +6,10 @@
     "pendingPayments": "Pending Payments",
     "totalStudents": "Total Students",
     "recentBookings": "Recent Bookings",
+    "monthlyBookings": "Monthly Bookings",
+    "statusDistribution": "Status Distribution",
+    "noData": "No booking data yet",
+    "viewAllBookings": "View all bookings",
     "noUpcoming": "No upcoming lessons"
   },
   "nav": {
@@ -41,6 +45,12 @@
     "confirmPayment": "Confirm Payment",
     "cancelBooking": "Cancel Booking",
     "addMeetingLink": "Add Meeting Link",
+    "markCompleted": "Mark Completed",
+    "save": "Save",
+    "online": "Online",
+    "inPerson": "In-person",
+    "actionSuccess": "Action completed",
+    "actionFailed": "Action failed",
     "noBookings": "No bookings found"
   },
   "blog": {
@@ -58,7 +68,12 @@
     "importButton": "Import",
     "importing": "Importing...",
     "importSuccess": "Blog post imported! Edit and translate before publishing.",
-    "importFailed": "Failed to import. Check the URL and try again."
+    "importFailed": "Failed to import. Check the URL and try again.",
+    "titleRequired": "At least one language title is required",
+    "slugRequired": "Slug is required",
+    "writeContentFirst": "Write content in at least one language first",
+    "translateSuccess": "Translated! Review before publishing.",
+    "translateFailed": "Translation failed. Try again."
   },
   "reviews": {
     "title": "Manage Reviews",

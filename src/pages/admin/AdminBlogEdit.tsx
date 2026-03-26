@@ -62,20 +62,22 @@ export default function AdminBlogEdit() {
     }
   }, [post]);
 
-  // Auto-generate slug from English title
+  // Auto-generate slug from first available title (en > ko)
   useEffect(() => {
-    if (isNew && title.en) {
-      setSlug(slugify(title.en));
+    if (isNew) {
+      const source = title.en || title.ko;
+      if (source) setSlug(slugify(source));
     }
-  }, [isNew, title.en]);
+  }, [isNew, title.en, title.ko]);
 
   const handleSave = async (publish: boolean) => {
-    if (!title.en.trim()) {
-      toast.error('English title is required');
+    const hasTitle = LANGUAGES.some((l) => title[l.code].trim());
+    if (!hasTitle) {
+      toast.error(t('blog.titleRequired'));
       return;
     }
     if (!slug.trim()) {
-      toast.error('Slug is required');
+      toast.error(t('blog.slugRequired'));
       return;
     }
 
@@ -102,32 +104,35 @@ export default function AdminBlogEdit() {
   };
 
   const handleTranslate = async () => {
-    if (!content.en.trim()) {
-      toast.error('Write the English content first');
+    // Find source language (first language with content)
+    const sourceLang = LANGUAGES.find((l) => content[l.code].trim())?.code;
+    if (!sourceLang) {
+      toast.error(t('blog.writeContentFirst'));
       return;
     }
 
     setTranslating(true);
     try {
       const fn = httpsCallable<
-        { title: string; excerpt: string; content: string },
+        { title: string; excerpt: string; content: string; sourceLang: string },
         { title: MultiLangText; excerpt: MultiLangText; content: MultiLangText }
       >(functions, 'translateBlogPost');
 
       const result = await fn({
-        title: title.en,
-        excerpt: excerpt.en,
-        content: content.en,
+        title: title[sourceLang],
+        excerpt: excerpt[sourceLang],
+        content: content[sourceLang],
+        sourceLang,
       });
 
-      // Merge translations (keep EN, update others)
-      setTitle((prev) => ({ ...prev, ...result.data.title, en: prev.en }));
-      setExcerpt((prev) => ({ ...prev, ...result.data.excerpt, en: prev.en }));
-      setContent((prev) => ({ ...prev, ...result.data.content, en: prev.en }));
+      // Merge translations (keep source language, update others)
+      setTitle((prev) => ({ ...prev, ...result.data.title, [sourceLang]: prev[sourceLang] }));
+      setExcerpt((prev) => ({ ...prev, ...result.data.excerpt, [sourceLang]: prev[sourceLang] }));
+      setContent((prev) => ({ ...prev, ...result.data.content, [sourceLang]: prev[sourceLang] }));
 
-      toast.success('Translated to 3 languages! Review before publishing.');
+      toast.success(t('blog.translateSuccess'));
     } catch {
-      toast.error('Translation failed. Make sure the Cloud Function is deployed.');
+      toast.error(t('blog.translateFailed'));
     } finally {
       setTranslating(false);
     }

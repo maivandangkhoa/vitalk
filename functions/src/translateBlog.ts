@@ -6,7 +6,15 @@ interface TranslateRequest {
   title: string;
   excerpt: string;
   content: string;
+  sourceLang?: string;
 }
+
+const LANG_NAMES: Record<string, string> = {
+  en: "English",
+  vi: "Vietnamese",
+  ko: "Korean",
+  ja: "Japanese",
+};
 
 interface TranslateResult {
   title: { en: string; vi: string; ko: string; ja: string };
@@ -36,7 +44,7 @@ export const translateBlogPost = onCall(
       throw new HttpsError("permission-denied", "Admin only");
     }
 
-    const { title, excerpt, content } = request.data as TranslateRequest;
+    const { title, excerpt, content, sourceLang = "en" } = request.data as TranslateRequest;
     if (!title || !content) {
       throw new HttpsError("invalid-argument", "title and content are required");
     }
@@ -46,19 +54,23 @@ export const translateBlogPost = onCall(
       throw new HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
     }
 
+    const targetLangs = ["en", "vi", "ko", "ja"].filter((l) => l !== sourceLang);
+    const targetNames = targetLangs.map((l) => `${LANG_NAMES[l]} (${l})`).join(", ");
+    const jsonFields = targetLangs.map((l) => `"${l}": "..."`).join(", ");
+
     const client = new Anthropic({ apiKey });
 
     const prompt = `You are a professional translator for a Vietnamese language learning blog.
-Translate the following blog post from English into 3 languages: Vietnamese (vi), Korean (ko), and Japanese (ja).
+Translate the following blog post from ${LANG_NAMES[sourceLang] || sourceLang} into ${targetNames}.
 
 The blog is written by a Vietnamese teacher based in Seoul who teaches Vietnamese to international students.
 Keep the translations natural and appropriate for language learners. Preserve all HTML formatting tags.
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks):
 {
-  "title": { "vi": "...", "ko": "...", "ja": "..." },
-  "excerpt": { "vi": "...", "ko": "...", "ja": "..." },
-  "content": { "vi": "...", "ko": "...", "ja": "..." }
+  "title": { ${jsonFields} },
+  "excerpt": { ${jsonFields} },
+  "content": { ${jsonFields} }
 }
 
 ---
@@ -83,15 +95,15 @@ ${content}`;
 
       // Parse the JSON response
       const translations = JSON.parse(responseText) as {
-        title: { vi: string; ko: string; ja: string };
-        excerpt: { vi: string; ko: string; ja: string };
-        content: { vi: string; ko: string; ja: string };
+        title: Record<string, string>;
+        excerpt: Record<string, string>;
+        content: Record<string, string>;
       };
 
       return {
-        title: { en: title, ...translations.title },
-        excerpt: { en: excerpt || "", ...translations.excerpt },
-        content: { en: content, ...translations.content },
+        title: { en: "", vi: "", ko: "", ja: "", [sourceLang]: title, ...translations.title },
+        excerpt: { en: "", vi: "", ko: "", ja: "", [sourceLang]: excerpt || "", ...translations.excerpt },
+        content: { en: "", vi: "", ko: "", ja: "", [sourceLang]: content, ...translations.content },
       };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Translation failed";

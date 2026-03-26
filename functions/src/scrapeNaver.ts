@@ -14,10 +14,6 @@ interface ScrapeResult {
 
 /**
  * Parse Naver blog URL to extract blogId and logNo.
- * Supports formats:
- *   - https://blog.naver.com/{blogId}/{logNo}
- *   - https://m.blog.naver.com/{blogId}/{logNo}
- *   - https://blog.naver.com/PostView.naver?blogId=xxx&logNo=xxx
  */
 function parseNaverUrl(url: string): { blogId: string; logNo: string } | null {
   try {
@@ -35,7 +31,6 @@ function parseNaverUrl(url: string): { blogId: string; logNo: string } | null {
 
     // Path format: /blogId/logNo
     const parts = u.pathname.split("/").filter(Boolean);
-    // Filter out "PostView.naver" etc.
     const cleanParts = parts.filter(
       (p) => !p.includes(".naver") && !p.includes(".nhn")
     );
@@ -51,8 +46,226 @@ function parseNaverUrl(url: string): { blogId: string; logNo: string } | null {
 }
 
 /**
- * Scrapes a Naver blog post and returns title + HTML content.
- * Uses the mobile version for easier parsing (no iframe).
+ * Strategy 1: Fetch the desktop iframe content directly.
+ * Naver blog desktop wraps content in an iframe - we fetch that iframe URL directly.
+ */
+async function fetchDesktopIframe(
+  blogId: string,
+  logNo: string
+): Promise<{ title: string; content: string; coverImageUrl: string } | null> {
+  const iframeUrl = `https://blog.naver.com/PostView.naver?blogId=${blogId}&logNo=${logNo}&directAccess=false`;
+
+  const response = await fetch(iframeUrl, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept-Language": "ko-KR,ko;q=0.9",
+      Referer: `https://blog.naver.com/${blogId}/${logNo}`,
+    },
+  });
+
+  if (!response.ok) return null;
+
+  const html = await response.text();
+  const $ = cheerio.load(html);
+
+  // Extract title
+  let title = "";
+  title = $(".se-title-text").first().text().trim();
+  if (!title) title = $(".pcol1 .itemSubjectBoldfont").first().text().trim();
+  if (!title) title = $(".se_title .se_textarea").first().text().trim();
+  if (!title)
+    title = $("meta[property='og:title']").attr("content")?.trim() || "";
+  title = title.replace(/\s*:\s*네이버\s*블로그\s*$/, "");
+
+  // Extract cover image
+  const coverImageUrl =
+    $("meta[property='og:image']").attr("content")?.trim() || "";
+
+  // Try SmartEditor ONE (SE3) - newest editor
+  let contentHtml = extractSE3Content($);
+
+  // Try SmartEditor 2 / older formats
+  if (!contentHtml) {
+    contentHtml = extractOldEditorContent($);
+  }
+
+  if (!contentHtml) return null;
+
+  return { title, content: contentHtml, coverImageUrl };
+}
+
+/**
+ * Strategy 2: Parse __NEXT_DATA__ from mobile page (Next.js SSR).
+ */
+async function fetchMobileNextData(
+  blogId: string,
+  logNo: string
+): Promise<{ title: string; content: string; coverImageUrl: string } | null> {
+  const mobileUrl = `https://m.blog.naver.com/${blogId}/${logNo}`;
+
+  const response = await fetch(mobileUrl, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+      "Accept-Language": "ko-KR,ko;q=0.9",
+    },
+  });
+
+  if (!response.ok) return null;
+
+  const html = await response.text();
+  const $ = cheerio.load(html);
+
+  // Try __NEXT_DATA__ first (Next.js SSR)
+  const nextDataScript = $("#__NEXT_DATA__").html();
+  if (nextDataScript) {
+    try {
+      const nextData = JSON.parse(nextDataScript);
+      // Navigate the Next.js data structure to find post content
+      const postData =
+        nextData?.props?.pageProps?.post ||
+        nextData?.props?.pageProps?.result?.post ||
+        nextData?.props?.pageProps;
+
+      if (postData) {
+        const title =
+          postData.titleWithInspectMessage ||
+          postData.title ||
+          postData.postTitle ||
+          "";
+        const contentHtml =
+          postData.contentHtml ||
+          postData.content ||
+          postData.postContent ||
+          postData.body ||
+          "";
+        const coverImageUrl =
+          postData.thumbnailUrl ||
+          postData.representImage ||
+          postData.ogImageUrl ||
+          "";
+
+        if (contentHtml) {
+          // Clean up the HTML content
+          const $content = cheerio.load(contentHtml);
+          $content("script, style").remove();
+          return {
+            title: cleanTitle(title),
+            content: $content.html() || contentHtml,
+            coverImageUrl,
+          };
+        }
+      }
+    } catch {
+      // JSON parse failed, continue to HTML parsing
+    }
+  }
+
+  // Fallback: parse mobile HTML directly
+  let title = $(".se-title-text").first().text().trim();
+  if (!title) title = $("h3.se_textarea").first().text().trim();
+  if (!title)
+    title = $("meta[property='og:title']").attr("content")?.trim() || "";
+  title = cleanTitle(title);
+
+  const coverImageUrl =
+    $("meta[property='og:image']").attr("content")?.trim() || "";
+
+  let contentHtml = extractSE3Content($);
+  if (!contentHtml) contentHtml = extractOldEditorContent($);
+
+  if (!contentHtml) return null;
+
+  return { title, content: contentHtml, coverImageUrl };
+}
+
+/**
+ * Extract content from SmartEditor ONE (SE3) - the newest Naver editor.
+ */
+function extractSE3Content($: cheerio.CheerioAPI): string {
+  const seMainContainer = $(".se-main-container");
+  if (!seMainContainer.length) return "";
+
+  seMainContainer.find("script, style, .se-oglink-container").remove();
+
+  const blocks: string[] = [];
+  seMainContainer.find(".se-module").each((_, module) => {
+    const $mod = $(module);
+
+    if ($mod.hasClass("se-module-text")) {
+      // Text block - get all paragraphs
+      $mod.find(".se-text-paragraph").each((_, p) => {
+        const html = $(p).html();
+        if (html && html.trim()) {
+          blocks.push(`<p>${html.trim()}</p>`);
+        }
+      });
+    } else if ($mod.hasClass("se-module-image")) {
+      const img = $mod.find("img.se-image-resource");
+      const src = img.attr("data-src") || img.attr("src");
+      if (src) {
+        blocks.push(`<p><img src="${src}" alt="" /></p>`);
+      }
+    } else if ($mod.hasClass("se-module-sticker")) {
+      // Sticker/emoji - skip or get image
+      const img = $mod.find("img");
+      const src = img.attr("data-src") || img.attr("src");
+      if (src) {
+        blocks.push(`<p><img src="${src}" alt="" style="max-width:120px" /></p>`);
+      }
+    } else if (
+      $mod.hasClass("se-module-horizontalLine") ||
+      $mod.hasClass("se-module-hr")
+    ) {
+      blocks.push("<hr />");
+    } else if ($mod.hasClass("se-module-video")) {
+      // Video embed - try to get thumbnail or link
+      const link = $mod.find("a").attr("href");
+      if (link) {
+        blocks.push(`<p><a href="${link}">[Video]</a></p>`);
+      }
+    }
+  });
+
+  return blocks.join("\n");
+}
+
+/**
+ * Extract content from older Naver editors (SmartEditor 2, etc).
+ */
+function extractOldEditorContent($: cheerio.CheerioAPI): string {
+  // Try multiple selectors for different editor versions
+  const selectors = [
+    "#postViewArea",
+    "#viewTypeSelector",
+    ".post-view",
+    ".post_ct",
+    "#post-view",
+    ".se_component_wrap",
+    "#content-area",
+  ];
+
+  for (const selector of selectors) {
+    const area = $(selector);
+    if (area.length && area.html()?.trim()) {
+      area.find("script, style, .post_footer, .post_header").remove();
+      const html = area.html()?.trim();
+      if (html && html.length > 50) {
+        return html;
+      }
+    }
+  }
+
+  return "";
+}
+
+function cleanTitle(title: string): string {
+  return title.replace(/\s*:\s*네이버\s*블로그\s*$/, "").trim();
+}
+
+/**
+ * Scrapes a Naver blog post using multiple strategies.
  */
 export const scrapeNaverBlog = onCall(
   {
@@ -88,129 +301,73 @@ export const scrapeNaverBlog = onCall(
     }
 
     const { blogId, logNo } = parsed;
+    console.log(`Scraping Naver blog: blogId=${blogId}, logNo=${logNo}`);
 
     try {
-      // Fetch mobile version (renders content directly, no iframe)
-      const mobileUrl = `https://m.blog.naver.com/${blogId}/${logNo}`;
-      const response = await fetch(mobileUrl, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-          "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-        },
-      });
-
-      if (!response.ok) {
-        throw new HttpsError(
-          "not-found",
-          `Failed to fetch blog post (HTTP ${response.status})`
+      // Strategy 1: Desktop iframe (most reliable for full content)
+      console.log("Trying Strategy 1: Desktop iframe...");
+      const desktopResult = await fetchDesktopIframe(blogId, logNo);
+      if (desktopResult && desktopResult.content.length > 50) {
+        console.log(
+          `Strategy 1 success: title="${desktopResult.title}", content length=${desktopResult.content.length}`
         );
+        return desktopResult;
       }
 
-      const html = await response.text();
-      const $ = cheerio.load(html);
-
-      // Extract title
-      let title = "";
-      // SmartEditor 3 (SE3)
-      title = $(".se-title-text").first().text().trim();
-      if (!title) {
-        title = $(".tit_h3").first().text().trim();
-      }
-      if (!title) {
-        title = $("h3.se_textarea").first().text().trim();
-      }
-      if (!title) {
-        title = $("meta[property='og:title']").attr("content")?.trim() || "";
-      }
-      // Strip " : 네이버 블로그" suffix
-      title = title.replace(/\s*:\s*네이버\s*블로그\s*$/, "");
-
-      // Extract cover image
-      let coverImageUrl = "";
-      coverImageUrl =
-        $("meta[property='og:image']").attr("content")?.trim() || "";
-
-      // Extract content - try multiple selectors for different Naver editor versions
-      let contentHtml = "";
-
-      // SmartEditor ONE (newest)
-      const seMainContainer = $(".se-main-container");
-      if (seMainContainer.length) {
-        // Remove script tags and unnecessary elements
-        seMainContainer.find("script, style, .se-oglink-container").remove();
-
-        // Process images - convert to simple img tags
-        seMainContainer.find(".se-image-resource").each((_, el) => {
-          const src = $(el).attr("data-src") || $(el).attr("src");
-          if (src) {
-            $(el)
-              .parent()
-              .replaceWith(`<p><img src="${src}" alt="" /></p>`);
-          }
-        });
-
-        // Process SE3 text blocks
-        const blocks: string[] = [];
-        seMainContainer.find(".se-module").each((_, module) => {
-          const $mod = $(module);
-
-          if ($mod.hasClass("se-module-text")) {
-            // Text block
-            const textContent = $mod.find(".se-text-paragraph").html();
-            if (textContent && textContent.trim()) {
-              blocks.push(`<p>${textContent.trim()}</p>`);
-            }
-          } else if ($mod.hasClass("se-module-image")) {
-            // Image block
-            const img = $mod.find("img.se-image-resource");
-            const src = img.attr("data-src") || img.attr("src");
-            if (src) {
-              blocks.push(`<p><img src="${src}" alt="" /></p>`);
-            }
-          } else if ($mod.hasClass("se-module-oglink")) {
-            // Skip link previews
-          } else if (
-            $mod.hasClass("se-module-horizontalLine") ||
-            $mod.hasClass("se-module-hr")
-          ) {
-            blocks.push("<hr />");
-          }
-        });
-
-        contentHtml = blocks.join("\n");
+      // Strategy 2: Mobile page with __NEXT_DATA__
+      console.log("Trying Strategy 2: Mobile __NEXT_DATA__...");
+      const mobileResult = await fetchMobileNextData(blogId, logNo);
+      if (mobileResult && mobileResult.content.length > 50) {
+        console.log(
+          `Strategy 2 success: title="${mobileResult.title}", content length=${mobileResult.content.length}`
+        );
+        return mobileResult;
       }
 
-      // Fallback: try postViewArea (older editor)
-      if (!contentHtml) {
-        const postViewArea = $("#postViewArea, #viewTypeSelector, .post-view");
-        if (postViewArea.length) {
-          postViewArea.find("script, style").remove();
-          contentHtml = postViewArea.html()?.trim() || "";
+      // Strategy 3: Use whatever partial content we got
+      const partialResult = desktopResult || mobileResult;
+      if (partialResult && partialResult.content) {
+        console.log(
+          `Using partial result: content length=${partialResult.content.length}`
+        );
+        return partialResult;
+      }
+
+      // Final fallback: og:description from mobile page
+      console.log("All strategies failed, trying og:description fallback...");
+      const fallbackResponse = await fetch(
+        `https://m.blog.naver.com/${blogId}/${logNo}`,
+        {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)",
+            "Accept-Language": "ko-KR,ko;q=0.9",
+          },
+        }
+      );
+      if (fallbackResponse.ok) {
+        const fallbackHtml = await fallbackResponse.text();
+        const $fb = cheerio.load(fallbackHtml);
+        const ogTitle =
+          $fb("meta[property='og:title']").attr("content")?.trim() || "";
+        const ogDesc =
+          $fb("meta[property='og:description']").attr("content")?.trim() || "";
+        const ogImage =
+          $fb("meta[property='og:image']").attr("content")?.trim() || "";
+
+        if (ogDesc) {
+          return {
+            title: cleanTitle(ogTitle),
+            content: `<p>${ogDesc}</p>`,
+            coverImageUrl: ogImage,
+          };
         }
       }
 
-      // Final fallback: og:description
-      if (!contentHtml) {
-        const desc =
-          $("meta[property='og:description']").attr("content")?.trim() || "";
-        if (desc) {
-          contentHtml = `<p>${desc}</p>`;
-        }
-      }
-
-      if (!title && !contentHtml) {
-        throw new HttpsError(
-          "not-found",
-          "Could not extract content from this Naver blog post. The post may be private or the format is not supported."
-        );
-      }
-
-      return {
-        title: title || "Untitled",
-        content: contentHtml,
-        coverImageUrl,
-      };
+      throw new HttpsError(
+        "not-found",
+        "Could not extract content. The post may be private or use an unsupported format."
+      );
     } catch (err) {
       if (err instanceof HttpsError) throw err;
       console.error("Naver scrape error:", err);

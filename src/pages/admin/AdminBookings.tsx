@@ -50,10 +50,10 @@ function AdminBookingCard({
     setActionLoading(action);
     try {
       await fn();
-      toast.success(`${action} successful`);
+      toast.success(t('bookings.actionSuccess'));
       onRefresh();
     } catch {
-      toast.error(`Failed to ${action.toLowerCase()}`);
+      toast.error(t('bookings.actionFailed'));
     } finally {
       setActionLoading(null);
     }
@@ -67,11 +67,11 @@ function AdminBookingCard({
             <div className="mb-2 flex flex-wrap items-center gap-2.5">
               <h3 className="font-semibold">{lessonName}</h3>
               <Badge className={statusColors[booking.status] || ''}>
-                {booking.status}
+                {t(`bookings.${booking.status}`)}
               </Badge>
               <Badge className={paymentStatusColors[booking.paymentStatus] || ''}>
                 <DollarSign className="mr-0.5 h-3 w-3" />
-                {booking.paymentStatus}
+                {t(`bookings.${booking.paymentStatus}`)}
               </Badge>
             </div>
 
@@ -96,8 +96,8 @@ function AdminBookingCard({
                 )}
                 <span>
                   {booking.format === 'online'
-                    ? `Online${booking.platform ? ` (${booking.platform.replace('_', ' ')})` : ''}`
-                    : 'In-person'}
+                    ? `${t('bookings.online')}${booking.platform ? ` (${booking.platform.replace('_', ' ')})` : ''}`
+                    : t('bookings.inPerson')}
                 </span>
               </div>
             </div>
@@ -163,7 +163,7 @@ function AdminBookingCard({
                       }}
                       disabled={actionLoading !== null}
                     >
-                      Save
+                      {t('bookings.save')}
                     </Button>
                   </div>
                 ) : (
@@ -195,7 +195,7 @@ function AdminBookingCard({
                 ) : (
                   <CheckCircle className="mr-1 h-3.5 w-3.5" />
                 )}
-                Mark Completed
+                {t('bookings.markCompleted')}
               </Button>
             )}
 

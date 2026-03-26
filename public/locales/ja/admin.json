@@ -6,6 +6,10 @@
     "pendingPayments": "未確認の支払い",
     "totalStudents": "総生徒数",
     "recentBookings": "最近の予約",
+    "monthlyBookings": "月別予約",
+    "statusDistribution": "ステータス分布",
+    "noData": "予約データがありません",
+    "viewAllBookings": "すべての予約を見る",
     "noUpcoming": "今後のレッスンはありません"
   },
   "nav": {
@@ -41,6 +45,12 @@
     "confirmPayment": "支払い確認",
     "cancelBooking": "予約キャンセル",
     "addMeetingLink": "ミーティングリンクを追加",
+    "markCompleted": "完了にする",
+    "save": "保存",
+    "online": "オンライン",
+    "inPerson": "対面",
+    "actionSuccess": "処理完了",
+    "actionFailed": "処理に失敗しました",
     "noBookings": "予約はありません"
   },
   "blog": {
@@ -58,7 +68,12 @@
     "importButton": "取り込み",
     "importing": "取り込み中...",
     "importSuccess": "記事を取り込みました！公開前に編集・翻訳してください。",
-    "importFailed": "取り込みに失敗しました。URLを確認して再試行してください。"
+    "importFailed": "取り込みに失敗しました。URLを確認して再試行してください。",
+    "titleRequired": "少なくとも1つの言語でタイトルを入力してください",
+    "slugRequired": "Slugは必須です",
+    "writeContentFirst": "まず1つの言語でコンテンツを書いてください",
+    "translateSuccess": "翻訳完了！公開前に確認してください。",
+    "translateFailed": "翻訳に失敗しました。もう一度お試しください。"
   },
   "reviews": {
     "title": "レビュー管理",

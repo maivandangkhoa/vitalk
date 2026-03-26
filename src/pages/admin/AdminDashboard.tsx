@@ -74,12 +74,13 @@ export default function AdminDashboard() {
   const statValues = [stats.upcoming, stats.total, stats.pendingPayments, stats.students];
 
   const statusDistribution = useMemo(() => {
-    const statuses = ['confirmed', 'pending', 'completed', 'cancelled'];
+    const statuses = ['confirmed', 'pending', 'completed', 'cancelled'] as const;
     return statuses.map((s) => ({
-      name: s.charAt(0).toUpperCase() + s.slice(1),
+      key: s,
+      name: t(`bookings.${s}`),
       value: allBookings.filter((b) => b.status === s).length,
     })).filter((d) => d.value > 0);
-  }, [allBookings]);
+  }, [allBookings, t]);
 
   const monthlyData = useMemo(() => {
     const months: Record<string, number> = {};
@@ -133,7 +134,7 @@ export default function AdminDashboard() {
               <AnimatedSection delay={0.2}>
                 <Card className="h-full">
                   <CardHeader>
-                    <h2 className="text-lg font-semibold">Monthly Bookings</h2>
+                    <h2 className="text-lg font-semibold">{t('dashboard.monthlyBookings')}</h2>
                   </CardHeader>
                   <CardContent>
                     {monthlyData.length > 0 ? (
@@ -152,7 +153,7 @@ export default function AdminDashboard() {
                         </BarChart>
                       </ResponsiveContainer>
                     ) : (
-                      <p className="py-12 text-center text-sm text-muted-foreground">No booking data yet</p>
+                      <p className="py-12 text-center text-sm text-muted-foreground">{t('dashboard.noData')}</p>
                     )}
                   </CardContent>
                 </Card>
@@ -163,7 +164,7 @@ export default function AdminDashboard() {
               <AnimatedSection delay={0.3}>
                 <Card className="h-full">
                   <CardHeader>
-                    <h2 className="text-lg font-semibold">Status Distribution</h2>
+                    <h2 className="text-lg font-semibold">{t('dashboard.statusDistribution')}</h2>
                   </CardHeader>
                   <CardContent>
                     {statusDistribution.length > 0 ? (
@@ -187,7 +188,7 @@ export default function AdminDashboard() {
                         </ResponsiveContainer>
                         <div className="space-y-2">
                           {statusDistribution.map((d, i) => (
-                            <div key={d.name} className="flex items-center gap-2 text-sm">
+                            <div key={d.key} className="flex items-center gap-2 text-sm">
                               <div
                                 className="h-3 w-3 rounded-full"
                                 style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
@@ -199,7 +200,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     ) : (
-                      <p className="py-12 text-center text-sm text-muted-foreground">No booking data yet</p>
+                      <p className="py-12 text-center text-sm text-muted-foreground">{t('dashboard.noData')}</p>
                     )}
                   </CardContent>
                 </Card>
@@ -228,7 +229,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-center gap-3">
                           <Badge className={statusColors[b.status] || ''}>
-                            {b.status}
+                            {t(`bookings.${b.status}`)}
                           </Badge>
                           <span className="font-mono text-muted-foreground">${b.amount}</span>
                         </div>
@@ -238,7 +239,7 @@ export default function AdminDashboard() {
                       to="/admin/bookings"
                       className="mt-3 block text-center text-sm text-indigo-500 hover:underline"
                     >
-                      View all bookings
+                      {t('dashboard.viewAllBookings')}
                     </Link>
                   </div>
                 ) : (
