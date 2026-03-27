@@ -101,7 +101,11 @@
     "deleteFailed": "Failed to delete",
     "visible": "Visible",
     "hidden": "Hidden",
-    "noReviews": "No reviews yet."
+    "noReviews": "No reviews yet.",
+    "syncItalki": "Sync from italki",
+    "syncing": "Syncing...",
+    "syncSuccess": "Imported {{imported}} new reviews ({{skipped}} already synced)",
+    "syncFailed": "Failed to sync reviews"
   },
   "availability": {
     "title": "Manage Availability",

@@ -1,15 +1,37 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Loader2, Eye, EyeOff, Trash2, MessageSquare } from 'lucide-react';
+import { Star, Loader2, Eye, EyeOff, Trash2, MessageSquare, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
 import { useAdminReviews, toggleReviewVisibility, deleteReview } from '@/hooks/useReviews';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 
 export default function AdminReviews() {
   const { t } = useTranslation('admin');
   const { reviews, loading, refetch } = useAdminReviews();
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const fn = httpsCallable<{ teacherId: string }, { imported: number; skipped: number; total: number }>(
+        functions,
+        'syncItalkiReviews'
+      );
+      const result = await fn({ teacherId: '12945599' });
+      const { imported, skipped } = result.data;
+      toast.success(t('reviews.syncSuccess', { imported, skipped }));
+      refetch();
+    } catch {
+      toast.error(t('reviews.syncFailed'));
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleToggle = async (id: string, visible: boolean) => {
     try {
@@ -34,8 +56,16 @@ export default function AdminReviews() {
 
   return (
     <div>
-      <AnimatedSection>
-        <h1 className="mb-6 text-2xl font-bold">{t('reviews.title')}</h1>
+      <AnimatedSection className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t('reviews.title')}</h1>
+        <Button onClick={handleSync} disabled={syncing} variant="outline">
+          {syncing ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
+          {syncing ? t('reviews.syncing') : t('reviews.syncItalki')}
+        </Button>
       </AnimatedSection>
 
       {loading ? (
@@ -49,7 +79,7 @@ export default function AdminReviews() {
             <Card>
               <CardContent className="flex items-start justify-between gap-4 p-5">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <span className="font-semibold">{review.studentName}</span>
                     <div className="flex">
                       {Array.from({ length: review.rating }).map((_, i) => (
@@ -59,6 +89,11 @@ export default function AdminReviews() {
                     <Badge className={review.isVisible ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''} variant={review.isVisible ? 'default' : 'secondary'}>
                       {review.isVisible ? t('reviews.visible') : t('reviews.hidden')}
                     </Badge>
+                    {review.source === 'italki' && (
+                      <Badge variant="outline" className="border-orange-200 bg-orange-50 text-orange-600">
+                        italki
+                      </Badge>
+                    )}
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground italic">
                     &ldquo;{review.content}&rdquo;

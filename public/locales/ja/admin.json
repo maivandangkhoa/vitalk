@@ -101,7 +101,11 @@
     "deleteFailed": "削除に失敗しました",
     "visible": "表示中",
     "hidden": "非表示",
-    "noReviews": "まだレビューがありません。"
+    "noReviews": "まだレビューがありません。",
+    "syncItalki": "italkiから同期",
+    "syncing": "同期中...",
+    "syncSuccess": "{{imported}}件の新しいレビューをインポート（{{skipped}}件は同期済み）",
+    "syncFailed": "レビューの同期に失敗しました"
   },
   "availability": {
     "title": "空き時間管理",

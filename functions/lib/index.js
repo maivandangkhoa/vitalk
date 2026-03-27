@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scrapeNaverBlog = exports.translateBlogPost = exports.sendLessonReminders = exports.onBookingUpdated = exports.onBookingCreated = exports.setUserRole = exports.confirmTossPayment = exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
+exports.syncItalkiReviews = exports.scrapeNaverBlog = exports.translateBlogPost = exports.sendLessonReminders = exports.onBookingUpdated = exports.onBookingCreated = exports.setUserRole = exports.confirmTossPayment = exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
 const admin = __importStar(require("firebase-admin"));
 admin.initializeApp();
 // Payment functions
@@ -58,4 +58,7 @@ Object.defineProperty(exports, "translateBlogPost", { enumerable: true, get: fun
 // Naver blog import
 var scrapeNaver_1 = require("./scrapeNaver");
 Object.defineProperty(exports, "scrapeNaverBlog", { enumerable: true, get: function () { return scrapeNaver_1.scrapeNaverBlog; } });
+// italki review sync
+var syncItalki_1 = require("./syncItalki");
+Object.defineProperty(exports, "syncItalkiReviews", { enumerable: true, get: function () { return syncItalki_1.syncItalkiReviews; } });
 //# sourceMappingURL=index.js.map

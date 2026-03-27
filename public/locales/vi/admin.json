@@ -101,7 +101,11 @@
     "deleteFailed": "Xóa thất bại",
     "visible": "Hiển thị",
     "hidden": "Ẩn",
-    "noReviews": "Chưa có đánh giá nào."
+    "noReviews": "Chưa có đánh giá nào.",
+    "syncItalki": "Đồng bộ từ italki",
+    "syncing": "Đang đồng bộ...",
+    "syncSuccess": "Đã nhập {{imported}} đánh giá mới ({{skipped}} đã đồng bộ)",
+    "syncFailed": "Đồng bộ đánh giá thất bại"
   },
   "availability": {
     "title": "Quản lý lịch rảnh",

@@ -12,4 +12,6 @@ export interface Review {
   bookingId?: string;
   isVisible: boolean;
   createdAt: Date;
+  source?: 'italki' | 'user';
+  externalId?: string;
 }

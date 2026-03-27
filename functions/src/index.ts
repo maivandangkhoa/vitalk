@@ -20,3 +20,6 @@ export { translateBlogPost } from "./translateBlog";
 
 // Naver blog import
 export { scrapeNaverBlog } from "./scrapeNaver";
+
+// italki review sync
+export { syncItalkiReviews } from "./syncItalki";

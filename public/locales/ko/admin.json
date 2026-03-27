@@ -101,7 +101,11 @@
     "deleteFailed": "삭제에 실패했습니다",
     "visible": "표시",
     "hidden": "숨김",
-    "noReviews": "아직 후기가 없습니다."
+    "noReviews": "아직 후기가 없습니다.",
+    "syncItalki": "italki에서 동기화",
+    "syncing": "동기화 중...",
+    "syncSuccess": "{{imported}}개 새 후기 가져옴 ({{skipped}}개 이미 동기화됨)",
+    "syncFailed": "후기 동기화에 실패했습니다"
   },
   "availability": {
     "title": "가능 시간 관리",
