@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Loader2,
   CheckCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAvailableSlots } from '@/hooks/useAvailability';
@@ -24,6 +25,7 @@ import { useUserTimezone } from '@/hooks/useTimezone';
 import { useCurrencySettings } from '@/hooks/useCurrency';
 import { convertSlotToUserTz } from '@/lib/timezone';
 import { AnimatedSection } from '@/components/shared/motion';
+import { useLocations } from '@/hooks/useLocations';
 import type { OnlinePlatform, PaymentMethod } from '@/types';
 import { toast } from 'sonner';
 
@@ -69,6 +71,7 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [lessonFormat, setLessonFormat] = useState<'online' | 'offline'>('online');
   const [platform, setPlatform] = useState('zoom');
+  const [selectedLocationId, setSelectedLocationId] = useState('');
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paypal');
   const [bookingComplete, setBookingComplete] = useState(false);
@@ -79,6 +82,7 @@ export default function BookingPage() {
   const { slots: availableSlots, loading: slotsLoading } = useAvailableSlots(yearMonth);
   const { createBooking, loading: bookingLoading } = useCreateBooking();
   const { userTz, userTzLabel, teacherTzLabel, isSameAsTeacher } = useUserTimezone();
+  const { locations: offlineLocations } = useLocations();
 
   // Handle Toss payment redirect
   const tossRedirect = searchParams.get('toss');
@@ -110,12 +114,13 @@ export default function BookingPage() {
 
   const selectedLessonData = LESSON_OPTIONS.find((o) => o.id === selectedLesson);
   const selectedSlot = daySlots.find((s) => s.startTime === selectedTime);
+  const selectedLocationData = offlineLocations.find((l) => l.id === selectedLocationId);
 
   const canProceed = () => {
     switch (step) {
       case 'lessonType': return !!selectedLesson;
       case 'dateTime': return !!selectedDate && !!selectedTime && !!selectedSlot;
-      case 'details': return true;
+      case 'details': return lessonFormat === 'online' || !!selectedLocationId;
       case 'payment': return true;
     }
   };
@@ -141,7 +146,9 @@ export default function BookingPage() {
         endTime: selectedSlot.endTime,
         format: lessonFormat,
         platform: lessonFormat === 'online' ? PLATFORM_MAP[platform] : null,
-        offlineLocation: null,
+        offlineLocation: lessonFormat === 'offline' && selectedLocationData
+          ? { name: selectedLocationData.name, address: selectedLocationData.address }
+          : null,
         paymentMethod,
         notes,
         amount: selectedLessonData.price,
@@ -177,6 +184,7 @@ export default function BookingPage() {
     setSelectedLesson('');
     setSelectedDate(undefined);
     setSelectedTime('');
+    setSelectedLocationId('');
     setNotes('');
   };
 
@@ -391,12 +399,61 @@ export default function BookingPage() {
 
             {lessonFormat === 'offline' && (
               <div>
-                <p className="mb-2 text-sm font-medium">{t('format.selectLocation')}</p>
-                <Card className="border-dashed">
-                  <CardContent className="py-4 text-center text-sm text-muted-foreground">
-                    Locations will be available after admin setup
-                  </CardContent>
-                </Card>
+                <p className="mb-3 text-sm font-medium">{t('format.selectLocation')}</p>
+                {offlineLocations.length > 0 ? (
+                  <div className="space-y-3">
+                    {offlineLocations.map((loc) => (
+                      <Button
+                        key={loc.id}
+                        variant={selectedLocationId === loc.id ? 'default' : 'outline'}
+                        className="h-auto w-full justify-start rounded-xl px-5 py-4 text-left"
+                        onClick={() => setSelectedLocationId(loc.id)}
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 shrink-0" />
+                            <span className="font-medium">{loc.name}</span>
+                          </div>
+                          <span className={`ml-6 text-xs ${selectedLocationId === loc.id ? 'text-white/70' : 'text-muted-foreground'}`}>
+                            {loc.address}
+                          </span>
+                          <div className="ml-6 mt-1 flex gap-3">
+                            {loc.googleMapsUrl && (
+                              <a
+                                href={loc.googleMapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className={`flex items-center gap-1 text-xs font-medium ${selectedLocationId === loc.id ? 'text-white/80 hover:text-white' : 'text-indigo-500 hover:underline'}`}
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                {t('format.viewOnGoogleMaps')}
+                              </a>
+                            )}
+                            {loc.naverMapUrl && (
+                              <a
+                                href={loc.naverMapUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className={`flex items-center gap-1 text-xs font-medium ${selectedLocationId === loc.id ? 'text-white/80 hover:text-white' : 'text-emerald-600 hover:underline'}`}
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                {t('format.viewOnNaverMap')}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="border-dashed">
+                    <CardContent className="py-4 text-center text-sm text-muted-foreground">
+                      {t('format.noLocations')}
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
@@ -442,7 +499,13 @@ export default function BookingPage() {
                 </div>
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.format')}</span>
-                  <span>{lessonFormat === 'online' ? `${t('format.online')} (${t(`format.${platform}`)})` : t('format.offline')}</span>
+                  <span>
+                    {lessonFormat === 'online'
+                      ? `${t('format.online')} (${t(`format.${platform}`)})`
+                      : selectedLocationData
+                        ? `${t('format.offline')} — ${selectedLocationData.name}`
+                        : t('format.offline')}
+                  </span>
                 </div>
                 <div className="mt-4 flex justify-between border-t pt-4 font-semibold">
                   <span>{t('payment.total')}</span>

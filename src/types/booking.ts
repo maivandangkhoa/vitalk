@@ -19,9 +19,22 @@ export interface MonthlyAvailability {
   updatedAt: Date;
 }
 
+/** Stored on booking documents — minimal location info */
 export interface OfflineLocation {
   name: string;
   address: string;
+}
+
+/** Full location document from the 'locations' collection */
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  googleMapsUrl: string;
+  naverMapUrl: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
 }
 
 export interface Booking {

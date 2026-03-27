@@ -21,6 +21,7 @@
     "profile": "프로필",
     "users": "사용자",
     "lessons": "수업 관리",
+    "locations": "장소",
     "settings": "설정",
     "backToSite": "사이트로 돌아가기"
   },
@@ -152,6 +153,23 @@
     "actionSuccess": "처리 완료",
     "actionFailed": "처리 실패",
     "noBookings": "예약이 없습니다"
+  },
+  "locations": {
+    "title": "장소 관리",
+    "addLocation": "장소 추가",
+    "editLocation": "장소 수정",
+    "name": "장소 이름",
+    "address": "주소",
+    "googleMapsUrl": "Google Maps URL",
+    "naverMapUrl": "네이버 지도 URL",
+    "active": "활성",
+    "inactive": "비활성",
+    "saved": "장소가 저장되었습니다!",
+    "saveFailed": "저장에 실패했습니다",
+    "deleteConfirm": "이 장소를 삭제하시겠습니까?",
+    "deleted": "장소가 삭제되었습니다",
+    "deleteFailed": "삭제에 실패했습니다",
+    "noLocations": "아직 장소가 없습니다. 첫 번째 장소를 추가하세요!"
   },
   "blog": {
     "title": "블로그 관리",

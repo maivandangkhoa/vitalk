@@ -20,7 +20,10 @@
     "selectLocation": "Choose location",
     "zoom": "Zoom",
     "googleMeet": "Google Meet",
-    "teams": "Microsoft Teams"
+    "teams": "Microsoft Teams",
+    "noLocations": "No locations available. Contact the teacher.",
+    "viewOnGoogleMaps": "Google Maps",
+    "viewOnNaverMap": "Naver Map"
   },
   "notes": {
     "label": "Notes for teacher",

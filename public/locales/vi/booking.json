@@ -20,7 +20,10 @@
     "selectLocation": "Chọn địa điểm",
     "zoom": "Zoom",
     "googleMeet": "Google Meet",
-    "teams": "Microsoft Teams"
+    "teams": "Microsoft Teams",
+    "noLocations": "Chưa có địa điểm. Vui lòng liên hệ giáo viên.",
+    "viewOnGoogleMaps": "Google Maps",
+    "viewOnNaverMap": "Naver Map"
   },
   "notes": {
     "label": "Ghi chú cho giáo viên",

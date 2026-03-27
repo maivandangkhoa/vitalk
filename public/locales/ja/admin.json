@@ -21,6 +21,7 @@
     "profile": "プロフィール",
     "users": "ユーザー",
     "lessons": "レッスン管理",
+    "locations": "場所",
     "settings": "設定",
     "backToSite": "サイトに戻る"
   },
@@ -152,6 +153,23 @@
     "actionSuccess": "処理完了",
     "actionFailed": "処理に失敗しました",
     "noBookings": "予約はありません"
+  },
+  "locations": {
+    "title": "場所管理",
+    "addLocation": "場所を追加",
+    "editLocation": "場所を編集",
+    "name": "場所名",
+    "address": "住所",
+    "googleMapsUrl": "Google Maps URL",
+    "naverMapUrl": "Naver Map URL",
+    "active": "アクティブ",
+    "inactive": "非アクティブ",
+    "saved": "場所を保存しました！",
+    "saveFailed": "保存に失敗しました",
+    "deleteConfirm": "この場所を削除しますか？",
+    "deleted": "場所を削除しました",
+    "deleteFailed": "削除に失敗しました",
+    "noLocations": "まだ場所がありません。最初の場所を追加しましょう！"
   },
   "blog": {
     "title": "ブログ管理",

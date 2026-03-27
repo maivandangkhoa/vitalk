@@ -20,7 +20,10 @@
     "selectLocation": "장소 선택",
     "zoom": "Zoom",
     "googleMeet": "Google Meet",
-    "teams": "Microsoft Teams"
+    "teams": "Microsoft Teams",
+    "noLocations": "이용 가능한 장소가 없습니다. 선생님에게 문의하세요.",
+    "viewOnGoogleMaps": "Google Maps",
+    "viewOnNaverMap": "네이버 지도"
   },
   "notes": {
     "label": "선생님에게 메모",

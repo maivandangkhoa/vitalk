@@ -27,6 +27,7 @@ const AdminReviews = lazy(() => import('@/pages/admin/AdminReviews'));
 const AdminProfile = lazy(() => import('@/pages/admin/AdminProfile'));
 const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'));
 const AdminLessons = lazy(() => import('@/pages/admin/AdminLessons'));
+const AdminLocations = lazy(() => import('@/pages/admin/AdminLocations'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
@@ -126,6 +127,10 @@ export const router = createBrowserRouter([
       {
         path: 'lessons',
         element: <SuspenseWrapper><AdminLessons /></SuspenseWrapper>,
+      },
+      {
+        path: 'locations',
+        element: <SuspenseWrapper><AdminLocations /></SuspenseWrapper>,
       },
       {
         path: 'settings',

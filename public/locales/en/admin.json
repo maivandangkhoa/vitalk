@@ -21,6 +21,7 @@
     "profile": "Profile",
     "users": "Users",
     "lessons": "Lessons",
+    "locations": "Locations",
     "settings": "Settings",
     "backToSite": "Back to site"
   },
@@ -152,6 +153,23 @@
     "actionSuccess": "Action completed",
     "actionFailed": "Action failed",
     "noBookings": "No bookings found"
+  },
+  "locations": {
+    "title": "Manage Locations",
+    "addLocation": "Add Location",
+    "editLocation": "Edit Location",
+    "name": "Location Name",
+    "address": "Address",
+    "googleMapsUrl": "Google Maps URL",
+    "naverMapUrl": "Naver Map URL",
+    "active": "Active",
+    "inactive": "Inactive",
+    "saved": "Location saved!",
+    "saveFailed": "Failed to save",
+    "deleteConfirm": "Delete this location?",
+    "deleted": "Location deleted",
+    "deleteFailed": "Failed to delete",
+    "noLocations": "No locations yet. Add your first location!"
   },
   "blog": {
     "title": "Manage Blog Posts",

@@ -20,7 +20,10 @@
     "selectLocation": "場所を選択",
     "zoom": "Zoom",
     "googleMeet": "Google Meet",
-    "teams": "Microsoft Teams"
+    "teams": "Microsoft Teams",
+    "noLocations": "利用可能な場所がありません。講師にお問い合わせください。",
+    "viewOnGoogleMaps": "Google Maps",
+    "viewOnNaverMap": "Naver Map"
   },
   "notes": {
     "label": "講師へのメモ",

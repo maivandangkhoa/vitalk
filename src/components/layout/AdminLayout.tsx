@@ -9,6 +9,7 @@ import {
   User,
   Users,
   GraduationCap,
+  MapPin,
   Settings,
   ArrowLeft,
   Menu,
@@ -27,6 +28,7 @@ const ADMIN_NAV = [
   { key: 'profile', path: '/admin/profile', icon: User, color: 'bg-rose-50 text-rose-500' },
   { key: 'users', path: '/admin/users', icon: Users, color: 'bg-orange-50 text-orange-500' },
   { key: 'lessons', path: '/admin/lessons', icon: GraduationCap, color: 'bg-teal-50 text-teal-500' },
+  { key: 'locations', path: '/admin/locations', icon: MapPin, color: 'bg-cyan-50 text-cyan-500' },
   { key: 'settings', path: '/admin/settings', icon: Settings, color: 'bg-zinc-100 text-zinc-500' },
 ] as const;
 

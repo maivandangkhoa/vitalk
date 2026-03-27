@@ -21,6 +21,7 @@
     "profile": "Hồ sơ",
     "users": "Người dùng",
     "lessons": "Quản lý lớp học",
+    "locations": "Địa điểm",
     "settings": "Cài đặt",
     "backToSite": "Quay lại trang chính"
   },
@@ -152,6 +153,23 @@
     "actionSuccess": "Thao tác thành công",
     "actionFailed": "Thao tác thất bại",
     "noBookings": "Không có đặt lịch nào"
+  },
+  "locations": {
+    "title": "Quản lý địa điểm",
+    "addLocation": "Thêm địa điểm",
+    "editLocation": "Sửa địa điểm",
+    "name": "Tên địa điểm",
+    "address": "Địa chỉ",
+    "googleMapsUrl": "URL Google Maps",
+    "naverMapUrl": "URL Naver Map",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động",
+    "saved": "Đã lưu địa điểm!",
+    "saveFailed": "Lưu thất bại",
+    "deleteConfirm": "Xóa địa điểm này?",
+    "deleted": "Địa điểm đã được xóa",
+    "deleteFailed": "Xóa thất bại",
+    "noLocations": "Chưa có địa điểm nào. Thêm địa điểm đầu tiên!"
   },
   "blog": {
     "title": "Quản lý Blog",

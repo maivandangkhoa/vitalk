@@ -72,6 +72,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Locations - public read, admin write
+    match /locations/{locationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Site Config - public read, admin write
     match /siteConfig/{docId} {
       allow read: if true;
