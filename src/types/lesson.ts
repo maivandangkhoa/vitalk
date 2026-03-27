@@ -8,6 +8,7 @@ export interface LessonType {
   description: MultiLangText;
   duration: number;
   price: number;
+  prices?: Record<string, number>;
   currency: string;
   features: MultiLangText[];
   level: LessonLevel;

@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Clock, DollarSign } from 'lucide-react';
+import { Check, Clock } from 'lucide-react';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
+import { useCurrencySettings } from '@/hooks/useCurrency';
 
 const LESSON_LEVELS = ['beginner', 'intermediate', 'conversation'] as const;
 
@@ -17,6 +18,7 @@ const LEVEL_COLORS: Record<string, string> = {
 export default function LessonsPage() {
   const { t } = useTranslation('lessons');
   const { t: tc } = useTranslation('common');
+  const { formatLesson } = useCurrencySettings();
 
   return (
     <div className="px-4 py-16 md:py-24">
@@ -47,9 +49,8 @@ export default function LessonsPage() {
                         <Clock className="h-4 w-4" />
                         {t('duration', { minutes: 50 })}
                       </span>
-                      <span className="flex items-center gap-1.5">
-                        <DollarSign className="h-4 w-4" />
-                        <span className="font-mono">$14</span> {tc('common.perLesson')}
+                      <span className="font-mono">
+                        {formatLesson({ price: 14 })} {tc('common.perLesson')}
                       </span>
                     </div>
                     <ul className="space-y-3.5">

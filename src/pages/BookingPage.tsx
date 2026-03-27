@@ -8,7 +8,6 @@ import { Calendar } from '@/components/ui/calendar';
 import {
   Check,
   Clock,
-  DollarSign,
   Monitor,
   MapPin,
   CreditCard,
@@ -22,6 +21,7 @@ import { useAvailableSlots } from '@/hooks/useAvailability';
 import { useCreateBooking } from '@/hooks/useBookings';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
+import { useCurrencySettings } from '@/hooks/useCurrency';
 import { convertSlotToUserTz } from '@/lib/timezone';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { OnlinePlatform, PaymentMethod } from '@/types';
@@ -57,6 +57,7 @@ export default function BookingPage() {
   const { t, i18n } = useTranslation('booking');
   const { t: tl } = useTranslation('lessons');
   const { t: tc } = useTranslation('common');
+  const { formatLesson, format: formatCurrency } = useCurrencySettings();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [searchParams] = useSearchParams();
@@ -78,6 +79,7 @@ export default function BookingPage() {
   const { slots: availableSlots, loading: slotsLoading } = useAvailableSlots(yearMonth);
   const { createBooking, loading: bookingLoading } = useCreateBooking();
   const { userTz, userTzLabel, teacherTzLabel, isSameAsTeacher } = useUserTimezone();
+  const { formatLesson } = useCurrencySettings();
 
   // Handle Toss payment redirect
   const tossRedirect = searchParams.get('toss');
@@ -265,8 +267,7 @@ export default function BookingPage() {
                         {opt.duration}{tc('common.minutes')}
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <DollarSign className="h-3.5 w-3.5" />
-                        <span className="font-mono">${opt.price}</span>
+                        <span className="font-mono">{formatLesson({ price: opt.price })}</span>
                       </span>
                     </div>
                   </CardContent>
@@ -448,7 +449,7 @@ export default function BookingPage() {
                 </div>
                 <div className="mt-4 flex justify-between border-t pt-4 font-semibold">
                   <span>{t('payment.total')}</span>
-                  <span className="font-mono">${selectedLessonData?.price}.00 USD</span>
+                  <span className="font-mono">{formatLesson({ price: selectedLessonData?.price ?? 14 })}</span>
                 </div>
               </CardContent>
             </Card>

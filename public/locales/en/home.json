@@ -6,7 +6,7 @@
     "cta": "Book Your First Lesson",
     "trialNote": "Start your Vietnamese journey today",
     "reviewCount": "362+ reviews",
-    "pricePerLesson": "$14 / lesson"
+    "pricePerLesson": "{{price}} / lesson"
   },
   "highlights": {
     "title": "Why Learn With Me?",

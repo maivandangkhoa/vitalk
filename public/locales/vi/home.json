@@ -6,7 +6,7 @@
     "cta": "Đặt buổi học đầu tiên",
     "trialNote": "Bắt đầu hành trình tiếng Việt ngay hôm nay",
     "reviewCount": "362+ đánh giá",
-    "pricePerLesson": "$14 / buổi"
+    "pricePerLesson": "{{price}} / buổi"
   },
   "highlights": {
     "title": "Tại sao nên học cùng tôi?",

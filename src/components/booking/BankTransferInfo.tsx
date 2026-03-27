@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { formatPrice, type SupportedCurrency } from '@/lib/currency';
 
 interface BankTransferInfoProps {
   bookingId: string;
@@ -67,7 +68,7 @@ export default function BankTransferInfo({
 
           <div className="flex items-center justify-between border-t pt-3">
             <span className="font-medium">{t('payment.total')}</span>
-            <span className="font-mono text-lg font-bold">${amount} {currency}</span>
+            <span className="font-mono text-lg font-bold">{formatPrice(amount, (currency || 'USD') as SupportedCurrency)}</span>
           </div>
         </CardContent>
       </Card>

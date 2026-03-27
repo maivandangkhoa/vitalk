@@ -6,7 +6,7 @@
     "cta": "첫 수업 예약하기",
     "trialNote": "오늘 베트남어 여정을 시작하세요",
     "reviewCount": "362+ 리뷰",
-    "pricePerLesson": "$14 / 수업"
+    "pricePerLesson": "{{price}} / 수업"
   },
   "highlights": {
     "title": "왜 저와 함께 배워야 할까요?",

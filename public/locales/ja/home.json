@@ -6,7 +6,7 @@
     "cta": "初回レッスンを予約",
     "trialNote": "今日からベトナム語の旅を始めましょう",
     "reviewCount": "362件以上のレビュー",
-    "pricePerLesson": "¥2,100 / レッスン"
+    "pricePerLesson": "{{price}} / レッスン"
   },
   "highlights": {
     "title": "なぜ私と学ぶべき？",

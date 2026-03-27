@@ -22,6 +22,7 @@ import { convertSlotToUserTz } from '@/lib/timezone';
 import { statusColors } from '@/lib/utils';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { ReviewDialog } from '@/components/reviews/ReviewDialog';
+import { formatPrice, type SupportedCurrency } from '@/lib/currency';
 import type { Booking } from '@/types';
 
 function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Booking; isReviewed: boolean; onReviewSubmitted: () => void }) {
@@ -90,7 +91,7 @@ function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Book
           </div>
 
           <div className="text-right text-sm">
-            <p className="font-mono font-semibold">${booking.amount} {booking.currency}</p>
+            <p className="font-mono font-semibold">{formatPrice(booking.amount, (booking.currency || 'USD') as SupportedCurrency)}</p>
             {booking.meetingLink && booking.status === 'confirmed' && (
               <a
                 href={booking.meetingLink}

@@ -2,6 +2,7 @@ import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { usePaypalPayment } from '@/hooks/usePayment';
+import { formatPrice, type SupportedCurrency } from '@/lib/currency';
 
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || '';
 
@@ -82,7 +83,7 @@ export default function PaypalCheckout({
     >
       <div className="min-h-[120px]">
         <p className="mb-3 text-sm text-muted-foreground">
-          Pay <span className="font-mono">${amount}</span> {currency} with PayPal
+          {formatPrice(amount, (currency || 'USD') as SupportedCurrency)} — PayPal
         </p>
         <PaypalButtonWrapper
           bookingId={bookingId}

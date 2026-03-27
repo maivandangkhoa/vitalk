@@ -14,6 +14,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
+import { useCurrencySettings } from '@/hooks/useCurrency';
 
 const REVIEWS_PREVIEW = [
   {
@@ -47,6 +48,7 @@ const HIGHLIGHT_STYLES = [
 
 export default function HomePage() {
   const { t } = useTranslation('home');
+  const { formatLesson } = useCurrencySettings();
 
   return (
     <div>
@@ -83,7 +85,7 @@ export default function HomePage() {
               <span className="ml-1 font-mono font-medium">5.0</span>
             </div>
             <span>{t('hero.reviewCount')}</span>
-            <span className="font-mono">{t('hero.pricePerLesson')}</span>
+            <span className="font-mono">{t('hero.pricePerLesson', { price: formatLesson({ price: 14 }) })}</span>
           </div>
         </AnimatedSection>
       </section>

@@ -27,6 +27,7 @@ import {
 import { statusColors, paymentStatusColors } from '@/lib/utils';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import type { Booking, BookingStatus } from '@/types';
+import { formatPrice, type SupportedCurrency } from '@/lib/currency';
 
 const STATUSES = ['all', 'pending', 'confirmed', 'completed', 'cancelled'] as const;
 
@@ -109,7 +110,7 @@ function AdminBookingCard({
             )}
 
             <div className="mt-2 text-sm font-medium">
-              <span className="font-mono">${booking.amount}</span> {booking.currency} · {booking.paymentMethod.replace('_', ' ')}
+              <span className="font-mono">{formatPrice(booking.amount, (booking.currency || 'USD') as SupportedCurrency)}</span> · {booking.paymentMethod.replace('_', ' ')}
             </div>
 
             {booking.meetingLink && (

@@ -4,6 +4,8 @@ import { Loader2, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { useTossPayment } from '@/hooks/usePayment';
+import { useCurrencySettings } from '@/hooks/useCurrency';
+import { formatPrice } from '@/lib/currency';
 
 const TOSS_CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY || '';
 const TOSS_SDK_URL = 'https://js.tosspayments.com/v2/standard';
@@ -17,9 +19,6 @@ interface TossCheckoutProps {
   onSuccess: () => void;
   onError: (error: string) => void;
 }
-
-// KRW amount (approximate conversion from USD)
-const USD_TO_KRW_RATE = 1350;
 
 export default function TossCheckout({
   bookingId,
@@ -35,8 +34,10 @@ export default function TossCheckout({
   const tossPaymentsRef = useRef<unknown>(null);
   const { confirmPayment } = useTossPayment();
   const { t } = useTranslation('common');
+  const { config } = useCurrencySettings();
 
-  const krwAmount = Math.round(amount * USD_TO_KRW_RATE);
+  const krwRate = config.exchangeRates['KRW'] ?? 1350;
+  const krwAmount = Math.round(amount * krwRate);
 
   // Load Toss SDK
   useEffect(() => {
@@ -92,7 +93,6 @@ export default function TossCheckout({
     try {
       const orderId = `vitalk_${bookingId}_${Date.now()}`;
 
-      // This opens Toss payment popup/redirect
       const result = await tp.requestPayment('CARD', {
         amount: krwAmount,
         orderId,
@@ -103,7 +103,6 @@ export default function TossCheckout({
         failUrl: `${window.location.origin}/book?toss=fail&bookingId=${bookingId}`,
       });
 
-      // If we get here (popup mode), confirm server-side
       if (result) {
         await confirmPayment({
           paymentKey: result.paymentKey,
@@ -126,7 +125,7 @@ export default function TossCheckout({
   return (
     <div>
       <p className="mb-2 text-sm text-muted-foreground">
-        Pay <span className="font-mono">₩{krwAmount.toLocaleString()}</span> KRW (≈ <span className="font-mono">${amount}</span> USD) with Toss
+        {formatPrice(krwAmount, 'KRW')} ({formatPrice(amount, 'USD')})
       </p>
       <p className="mb-3 text-xs text-muted-foreground">
         {t('payment.tossHelperText')}
@@ -141,7 +140,7 @@ export default function TossCheckout({
         ) : (
           <CreditCard className="mr-2 h-4 w-4" />
         )}
-        {paying ? t('payment.processing') : `Pay with Toss ₩${krwAmount.toLocaleString()}`}
+        {paying ? t('payment.processing') : `Toss ${formatPrice(krwAmount, 'KRW')}`}
       </Button>
     </div>
   );

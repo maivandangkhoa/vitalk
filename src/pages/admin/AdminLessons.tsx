@@ -11,6 +11,7 @@ import {
   doc,
   setDoc,
   deleteDoc,
+  getDoc,
   getDocs,
   serverTimestamp,
   orderBy,
@@ -18,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Language } from '@/types';
+import { CURRENCIES, CURRENCY_SYMBOLS, DEFAULT_CURRENCY_CONFIG, type CurrencyConfig, type SupportedCurrency } from '@/lib/currency';
 
 const LANGS: Language[] = ['en', 'vi', 'ko', 'ja'];
 const LANG_LABELS: Record<Language, string> = { en: 'EN', vi: 'VI', ko: 'KO', ja: 'JA' };
@@ -28,6 +30,7 @@ interface LessonType {
   description: Record<Language, string>;
   duration: number;
   price: number;
+  prices: Record<string, number>;
   currency: string;
   level: string;
   isActive: boolean;
@@ -41,14 +44,26 @@ export default function AdminLessons() {
   const [lessons, setLessons] = useState<LessonType[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [currencyConfig, setCurrencyConfig] = useState<CurrencyConfig>(DEFAULT_CURRENCY_CONFIG);
 
   const fetchLessons = useCallback(async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(
-        query(collection(db, 'lessonTypes'), orderBy('sortOrder', 'asc'))
-      );
-      setLessons(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LessonType));
+      const [lessonSnap, configSnap] = await Promise.all([
+        getDocs(query(collection(db, 'lessonTypes'), orderBy('sortOrder', 'asc'))),
+        getDoc(doc(db, 'siteConfig', 'general')),
+      ]);
+      if (configSnap.exists() && configSnap.data().currency) {
+        setCurrencyConfig({ ...DEFAULT_CURRENCY_CONFIG, ...configSnap.data().currency });
+      }
+      setLessons(lessonSnap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          prices: data.prices ?? { USD: data.price ?? 14 },
+        } as LessonType;
+      }));
     } finally {
       setLoading(false);
     }
@@ -57,6 +72,15 @@ export default function AdminLessons() {
   useEffect(() => {
     fetchLessons();
   }, [fetchLessons]);
+
+  const calcPricesFromUsd = (usdPrice: number) => {
+    const prices: Record<string, number> = { USD: usdPrice };
+    for (const cur of CURRENCIES) {
+      if (cur === 'USD') continue;
+      prices[cur] = Math.round(usdPrice * (currencyConfig.exchangeRates[cur] ?? 1));
+    }
+    return prices;
+  };
 
   const addLesson = () => {
     const newId = `lesson_${Date.now()}`;
@@ -68,6 +92,7 @@ export default function AdminLessons() {
         description: { ...EMPTY_LANG },
         duration: 50,
         price: 14,
+        prices: calcPricesFromUsd(14),
         currency: 'USD',
         level: 'beginner',
         isActive: true,
@@ -106,7 +131,8 @@ export default function AdminLessons() {
           title: lesson.title,
           description: lesson.description,
           duration: lesson.duration,
-          price: lesson.price,
+          price: lesson.prices?.USD ?? lesson.price,
+          prices: lesson.prices,
           currency: lesson.currency,
           level: lesson.level,
           isActive: lesson.isActive,
@@ -202,12 +228,32 @@ export default function AdminLessons() {
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium">{t('lessons.priceUsd')}</label>
-                  <input
-                    type="number"
-                    value={lesson.price}
-                    onChange={(e) => updateLesson(lesson.id, 'price', Number(e.target.value))}
-                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                  />
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {CURRENCIES.map((cur) => (
+                      <div key={cur} className="relative">
+                        <span className="absolute left-2 top-2 text-xs text-muted-foreground">{CURRENCY_SYMBOLS[cur]}</span>
+                        <input
+                          type="number"
+                          value={lesson.prices?.[cur] ?? ''}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            const newPrices = { ...lesson.prices, [cur]: val };
+                            if (cur === 'USD') {
+                              // Auto-fill other currencies from USD
+                              for (const c of CURRENCIES) {
+                                if (c === 'USD') continue;
+                                newPrices[c] = Math.round(val * (currencyConfig.exchangeRates[c] ?? 1));
+                              }
+                              updateLesson(lesson.id, 'price', val);
+                            }
+                            updateLesson(lesson.id, 'prices', newPrices);
+                          }}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 pl-6 text-sm"
+                          placeholder={cur}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
