@@ -185,9 +185,9 @@ export default function BookingPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
         <AnimatedSection>
-          <Card className="w-full max-w-md text-center">
-            <CardContent className="pt-8">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50">
+          <Card className="w-full max-w-lg text-center">
+            <CardContent className="px-8 py-10">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50">
                 <CheckCircle className="h-8 w-8 text-emerald-500" />
               </div>
               <h2 className="text-2xl font-bold">{t('confirmation.title')}</h2>
@@ -195,11 +195,11 @@ export default function BookingPage() {
               {paymentMethod === 'bank_transfer' && (
                 <p className="mt-2 text-sm text-amber-600">{t('confirmation.pendingPayment')}</p>
               )}
-              <div className="mt-6 flex flex-col gap-2">
-                <Button onClick={() => navigate('/my-bookings')}>
+              <div className="mt-8 flex flex-col gap-3">
+                <Button className="h-12" onClick={() => navigate('/my-bookings')}>
                   {t('confirmation.viewBookings')}
                 </Button>
-                <Button variant="outline" onClick={resetBooking}>
+                <Button className="h-12" variant="outline" onClick={resetBooking}>
                   {t('confirmation.bookAnother')}
                 </Button>
               </div>
@@ -246,9 +246,9 @@ export default function BookingPage() {
 
         {/* Step 1: Lesson Type */}
         {step === 'lessonType' && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <p className="text-center text-muted-foreground">{t('selectLesson')}</p>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3">
               {LESSON_OPTIONS.map((opt) => (
                 <Card
                   key={opt.id}
@@ -257,10 +257,10 @@ export default function BookingPage() {
                   }`}
                   onClick={() => setSelectedLesson(opt.id)}
                 >
-                  <CardContent className="pt-6">
+                  <CardContent className="p-8">
                     <Badge className={`mb-3 ${LEVEL_COLORS[opt.level]}`}>{opt.level}</Badge>
                     <h3 className="font-semibold">{tl(`${opt.level}.name`)}</h3>
-                    <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" />
                         {opt.duration}{tc('common.minutes')}
@@ -281,7 +281,7 @@ export default function BookingPage() {
           <div className="space-y-6">
             <p className="text-center text-muted-foreground">{t('selectDate')}</p>
             <div className="flex flex-col items-center gap-8 md:flex-row md:items-start md:justify-center">
-              <Card className="p-2">
+              <Card className="p-4">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
@@ -305,7 +305,7 @@ export default function BookingPage() {
                   </div>
                 ) : selectedDate ? (
                   daySlots.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       {daySlots.map((slot, index) => {
                         const display = convertedDaySlots?.[index];
                         const displayStart = display?.startTime ?? slot.startTime;
@@ -314,8 +314,7 @@ export default function BookingPage() {
                           <Button
                             key={slot.startTime}
                             variant={selectedTime === slot.startTime ? 'default' : 'outline'}
-                            size="sm"
-                            className="rounded-xl"
+                            className="h-12 rounded-xl"
                             onClick={() => setSelectedTime(slot.startTime)}
                           >
                             <span className="font-mono text-xs">{displayStart} - {displayEnd}</span>
@@ -341,10 +340,10 @@ export default function BookingPage() {
 
         {/* Step 3: Details */}
         {step === 'details' && (
-          <div className="mx-auto max-w-md space-y-6">
+          <div className="mx-auto max-w-lg space-y-8">
             <div>
-              <p className="mb-3 font-medium">{t('format.title')}</p>
-              <div className="grid grid-cols-2 gap-3">
+              <p className="mb-4 font-medium">{t('format.title')}</p>
+              <div className="grid grid-cols-2 gap-4">
                 <Button
                   variant={lessonFormat === 'online' ? 'default' : 'outline'}
                   onClick={() => setLessonFormat('online')}
@@ -374,14 +373,13 @@ export default function BookingPage() {
 
             {lessonFormat === 'online' && (
               <div>
-                <p className="mb-2 text-sm font-medium">{t('format.selectPlatform')}</p>
-                <div className="grid grid-cols-3 gap-2">
+                <p className="mb-3 text-sm font-medium">{t('format.selectPlatform')}</p>
+                <div className="grid grid-cols-3 gap-3">
                   {['zoom', 'googleMeet', 'teams'].map((p) => (
                     <Button
                       key={p}
                       variant={platform === p ? 'default' : 'outline'}
-                      size="sm"
-                      className="rounded-xl"
+                      className="h-12 rounded-xl"
                       onClick={() => setPlatform(p)}
                     >
                       {t(`format.${p}`)}
@@ -409,7 +407,7 @@ export default function BookingPage() {
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t('notes.placeholder')}
                 rows={3}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               />
             </div>
           </div>
@@ -417,13 +415,13 @@ export default function BookingPage() {
 
         {/* Step 4: Payment */}
         {step === 'payment' && (
-          <div className="mx-auto max-w-md space-y-6">
+          <div className="mx-auto max-w-lg space-y-8">
             {/* Booking summary */}
             <Card>
-              <CardHeader>
+              <CardHeader className="px-8 pt-8">
                 <h3 className="font-semibold">{t('confirmation.details')}</h3>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm">
+              <CardContent className="space-y-3 px-8 pb-8 text-sm">
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.lesson')}</span>
                   <span>{selectedLesson && tl(`${selectedLesson}.name`)}</span>
@@ -456,13 +454,13 @@ export default function BookingPage() {
             {/* Payment method selection */}
             {!showPaymentUI && (
               <div>
-                <p className="mb-3 font-medium">{t('payment.title')}</p>
-                <div className="space-y-2">
+                <p className="mb-4 font-medium">{t('payment.title')}</p>
+                <div className="space-y-3">
                   {(['paypal', 'toss', 'bank_transfer'] as const).map((method) => (
                     <Button
                       key={method}
                       variant={paymentMethod === method ? 'default' : 'outline'}
-                      className="w-full justify-start rounded-xl"
+                      className="h-12 w-full justify-start rounded-xl"
                       onClick={() => setPaymentMethod(method)}
                     >
                       <CreditCard className="mr-2 h-4 w-4" />
@@ -506,7 +504,7 @@ export default function BookingPage() {
                       currency="USD"
                     />
                     <Button
-                      className="mt-4 w-full"
+                      className="mt-4 h-12 w-full"
                       onClick={handlePaymentSuccess}
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
@@ -520,9 +518,10 @@ export default function BookingPage() {
         )}
 
         {/* Navigation */}
-        <div className="mt-8 flex justify-between">
+        <div className="mt-10 flex justify-between">
           <Button
             variant="outline"
+            className="h-12"
             onClick={() => {
               if (showPaymentUI) {
                 setShowPaymentUI(false);
@@ -537,6 +536,7 @@ export default function BookingPage() {
           </Button>
           {currentStep < STEPS.length - 1 ? (
             <Button
+              className="h-12"
               onClick={() => setCurrentStep((s) => s + 1)}
               disabled={!canProceed()}
             >
@@ -545,6 +545,7 @@ export default function BookingPage() {
             </Button>
           ) : !showPaymentUI ? (
             <Button
+              className="h-12"
               onClick={handleConfirmBooking}
               disabled={bookingLoading || !user}
             >

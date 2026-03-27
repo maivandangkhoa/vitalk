@@ -33,7 +33,7 @@ export function Header() {
           key={item.key}
           to={item.path}
           onClick={() => setMobileNavOpen(false)}
-          className={`rounded-xl px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+          className={`flex h-9 items-center rounded-xl px-3 text-sm font-medium transition-all duration-200 ${
             location.pathname === item.path
               ? 'bg-indigo-50 text-indigo-600'
               : 'text-muted-foreground hover:bg-indigo-50 hover:text-indigo-600'
@@ -65,17 +65,17 @@ export function Header() {
           {user ? (
             <div className="hidden items-center gap-2 md:flex">
               {role === 'admin' && (
-                <Button variant="outline" size="sm" render={<Link to="/admin" />}>
+                <Button variant="outline" size="lg" render={<Link to="/admin" />}>
                   {t('nav.admin')}
                 </Button>
               )}
-              <Button variant="outline" size="sm" render={<Link to="/my-bookings" />}>
+              <Button variant="outline" size="lg" render={<Link to="/my-bookings" />}>
                 {t('nav.myBookings')}
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button variant="ghost" size="lg" onClick={handleSignOut}>
                 {t('nav.logout')}
               </Button>
-              <Link to="/my-bookings" className="flex items-center gap-2 rounded-full border border-zinc-200 py-1 pr-3 pl-1 transition-colors hover:bg-zinc-50">
+              <Link to="/my-bookings" className="flex h-9 items-center gap-2 rounded-full border border-zinc-200 pr-3 pl-1 transition-colors hover:bg-zinc-50">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full object-cover" />
                 ) : (
@@ -89,7 +89,7 @@ export function Header() {
               </Link>
             </div>
           ) : (
-            <Button size="sm" render={<Link to="/login" />} className="hidden md:inline-flex">
+            <Button size="lg" render={<Link to="/login" />} className="hidden md:inline-flex">
               {t('nav.login')}
             </Button>
           )}

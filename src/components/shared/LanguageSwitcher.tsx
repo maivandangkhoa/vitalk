@@ -14,7 +14,7 @@ export function LanguageSwitcher() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-lg" />}>
         <Globe className="h-5 w-5" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

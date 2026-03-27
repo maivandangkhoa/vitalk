@@ -59,18 +59,18 @@ export default function LoginPage() {
       <div className="absolute -top-40 right-1/4 h-80 w-80 rounded-full bg-indigo-200/20 blur-3xl" />
       <div className="absolute -bottom-40 left-1/4 h-80 w-80 rounded-full bg-purple-200/15 blur-3xl" />
 
-      <AnimatedSection className="relative w-full max-w-md">
+      <AnimatedSection className="relative w-full max-w-lg">
         <Card className="border-zinc-100 bg-white/80 shadow-lg backdrop-blur-md">
-          <CardHeader className="pb-2 text-center">
+          <CardHeader className="px-8 pb-2 pt-8 text-center">
             <h1 className="text-2xl font-bold">
               {isLogin ? t('auth.loginTitle') : t('auth.signupTitle')}
             </h1>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-5 px-8 pb-8">
             {/* Social logins */}
             <Button
               variant="outline"
-              className="w-full rounded-xl border-zinc-200 hover:bg-zinc-50"
+              className="h-12 w-full rounded-xl border-zinc-200 hover:bg-zinc-50"
               onClick={handleGoogleLogin}
               disabled={loading}
             >
@@ -97,7 +97,7 @@ export default function LoginPage() {
 
             <Button
               variant="outline"
-              className="w-full rounded-xl bg-[#FEE500] text-[#191919] hover:bg-[#FDD800]"
+              className="h-12 w-full rounded-xl bg-[#FEE500] text-[#191919] hover:bg-[#FDD800]"
               onClick={handleKakaoLogin}
               disabled={loading}
             >
@@ -125,7 +125,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
               <div>
@@ -136,10 +136,10 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
-              <Button type="submit" className="mt-1 w-full" disabled={loading}>
+              <Button type="submit" className="mt-1 h-12 w-full" disabled={loading}>
                 {isLogin ? t('auth.loginWithEmail') : t('auth.signupWithEmail')}
               </Button>
             </form>

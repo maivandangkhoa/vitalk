@@ -67,11 +67,11 @@ export default function HomePage() {
             {t('hero.subtitle')}
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Button size="lg" render={<Link to="/book" />} className="shadow-md hover:shadow-lg">
+            <Button size="lg" render={<Link to="/book" />} className="h-12 shadow-md hover:shadow-lg">
               {t('hero.cta')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button variant="outline" size="lg" render={<Link to="/lessons" />}>
+            <Button variant="outline" size="lg" render={<Link to="/lessons" />} className="h-12">
               {t('cta.button')}
             </Button>
           </div>
@@ -98,11 +98,11 @@ export default function HomePage() {
               {t('highlights.title')}
             </h2>
           </AnimatedSection>
-          <StaggerContainer className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <StaggerContainer className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {HIGHLIGHT_STYLES.map(({ key, icon: Icon, bg, text }) => (
               <StaggerItem key={key}>
                 <Card className="h-full border-0 bg-white">
-                  <CardContent className="pt-6">
+                  <CardContent className="p-8">
                     <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl ${bg}`}>
                       <Icon className={`h-6 w-6 ${text}`} />
                     </div>
@@ -156,11 +156,11 @@ export default function HomePage() {
               {t('testimonials.title')}
             </h2>
           </AnimatedSection>
-          <StaggerContainer className="mt-12 grid gap-6 md:grid-cols-2">
+          <StaggerContainer className="mt-12 grid gap-8 md:grid-cols-2">
             {REVIEWS_PREVIEW.map((review) => (
               <StaggerItem key={review.name}>
                 <Card className="h-full border-0 bg-white">
-                  <CardContent className="pt-6">
+                  <CardContent className="p-8">
                     <Quote className="mb-4 h-5 w-5 text-indigo-200" />
                     <p className="mb-5 leading-relaxed text-muted-foreground italic">
                       &ldquo;{review.text}&rdquo;
@@ -179,7 +179,7 @@ export default function HomePage() {
             ))}
           </StaggerContainer>
           <div className="mt-8 text-center">
-            <Button variant="outline" render={<Link to="/reviews" />}>
+            <Button variant="outline" className="h-12" render={<Link to="/reviews" />}>
               {t('testimonials.viewAll')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -200,7 +200,7 @@ export default function HomePage() {
                 size="lg"
                 variant="secondary"
                 render={<Link to="/book" />}
-                className="mt-8"
+                className="mt-8 h-12"
               >
                 {t('cta.button')}
                 <ArrowRight className="ml-2 h-4 w-4" />

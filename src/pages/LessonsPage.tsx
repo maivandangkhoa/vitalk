@@ -34,7 +34,7 @@ export default function LessonsPage() {
             return (
               <StaggerItem key={level}>
                 <Card className="flex h-full flex-col">
-                  <CardHeader className="pb-2">
+                  <CardHeader className="px-8 pb-3 pt-8">
                     <Badge className={`mb-2 w-fit ${LEVEL_COLORS[level]}`}>
                       {level.charAt(0).toUpperCase() + level.slice(1)}
                     </Badge>
@@ -43,7 +43,7 @@ export default function LessonsPage() {
                       {t(`${level}.description`)}
                     </p>
                   </CardHeader>
-                  <CardContent className="flex-1 pt-2">
+                  <CardContent className="flex-1 px-8 pt-3">
                     <div className="mb-6 flex items-center gap-5 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1.5">
                         <Clock className="h-4 w-4" />
@@ -64,8 +64,8 @@ export default function LessonsPage() {
                       ))}
                     </ul>
                   </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" render={<Link to="/book" />}>
+                  <CardFooter className="px-8 pb-8">
+                    <Button className="h-12 w-full" render={<Link to="/book" />}>
                       {t('bookNow')}
                     </Button>
                   </CardFooter>
