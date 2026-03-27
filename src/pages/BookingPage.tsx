@@ -79,7 +79,6 @@ export default function BookingPage() {
   const { slots: availableSlots, loading: slotsLoading } = useAvailableSlots(yearMonth);
   const { createBooking, loading: bookingLoading } = useCreateBooking();
   const { userTz, userTzLabel, teacherTzLabel, isSameAsTeacher } = useUserTimezone();
-  const { formatLesson } = useCurrencySettings();
 
   // Handle Toss payment redirect
   const tossRedirect = searchParams.get('toss');
