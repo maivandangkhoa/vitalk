@@ -6,7 +6,7 @@ import { Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuthStore } from '@/stores/authStore';
+import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { Language } from '@/types';
 
@@ -15,7 +15,7 @@ const LANG_LABELS: Record<Language, string> = { en: 'English', vi: 'Tiáº¿ng Viá»
 
 export default function AdminProfile() {
   const { t } = useTranslation('admin');
-  const { teacherId } = useAuthStore();
+  const { teacherId, teachers, isAdmin, setTeacherId } = useTeacherSelector();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
@@ -93,7 +93,12 @@ export default function AdminProfile() {
   return (
     <div>
       <AnimatedSection className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('profile.title')}</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">{t('profile.title')}</h1>
+          {isAdmin && (
+            <TeacherSelector teacherId={teacherId} teachers={teachers} onChange={setTeacherId} />
+          )}
+        </div>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           {t('profile.save')}

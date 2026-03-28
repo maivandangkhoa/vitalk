@@ -613,7 +613,7 @@ export default function BookingPage() {
                     amount={selectedLessonData?.price || 14}
                     customerName={user.displayName || ''}
                     customerEmail={user.email || ''}
-                    orderName={`ViTalk - ${selectedLesson} lesson`}
+                    orderName={`haviTalk - ${selectedLesson} lesson`}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                   />

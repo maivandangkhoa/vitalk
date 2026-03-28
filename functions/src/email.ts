@@ -50,7 +50,7 @@ export async function sendEmail(params: {
   const mailer = await getTransporter();
   const senderEmail = process.env.TEACHER_EMAIL;
   await mailer.sendMail({
-    from: `ViTalk <${senderEmail}>`,
+    from: `haviTalk <${senderEmail}>`,
     to: params.to,
     subject: params.subject,
     html: params.html,

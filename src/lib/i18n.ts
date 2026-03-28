@@ -19,7 +19,7 @@ i18n
     detection: {
       order: ['querystring', 'localStorage', 'navigator'],
       lookupQuerystring: 'lang',
-      lookupLocalStorage: 'vitalk-lang',
+      lookupLocalStorage: 'havitalk-lang',
       caches: ['localStorage'],
     },
     interpolation: {

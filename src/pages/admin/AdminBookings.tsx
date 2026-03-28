@@ -25,6 +25,7 @@ import {
   updateBookingStatus,
 } from '@/hooks/useBookings';
 import { useAuthStore } from '@/stores/authStore';
+import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { statusColors, paymentStatusColors } from '@/lib/utils';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import type { Booking, BookingStatus } from '@/types';
@@ -228,7 +229,8 @@ function AdminBookingCard({
 
 export default function AdminBookings() {
   const { t } = useTranslation('admin');
-  const { role, teacherId } = useAuthStore();
+  const { role } = useAuthStore();
+  const { teacherId, teachers, isAdmin, setTeacherId } = useTeacherSelector();
   const [activeStatus, setActiveStatus] = useState<string>('all');
 
   const statusFilter = activeStatus === 'all' ? undefined : (activeStatus as BookingStatus);
@@ -236,8 +238,11 @@ export default function AdminBookings() {
 
   return (
     <div>
-      <AnimatedSection>
-        <h1 className="mb-6 text-2xl font-bold">{t('bookings.title')}</h1>
+      <AnimatedSection className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t('bookings.title')}</h1>
+        {isAdmin && (
+          <TeacherSelector teacherId={teacherId} teachers={teachers} onChange={setTeacherId} />
+        )}
       </AnimatedSection>
 
       <Tabs value={activeStatus} onValueChange={setActiveStatus}>

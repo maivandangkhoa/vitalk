@@ -8,13 +8,13 @@ import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { useAdminReviews, toggleReviewVisibility, deleteReview } from '@/hooks/useReviews';
-import { useAuthStore } from '@/stores/authStore';
+import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 
 export default function AdminReviews() {
   const { t } = useTranslation('admin');
-  const { role, teacherId } = useAuthStore();
-  const { reviews, loading, refetch } = useAdminReviews(role === 'teacher' ? teacherId || undefined : undefined);
+  const { teacherId, teachers, isAdmin, setTeacherId } = useTeacherSelector();
+  const { reviews, loading, refetch } = useAdminReviews(teacherId || undefined);
   const [syncing, setSyncing] = useState(false);
 
   const handleSync = async () => {
@@ -63,7 +63,12 @@ export default function AdminReviews() {
   return (
     <div>
       <AnimatedSection className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('reviews.title')}</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">{t('reviews.title')}</h1>
+          {isAdmin && (
+            <TeacherSelector teacherId={teacherId} teachers={teachers} onChange={setTeacherId} />
+          )}
+        </div>
         <Button onClick={handleSync} disabled={syncing} variant="outline">
           {syncing ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

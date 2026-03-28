@@ -91,7 +91,7 @@ export default function TossCheckout({
 
     setPaying(true);
     try {
-      const orderId = `vitalk_${bookingId}_${Date.now()}`;
+      const orderId = `havitalk_${bookingId}_${Date.now()}`;
 
       const result = await tp.requestPayment('CARD', {
         amount: krwAmount,

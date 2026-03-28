@@ -6,7 +6,7 @@ const COUNTRY_TO_LANGUAGE: Record<string, Language> = {
   JP: 'ja',
 };
 
-const LANG_STORAGE_KEY = 'vitalk-lang';
+const LANG_STORAGE_KEY = 'havitalk-lang';
 
 interface GeoResponse {
   country_code?: string; // ipapi.co

@@ -86,7 +86,7 @@ export const createPaypalOrder = onCall(
             currency_code: booking.currency || "USD",
             value: String(booking.amount),
           },
-          description: `ViTalk Lesson - ${booking.date} ${booking.startTime}`,
+          description: `haviTalk Lesson - ${booking.date} ${booking.startTime}`,
         },
       ],
     };

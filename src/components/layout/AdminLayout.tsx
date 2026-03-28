@@ -12,6 +12,7 @@ import {
   GraduationCap,
   MapPin,
   Settings,
+  DatabaseZap,
   ArrowLeft,
   Menu,
 } from 'lucide-react';
@@ -32,6 +33,7 @@ const ADMIN_NAV = [
   { key: 'teachers', path: '/admin/teachers', icon: Users2, color: 'bg-violet-50 text-violet-500' },
   { key: 'lessons', path: '/admin/lessons', icon: GraduationCap, color: 'bg-teal-50 text-teal-500' },
   { key: 'locations', path: '/admin/locations', icon: MapPin, color: 'bg-cyan-50 text-cyan-500' },
+  { key: 'migration', path: '/admin/migration', icon: DatabaseZap, color: 'bg-lime-50 text-lime-600' },
   { key: 'settings', path: '/admin/settings', icon: Settings, color: 'bg-zinc-100 text-zinc-500' },
 ] as const;
 
@@ -90,7 +92,7 @@ export function AdminLayout() {
       <aside className="hidden w-64 flex-shrink-0 border-r border-zinc-100 bg-white/80 backdrop-blur-md md:block">
         <div className="flex h-16 items-center justify-between border-b border-zinc-100 px-4">
           <Link to="/" className="text-lg font-bold">
-            Vi<span className="text-indigo-500">Talk</span>
+            havi<span className="text-indigo-500">Talk</span>
             <span className="ml-2 text-xs text-muted-foreground">Admin</span>
           </Link>
         </div>
@@ -115,7 +117,7 @@ export function AdminLayout() {
             <SheetContent side="left" className="w-64 p-0">
               <div className="flex h-16 items-center border-b border-zinc-100 px-4">
                 <span className="text-lg font-bold">
-                  Vi<span className="text-indigo-500">Talk</span>
+                  havi<span className="text-indigo-500">Talk</span>
                   <span className="ml-2 text-xs text-muted-foreground">Admin</span>
                 </span>
               </div>

@@ -57,16 +57,13 @@ export function useTeacherBySlug(slug: string | undefined) {
       try {
         const q = query(
           collection(db, 'teachers'),
-          where('slug', '==', slug),
-          where('isActive', '==', true)
+          where('slug', '==', slug)
         );
         const snap = await getDocs(q);
-        if (!snap.empty) {
-          const d = snap.docs[0];
-          setTeacher({ ...d.data(), id: d.id } as TeacherProfile);
-        } else {
-          setTeacher(null);
-        }
+        const found = snap.docs
+          .map((d) => ({ ...d.data(), id: d.id }) as TeacherProfile)
+          .find((t) => t.isActive);
+        setTeacher(found ?? null);
       } finally {
         setLoading(false);
       }

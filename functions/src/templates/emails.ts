@@ -16,8 +16,8 @@ interface BookingEmailData {
 
 function baseLayout(content: string, teacherName?: string): string {
   const footerText = teacherName
-    ? `ViTalk - Vietnamese Language Lessons with ${teacherName}`
-    : "ViTalk - Vietnamese Language Lessons";
+    ? `haviTalk - Vietnamese Language Lessons with ${teacherName}`
+    : "haviTalk - Vietnamese Language Lessons";
   return `
 <!DOCTYPE html>
 <html>
@@ -44,7 +44,7 @@ function baseLayout(content: string, teacherName?: string): string {
 <body>
   <div class="container">
     <div class="card">
-      <div class="header"><span class="logo">ViTalk</span></div>
+      <div class="header"><span class="logo">haviTalk</span></div>
       ${content}
     </div>
     <div class="footer">
@@ -85,7 +85,7 @@ export function newBookingTeacher(data: BookingEmailData): { subject: string; ht
       <p style="color:#6b7280; margin:0 0 16px;">A student has booked a lesson with you.</p>
       ${bookingDetails(data)}
       <div style="text-align:center; margin-top:24px;">
-        <a href="https://vietalky.web.app/admin/bookings" class="btn">View in Dashboard</a>
+        <a href="https://havitalk.web.app/admin/bookings" class="btn">View in Dashboard</a>
       </div>
     `, data.teacherName),
   };
@@ -124,7 +124,7 @@ export function bookingConfirmationStudent(data: BookingEmailData): { subject: s
         </div>
       ` : ""}
       <div style="text-align:center; margin-top:24px;">
-        <a href="https://vietalky.web.app/my-bookings" class="btn">View My Bookings</a>
+        <a href="https://havitalk.web.app/my-bookings" class="btn">View My Bookings</a>
       </div>
     `, data.teacherName),
   };
@@ -141,7 +141,7 @@ export function paymentConfirmedStudent(data: BookingEmailData): { subject: stri
         ${data.teacherName} will send you the meeting link before the lesson. Check your bookings page for updates.
       </div>
       <div style="text-align:center; margin-top:24px;">
-        <a href="https://vietalky.web.app/my-bookings" class="btn">View My Bookings</a>
+        <a href="https://havitalk.web.app/my-bookings" class="btn">View My Bookings</a>
       </div>
     `, data.teacherName),
   };
@@ -158,7 +158,7 @@ export function cancelledBookingStudent(data: BookingEmailData): { subject: stri
         If you did not request this cancellation, please contact us.
       </p>
       <div style="text-align:center; margin-top:24px;">
-        <a href="https://vietalky.web.app/book" class="btn">Book Another Lesson</a>
+        <a href="https://havitalk.web.app/book" class="btn">Book Another Lesson</a>
       </div>
     `, data.teacherName),
   };
@@ -193,7 +193,7 @@ export function lessonReminderTeacher(data: BookingEmailData): { subject: string
       <p style="color:#6b7280; margin:0 0 16px;">You have a lesson coming up tomorrow.</p>
       ${bookingDetails(data)}
       <div style="text-align:center; margin-top:24px;">
-        <a href="https://vietalky.web.app/admin/bookings" class="btn">View in Dashboard</a>
+        <a href="https://havitalk.web.app/admin/bookings" class="btn">View in Dashboard</a>
       </div>
     `, data.teacherName),
   };

@@ -30,6 +30,7 @@ const AdminLessons = lazy(() => import('@/pages/admin/AdminLessons'));
 const AdminLocations = lazy(() => import('@/pages/admin/AdminLocations'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
 const AdminTeachers = lazy(() => import('@/pages/admin/AdminTeachers'));
+const AdminMigration = lazy(() => import('@/pages/admin/AdminMigration'));
 
 // Public teacher pages
 const TeachersListPage = lazy(() => import('@/pages/TeachersListPage'));
@@ -156,6 +157,10 @@ export const router = createBrowserRouter([
       {
         path: 'settings',
         element: <SuspenseWrapper><AdminSettings /></SuspenseWrapper>,
+      },
+      {
+        path: 'migration',
+        element: <SuspenseWrapper><AdminMigration /></SuspenseWrapper>,
       },
     ],
   },

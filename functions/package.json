@@ -1,5 +1,5 @@
 {
-  "name": "vitalk-functions",
+  "name": "havitalk-functions",
   "private": true,
   "scripts": {
     "build": "tsc",

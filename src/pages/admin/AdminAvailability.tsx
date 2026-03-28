@@ -9,7 +9,7 @@ import { Plus, Trash2, Save, Loader2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/useAvailability';
-import { useAuthStore } from '@/stores/authStore';
+import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { TimeSlot } from '@/types';
 
@@ -23,7 +23,7 @@ interface TimeRange {
 
 export default function AdminAvailability() {
   const { t } = useTranslation('admin');
-  const { teacherId } = useAuthStore();
+  const { teacherId, teachers, isAdmin, setTeacherId } = useTeacherSelector();
   const now = new Date();
   const [viewMonth, setViewMonth] = useState(now);
   const yearMonth = format(viewMonth, 'yyyy-MM');
@@ -180,7 +180,7 @@ export default function AdminAvailability() {
   if (!teacherId) {
     return (
       <div className="flex items-center justify-center py-16">
-        <p className="text-muted-foreground">Select a teacher to manage availability.</p>
+        <p className="text-muted-foreground">{t('migration.noData', 'No teachers found.')}</p>
       </div>
     );
   }
@@ -188,11 +188,16 @@ export default function AdminAvailability() {
   return (
     <div>
       <AnimatedSection className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{t('availability.title')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {yearMonth} {loading && '(loading...)'}
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">{t('availability.title')}</h1>
+            <p className="text-sm text-muted-foreground">
+              {yearMonth} {loading && '(loading...)'}
+            </p>
+          </div>
+          {isAdmin && (
+            <TeacherSelector teacherId={teacherId} teachers={teachers} onChange={setTeacherId} />
+          )}
         </div>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
