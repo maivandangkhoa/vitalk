@@ -7,7 +7,7 @@ export const SUPPORTED_LANGUAGES: { code: Language; label: string; flag: string 
   { code: 'ja', label: '日本語', flag: '🇯🇵' },
 ];
 
-export const TEACHER_TIMEZONE = 'Asia/Seoul';
+export const DEFAULT_TIMEZONE = 'Asia/Seoul';
 
 export const LESSON_DURATION_MINUTES = 50;
 export const BREAK_DURATION_MINUTES = 10;

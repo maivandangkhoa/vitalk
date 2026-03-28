@@ -42,8 +42,6 @@ async function getTransporter(): Promise<nodemailer.Transporter> {
   return transporter;
 }
 
-const TEACHER_EMAIL = process.env.TEACHER_EMAIL || "";
-
 export async function sendEmail(params: {
   to: string;
   subject: string;
@@ -60,11 +58,12 @@ export async function sendEmail(params: {
 }
 
 export async function sendToTeacher(params: {
+  to: string;
   subject: string;
   html: string;
 }): Promise<void> {
   await sendEmail({
-    to: TEACHER_EMAIL,
+    to: params.to,
     subject: params.subject,
     html: params.html,
   });

@@ -13,8 +13,10 @@ import {
   query,
   orderBy,
   getDocs,
+  where,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuthStore } from '@/stores/authStore';
 import { BentoGrid, BentoCard } from '@/components/shared/BentoGrid';
 import { StaggerContainer, StaggerItem, AnimatedSection } from '@/components/shared/motion';
 import { statusColors } from '@/lib/utils';
@@ -38,6 +40,7 @@ const PIE_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#f43f5e'];
 
 export default function AdminDashboard() {
   const { t } = useTranslation('admin');
+  const { role, teacherId } = useAuthStore();
   const [stats, setStats] = useState<DashboardStats>({ upcoming: 0, total: 0, pendingPayments: 0, students: 0 });
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
@@ -47,8 +50,12 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const constraints = [orderBy('createdAt', 'desc')];
+        if (role === 'teacher' && teacherId) {
+          constraints.unshift(where('teacherId', '==', teacherId));
+        }
         const allSnap = await getDocs(
-          query(collection(db, 'bookings'), orderBy('createdAt', 'desc'))
+          query(collection(db, 'bookings'), ...constraints)
         );
         const bookings = allSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as Booking);
         setAllBookings(bookings);
@@ -69,7 +76,7 @@ export default function AdminDashboard() {
       }
     };
     fetchData();
-  }, []);
+  }, [role, teacherId]);
 
   const statValues = [stats.upcoming, stats.total, stats.pendingPayments, stats.students];
 

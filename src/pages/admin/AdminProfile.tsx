@@ -6,6 +6,7 @@ import { Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuthStore } from '@/stores/authStore';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { Language } from '@/types';
 
@@ -14,6 +15,7 @@ const LANG_LABELS: Record<Language, string> = { en: 'English', vi: 'Tiáº¿ng Viá»
 
 export default function AdminProfile() {
   const { t } = useTranslation('admin');
+  const { teacherId } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
@@ -25,10 +27,14 @@ export default function AdminProfile() {
   const [teachingStyle, setTeachingStyle] = useState<Record<Language, string>>({ en: '', vi: '', ko: '', ja: '' });
 
   useEffect(() => {
+    if (!teacherId) {
+      setLoading(false);
+      return;
+    }
     const fetch = async () => {
       setLoading(true);
       try {
-        const snap = await getDoc(doc(db, 'profile', 'teacher'));
+        const snap = await getDoc(doc(db, 'teachers', teacherId));
         if (snap.exists()) {
           const data = snap.data();
           setName(data.name || '');
@@ -44,12 +50,13 @@ export default function AdminProfile() {
       }
     };
     fetch();
-  }, []);
+  }, [teacherId]);
 
   const handleSave = async () => {
+    if (!teacherId) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'profile', 'teacher'), {
+      await setDoc(doc(db, 'teachers', teacherId), {
         name,
         age,
         location,
@@ -66,6 +73,14 @@ export default function AdminProfile() {
       setSaving(false);
     }
   };
+
+  if (!teacherId) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <p className="text-muted-foreground">Select a teacher to edit their profile.</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

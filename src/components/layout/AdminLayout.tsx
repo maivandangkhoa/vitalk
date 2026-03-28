@@ -8,6 +8,7 @@ import {
   Star,
   User,
   Users,
+  Users2,
   GraduationCap,
   MapPin,
   Settings,
@@ -17,7 +18,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAuthStore } from '@/stores/authStore';
 
 const ADMIN_NAV = [
   { key: 'dashboard', path: '/admin', icon: LayoutDashboard, color: 'bg-indigo-50 text-indigo-500' },
@@ -27,18 +29,21 @@ const ADMIN_NAV = [
   { key: 'reviews', path: '/admin/reviews', icon: Star, color: 'bg-amber-50 text-amber-500' },
   { key: 'profile', path: '/admin/profile', icon: User, color: 'bg-rose-50 text-rose-500' },
   { key: 'users', path: '/admin/users', icon: Users, color: 'bg-orange-50 text-orange-500' },
+  { key: 'teachers', path: '/admin/teachers', icon: Users2, color: 'bg-violet-50 text-violet-500' },
   { key: 'lessons', path: '/admin/lessons', icon: GraduationCap, color: 'bg-teal-50 text-teal-500' },
   { key: 'locations', path: '/admin/locations', icon: MapPin, color: 'bg-cyan-50 text-cyan-500' },
   { key: 'settings', path: '/admin/settings', icon: Settings, color: 'bg-zinc-100 text-zinc-500' },
 ] as const;
 
-function SidebarNav({ onItemClick }: { onItemClick?: () => void }) {
+const TEACHER_NAV_KEYS = ['dashboard', 'availability', 'bookings', 'reviews', 'profile'] as const;
+
+function SidebarNav({ items, onItemClick }: { items: typeof ADMIN_NAV[number][]; onItemClick?: () => void }) {
   const { t } = useTranslation('admin');
   const location = useLocation();
 
   return (
     <nav className="flex flex-col gap-1 px-3">
-      {ADMIN_NAV.map((item) => {
+      {items.map((item) => {
         const isActive =
           item.path === '/admin'
             ? location.pathname === '/admin'
@@ -69,6 +74,15 @@ function SidebarNav({ onItemClick }: { onItemClick?: () => void }) {
 export function AdminLayout() {
   const { t } = useTranslation('admin');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { role } = useAuthStore();
+
+  const navItems = useMemo(
+    () =>
+      role === 'teacher'
+        ? ADMIN_NAV.filter((item) => (TEACHER_NAV_KEYS as readonly string[]).includes(item.key))
+        : [...ADMIN_NAV],
+    [role],
+  );
 
   return (
     <div className="flex min-h-screen bg-zinc-50">
@@ -81,7 +95,7 @@ export function AdminLayout() {
           </Link>
         </div>
         <div className="py-4">
-          <SidebarNav />
+          <SidebarNav items={navItems} />
         </div>
         <div className="absolute bottom-4 left-4">
           <Button variant="ghost" size="sm" render={<Link to="/" />} className="flex items-center gap-2 text-muted-foreground hover:text-indigo-600">
@@ -106,7 +120,7 @@ export function AdminLayout() {
                 </span>
               </div>
               <div className="py-4">
-                <SidebarNav onItemClick={() => setMobileOpen(false)} />
+                <SidebarNav items={navItems} onItemClick={() => setMobileOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>

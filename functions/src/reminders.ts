@@ -12,7 +12,7 @@ export const sendLessonReminders = onSchedule(
   {
     schedule: "0 0 * * *", // midnight UTC = 9 AM KST
     timeZone: "Asia/Seoul",
-    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "TEACHER_EMAIL"],
+    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN"],
   },
   async () => {
     // Calculate tomorrow's date in KST
@@ -44,6 +44,7 @@ export const sendLessonReminders = onSchedule(
       const data = doc.data();
       const emailData = {
         studentName: data.studentName,
+        teacherName: data.teacherName || "Your teacher",
         lessonName: data.lessonTypeName?.en || "Vietnamese Lesson",
         date: data.date,
         startTime: data.startTime,
@@ -68,9 +69,19 @@ export const sendLessonReminders = onSchedule(
 
       // Remind teacher
       try {
-        const teacherEmail = lessonReminderTeacher(emailData);
-        await sendToTeacher(teacherEmail);
-        logger.info(`Sent teacher reminder for ${doc.id}`);
+        let teacherEmailAddr: string | null = null;
+        if (data.teacherId) {
+          const teacherDoc = await admin.firestore().doc(`teachers/${data.teacherId}`).get();
+          teacherEmailAddr = teacherDoc.exists ? (teacherDoc.data()?.email as string) || null : null;
+        }
+
+        if (teacherEmailAddr) {
+          const teacherEmail = lessonReminderTeacher(emailData);
+          await sendToTeacher({ to: teacherEmailAddr, ...teacherEmail });
+          logger.info(`Sent teacher reminder for ${doc.id}`);
+        } else {
+          logger.warn(`No teacher email found for booking ${doc.id}, skipping teacher reminder`);
+        }
       } catch (err) {
         logger.error(`Failed to send teacher reminder for ${doc.id}`, err);
       }

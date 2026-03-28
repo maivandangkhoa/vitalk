@@ -1,0 +1,17 @@
+{
+  "title": "講師紹介",
+  "subtitle": "経験豊富なベトナム語講師をご紹介します",
+  "empty": "現在、講師が登録されていません。",
+  "viewProfile": "プロフィールを見る",
+  "notFound": "講師が見つかりません",
+  "notFoundDescription": "お探しの講師は存在しません。",
+  "backToTeachers": "講師一覧に戻る",
+  "videoIntro": "紹介動画",
+  "aboutMe": "自己紹介",
+  "teachingStyle": "指導スタイル",
+  "recentReviews": "最近のレビュー",
+  "reviews": "件のレビュー",
+  "bookLesson": "レッスンを予約",
+  "selectTeacher": "講師を選択",
+  "selectTeacherDesc": "レッスンを予約する講師を選択してください。"
+}

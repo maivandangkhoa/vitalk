@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const NAV_ITEMS = [
   { key: 'home', path: '/' },
+  { key: 'teachers', path: '/teachers' },
   { key: 'lessons', path: '/lessons' },
   { key: 'book', path: '/book' },
   { key: 'blog', path: '/blog' },
@@ -64,7 +65,7 @@ export function Header() {
 
           {user ? (
             <div className="hidden items-center gap-2 md:flex">
-              {role === 'admin' && (
+              {(role === 'admin' || role === 'teacher') && (
                 <Button variant="outline" size="lg" render={<Link to="/admin" />}>
                   {t('nav.admin')}
                 </Button>
@@ -121,7 +122,7 @@ export function Header() {
                       </div>
                     </div>
                     <div className="my-1 h-px bg-zinc-100" />
-                    {role === 'admin' && (
+                    {(role === 'admin' || role === 'teacher') && (
                       <Link
                         to="/admin"
                         onClick={() => setMobileNavOpen(false)}

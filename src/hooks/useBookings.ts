@@ -51,23 +51,26 @@ export function useMyBookings() {
   return { bookings, loading };
 }
 
-export function useAdminBookings(statusFilter?: BookingStatus) {
+export function useAdminBookings(statusFilter?: BookingStatus, teacherId?: string) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
-      let q;
-      if (statusFilter) {
-        q = query(
-          collection(db, 'bookings'),
-          where('status', '==', statusFilter),
-          orderBy('date', 'asc')
-        );
-      } else {
-        q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
+      const constraints: Parameters<typeof query>[1][] = [];
+
+      if (teacherId) {
+        constraints.push(where('teacherId', '==', teacherId));
       }
+      if (statusFilter) {
+        constraints.push(where('status', '==', statusFilter));
+        constraints.push(orderBy('date', 'asc'));
+      } else {
+        constraints.push(orderBy('createdAt', 'desc'));
+      }
+
+      const q = query(collection(db, 'bookings'), ...constraints);
       const snap = await getDocs(q);
       setBookings(
         snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Booking)
@@ -75,7 +78,7 @@ export function useAdminBookings(statusFilter?: BookingStatus) {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [statusFilter, teacherId]);
 
   useEffect(() => {
     fetchBookings();
@@ -85,6 +88,8 @@ export function useAdminBookings(statusFilter?: BookingStatus) {
 }
 
 interface CreateBookingData {
+  teacherId: string;
+  teacherName: string;
   lessonTypeId: string;
   lessonTypeName: Booking['lessonTypeName'];
   date: string;
@@ -109,8 +114,8 @@ export function useCreateBooking() {
 
       setLoading(true);
       try {
-        const yearMonth = data.date.substring(0, 7); // "2026-03"
-        const availRef = doc(db, 'availability', yearMonth);
+        const yearMonth = data.date.substring(0, 7);
+        const availRef = doc(db, 'teachers', data.teacherId, 'availability', yearMonth);
         const bookingRef = doc(collection(db, 'bookings'));
 
         await runTransaction(db, async (transaction) => {
@@ -129,7 +134,6 @@ export function useCreateBooking() {
             throw new Error('This time slot is no longer available');
           }
 
-          // Mark slot as booked
           daySlots[slotIndex] = {
             ...daySlots[slotIndex],
             isBooked: true,
@@ -145,6 +149,8 @@ export function useCreateBooking() {
             createdAt: ReturnType<typeof serverTimestamp>;
             updatedAt: ReturnType<typeof serverTimestamp>;
           } = {
+            teacherId: data.teacherId,
+            teacherName: data.teacherName,
             studentId: user.uid,
             studentName: user.displayName || '',
             studentEmail: user.email || '',
@@ -159,7 +165,7 @@ export function useCreateBooking() {
             meetingLink: null,
             offlineLocation: data.offlineLocation,
             paymentMethod: data.paymentMethod,
-            paymentStatus: data.paymentMethod === 'bank_transfer' ? 'pending' : 'pending',
+            paymentStatus: 'pending',
             paymentReference: '',
             amount: data.amount,
             currency: data.currency,
@@ -216,7 +222,7 @@ export async function cancelBooking(bookingId: string) {
   const yearMonth = booking.date.substring(0, 7);
 
   await runTransaction(db, async (transaction) => {
-    const availRef = doc(db, 'availability', yearMonth);
+    const availRef = doc(db, 'teachers', booking.teacherId, 'availability', yearMonth);
     const availSnap = await transaction.get(availRef);
 
     if (availSnap.exists()) {

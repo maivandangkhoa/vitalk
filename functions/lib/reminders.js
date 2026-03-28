@@ -46,7 +46,7 @@ const emails_1 = require("./templates/emails");
 exports.sendLessonReminders = (0, scheduler_1.onSchedule)({
     schedule: "0 0 * * *", // midnight UTC = 9 AM KST
     timeZone: "Asia/Seoul",
-    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "TEACHER_EMAIL"],
+    secrets: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN"],
 }, async () => {
     // Calculate tomorrow's date in KST
     const now = new Date();
@@ -72,6 +72,7 @@ exports.sendLessonReminders = (0, scheduler_1.onSchedule)({
         const data = doc.data();
         const emailData = {
             studentName: data.studentName,
+            teacherName: data.teacherName || "Your teacher",
             lessonName: data.lessonTypeName?.en || "Vietnamese Lesson",
             date: data.date,
             startTime: data.startTime,
@@ -95,9 +96,19 @@ exports.sendLessonReminders = (0, scheduler_1.onSchedule)({
         }
         // Remind teacher
         try {
-            const teacherEmail = (0, emails_1.lessonReminderTeacher)(emailData);
-            await (0, email_1.sendToTeacher)(teacherEmail);
-            v2_1.logger.info(`Sent teacher reminder for ${doc.id}`);
+            let teacherEmailAddr = null;
+            if (data.teacherId) {
+                const teacherDoc = await admin.firestore().doc(`teachers/${data.teacherId}`).get();
+                teacherEmailAddr = teacherDoc.exists ? teacherDoc.data()?.email || null : null;
+            }
+            if (teacherEmailAddr) {
+                const teacherEmail = (0, emails_1.lessonReminderTeacher)(emailData);
+                await (0, email_1.sendToTeacher)({ to: teacherEmailAddr, ...teacherEmail });
+                v2_1.logger.info(`Sent teacher reminder for ${doc.id}`);
+            }
+            else {
+                v2_1.logger.warn(`No teacher email found for booking ${doc.id}, skipping teacher reminder`);
+            }
         }
         catch (err) {
             v2_1.logger.error(`Failed to send teacher reminder for ${doc.id}`, err);

@@ -29,6 +29,11 @@ const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'));
 const AdminLessons = lazy(() => import('@/pages/admin/AdminLessons'));
 const AdminLocations = lazy(() => import('@/pages/admin/AdminLocations'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
+const AdminTeachers = lazy(() => import('@/pages/admin/AdminTeachers'));
+
+// Public teacher pages
+const TeachersListPage = lazy(() => import('@/pages/TeachersListPage'));
+const TeacherProfilePage = lazy(() => import('@/pages/TeacherProfilePage'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>;
@@ -48,6 +53,18 @@ export const router = createBrowserRouter([
       },
       {
         path: '/book',
+        element: <SuspenseWrapper><BookingPage /></SuspenseWrapper>,
+      },
+      {
+        path: '/teachers',
+        element: <SuspenseWrapper><TeachersListPage /></SuspenseWrapper>,
+      },
+      {
+        path: '/teachers/:slug',
+        element: <SuspenseWrapper><TeacherProfilePage /></SuspenseWrapper>,
+      },
+      {
+        path: '/teachers/:slug/book',
         element: <SuspenseWrapper><BookingPage /></SuspenseWrapper>,
       },
       {
@@ -87,7 +104,7 @@ export const router = createBrowserRouter([
   {
     path: '/admin',
     element: (
-      <ProtectedRoute requiredRole="admin">
+      <ProtectedRoute requiredRole={['admin', 'teacher']}>
         <AdminLayout />
       </ProtectedRoute>
     ),
@@ -123,6 +140,10 @@ export const router = createBrowserRouter([
       {
         path: 'users',
         element: <SuspenseWrapper><AdminUsers /></SuspenseWrapper>,
+      },
+      {
+        path: 'teachers',
+        element: <SuspenseWrapper><AdminTeachers /></SuspenseWrapper>,
       },
       {
         path: 'lessons',

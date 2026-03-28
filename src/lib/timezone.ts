@@ -1,6 +1,6 @@
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { format } from 'date-fns';
-import { TEACHER_TIMEZONE } from '@/lib/constants';
+import { DEFAULT_TIMEZONE } from '@/lib/constants';
 
 /**
  * Get the user's IANA timezone string (e.g., "Asia/Ho_Chi_Minh", "America/New_York")
@@ -9,7 +9,7 @@ export function getUserTimezone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   } catch {
-    return TEACHER_TIMEZONE;
+    return DEFAULT_TIMEZONE;
   }
 }
 
@@ -43,9 +43,10 @@ export function convertSlotToUserTz(
   endTime: string,
   date: string,
   userTz: string,
+  teacherTz: string = DEFAULT_TIMEZONE,
 ): { startTime: string; endTime: string; date: string } {
-  const start = convertTime(startTime, date, TEACHER_TIMEZONE, userTz);
-  const end = convertTime(endTime, date, TEACHER_TIMEZONE, userTz);
+  const start = convertTime(startTime, date, teacherTz, userTz);
+  const end = convertTime(endTime, date, teacherTz, userTz);
   return {
     startTime: start.time,
     endTime: end.time,

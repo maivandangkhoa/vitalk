@@ -53,7 +53,13 @@ exports.syncItalkiReviews = (0, https_1.onCall)({ cors: true, invoker: "public",
     if (userDoc.data()?.role !== "admin") {
         throw new https_1.HttpsError("permission-denied", "Admin only");
     }
-    const teacherId = request.data.teacherId || "12945599";
+    const { teacherId: firestoreTeacherId } = request.data;
+    if (!firestoreTeacherId) {
+        throw new https_1.HttpsError("invalid-argument", "teacherId is required");
+    }
+    // Look up the italki teacher ID from the teacher document
+    const teacherDoc = await admin.firestore().doc(`teachers/${firestoreTeacherId}`).get();
+    const italkiTeacherId = teacherDoc.data()?.italkiId || "12945599";
     // Fetch existing italki reviews to deduplicate
     const existingSnap = await admin
         .firestore()
@@ -66,7 +72,7 @@ exports.syncItalkiReviews = (0, https_1.onCall)({ cors: true, invoker: "public",
     let page = 1;
     let hasNext = true;
     while (hasNext) {
-        const url = `https://api.italki.com/api/v2/teacher/${teacherId}/reviews?page=${page}&page_size=100`;
+        const url = `https://api.italki.com/api/v2/teacher/${italkiTeacherId}/reviews?page=${page}&page_size=100`;
         const res = await fetch(url, {
             headers: {
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -96,6 +102,7 @@ exports.syncItalkiReviews = (0, https_1.onCall)({ cors: true, invoker: "public",
         }
         const ref = admin.firestore().collection("reviews").doc();
         batch.set(ref, {
+            teacherId: firestoreTeacherId,
             studentId: `italki_${review.user_info.user_id}`,
             studentName: review.user_info.nickname,
             studentAvatarUrl: null,

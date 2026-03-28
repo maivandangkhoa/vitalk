@@ -45,6 +45,11 @@ function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Book
                 {booking.status}
               </Badge>
             </div>
+            {booking.teacherName && (
+              <p className="mb-1 text-sm text-muted-foreground">
+                {booking.teacherName}
+              </p>
+            )}
 
             <div className="mt-3 space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2.5">

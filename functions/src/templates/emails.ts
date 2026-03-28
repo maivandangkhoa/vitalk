@@ -1,5 +1,6 @@
 interface BookingEmailData {
   studentName: string;
+  teacherName: string;
   lessonName: string;
   date: string;
   startTime: string;
@@ -13,7 +14,10 @@ interface BookingEmailData {
   notes?: string;
 }
 
-function baseLayout(content: string): string {
+function baseLayout(content: string, teacherName?: string): string {
+  const footerText = teacherName
+    ? `ViTalk - Vietnamese Language Lessons with ${teacherName}`
+    : "ViTalk - Vietnamese Language Lessons";
   return `
 <!DOCTYPE html>
 <html>
@@ -44,7 +48,7 @@ function baseLayout(content: string): string {
       ${content}
     </div>
     <div class="footer">
-      <p>ViTalk - Vietnamese Language Lessons with Win</p>
+      <p>${footerText}</p>
       <p>Seoul, South Korea</p>
     </div>
   </div>
@@ -83,7 +87,7 @@ export function newBookingTeacher(data: BookingEmailData): { subject: string; ht
       <div style="text-align:center; margin-top:24px;">
         <a href="https://vietalky.web.app/admin/bookings" class="btn">View in Dashboard</a>
       </div>
-    `),
+    `, data.teacherName),
   };
 }
 
@@ -94,7 +98,7 @@ export function cancelledBookingTeacher(data: BookingEmailData): { subject: stri
       <h2 style="margin:0 0 8px; font-size:20px;">Booking Cancelled</h2>
       <p style="color:#6b7280; margin:0 0 16px;">The following booking has been cancelled.</p>
       ${bookingDetails(data)}
-    `),
+    `, data.teacherName),
   };
 }
 
@@ -103,15 +107,15 @@ export function cancelledBookingTeacher(data: BookingEmailData): { subject: stri
 export function bookingConfirmationStudent(data: BookingEmailData): { subject: string; html: string } {
   const isPending = data.paymentMethod === "bank_transfer";
   return {
-    subject: `Booking ${isPending ? "Received" : "Confirmed"} - ViTalk Lesson on ${data.date}`,
+    subject: `Booking ${isPending ? "Received" : "Confirmed"} - Lesson with ${data.teacherName} on ${data.date}`,
     html: baseLayout(`
       <h2 style="margin:0 0 8px; font-size:20px;">
         ${isPending ? "Booking Received!" : "Booking Confirmed!"}
       </h2>
       <p style="color:#6b7280; margin:0 0 16px;">
         ${isPending
-          ? "Your booking has been received. It will be confirmed once payment is verified."
-          : "Your lesson has been booked successfully."}
+          ? `Your booking with ${data.teacherName} has been received. It will be confirmed once payment is verified.`
+          : `Your lesson with ${data.teacherName} has been booked successfully.`}
       </p>
       ${bookingDetails(data)}
       ${isPending ? `
@@ -122,33 +126,33 @@ export function bookingConfirmationStudent(data: BookingEmailData): { subject: s
       <div style="text-align:center; margin-top:24px;">
         <a href="https://vietalky.web.app/my-bookings" class="btn">View My Bookings</a>
       </div>
-    `),
+    `, data.teacherName),
   };
 }
 
 export function paymentConfirmedStudent(data: BookingEmailData): { subject: string; html: string } {
   return {
-    subject: `Payment Confirmed - ViTalk Lesson on ${data.date}`,
+    subject: `Payment Confirmed - Lesson with ${data.teacherName} on ${data.date}`,
     html: baseLayout(`
       <h2 style="margin:0 0 8px; font-size:20px;">Payment Confirmed!</h2>
-      <p style="color:#6b7280; margin:0 0 16px;">Your payment has been confirmed and your lesson is all set.</p>
+      <p style="color:#6b7280; margin:0 0 16px;">Your payment has been confirmed and your lesson with ${data.teacherName} is all set.</p>
       ${bookingDetails(data)}
       <div class="highlight">
-        Your teacher will send you the meeting link before the lesson. Check your bookings page for updates.
+        ${data.teacherName} will send you the meeting link before the lesson. Check your bookings page for updates.
       </div>
       <div style="text-align:center; margin-top:24px;">
         <a href="https://vietalky.web.app/my-bookings" class="btn">View My Bookings</a>
       </div>
-    `),
+    `, data.teacherName),
   };
 }
 
 export function cancelledBookingStudent(data: BookingEmailData): { subject: string; html: string } {
   return {
-    subject: `Booking Cancelled - ViTalk Lesson on ${data.date}`,
+    subject: `Booking Cancelled - Lesson with ${data.teacherName} on ${data.date}`,
     html: baseLayout(`
       <h2 style="margin:0 0 8px; font-size:20px;">Booking Cancelled</h2>
-      <p style="color:#6b7280; margin:0 0 16px;">Your booking has been cancelled.</p>
+      <p style="color:#6b7280; margin:0 0 16px;">Your booking with ${data.teacherName} has been cancelled.</p>
       ${bookingDetails(data)}
       <p style="color:#6b7280; font-size:14px; margin-top:16px;">
         If you did not request this cancellation, please contact us.
@@ -156,16 +160,16 @@ export function cancelledBookingStudent(data: BookingEmailData): { subject: stri
       <div style="text-align:center; margin-top:24px;">
         <a href="https://vietalky.web.app/book" class="btn">Book Another Lesson</a>
       </div>
-    `),
+    `, data.teacherName),
   };
 }
 
 export function lessonReminderStudent(data: BookingEmailData & { meetingLink?: string | null }): { subject: string; html: string } {
   return {
-    subject: `Reminder: Your ViTalk lesson is tomorrow - ${data.date} ${data.startTime} KST`,
+    subject: `Reminder: Lesson with ${data.teacherName} tomorrow - ${data.date} ${data.startTime} KST`,
     html: baseLayout(`
       <h2 style="margin:0 0 8px; font-size:20px;">Lesson Reminder</h2>
-      <p style="color:#6b7280; margin:0 0 16px;">Your lesson is coming up tomorrow!</p>
+      <p style="color:#6b7280; margin:0 0 16px;">Your lesson with ${data.teacherName} is coming up tomorrow!</p>
       ${bookingDetails(data)}
       ${data.meetingLink ? `
         <div class="highlight" style="text-align:center;">
@@ -174,10 +178,10 @@ export function lessonReminderStudent(data: BookingEmailData & { meetingLink?: s
         </div>
       ` : `
         <div class="highlight">
-          Your teacher will share the meeting link before the lesson.
+          ${data.teacherName} will share the meeting link before the lesson.
         </div>
       `}
-    `),
+    `, data.teacherName),
   };
 }
 
@@ -191,6 +195,6 @@ export function lessonReminderTeacher(data: BookingEmailData): { subject: string
       <div style="text-align:center; margin-top:24px;">
         <a href="https://vietalky.web.app/admin/bookings" class="btn">View in Dashboard</a>
       </div>
-    `),
+    `, data.teacherName),
   };
 }

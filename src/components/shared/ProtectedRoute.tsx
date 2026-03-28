@@ -4,7 +4,7 @@ import type { UserRole } from '@/types';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: UserRole;
+  requiredRole?: UserRole | UserRole[];
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
@@ -22,8 +22,11 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && role !== requiredRole) {
-    return <Navigate to="/" replace />;
+  if (requiredRole) {
+    const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    if (!role || !allowed.includes(role)) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <>{children}</>;

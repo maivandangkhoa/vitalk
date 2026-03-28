@@ -24,6 +24,7 @@ import {
   addMeetingLink,
   updateBookingStatus,
 } from '@/hooks/useBookings';
+import { useAuthStore } from '@/stores/authStore';
 import { statusColors, paymentStatusColors } from '@/lib/utils';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import type { Booking, BookingStatus } from '@/types';
@@ -227,10 +228,11 @@ function AdminBookingCard({
 
 export default function AdminBookings() {
   const { t } = useTranslation('admin');
+  const { role, teacherId } = useAuthStore();
   const [activeStatus, setActiveStatus] = useState<string>('all');
 
   const statusFilter = activeStatus === 'all' ? undefined : (activeStatus as BookingStatus);
-  const { bookings, loading, refetch } = useAdminBookings(statusFilter);
+  const { bookings, loading, refetch } = useAdminBookings(statusFilter, role === 'teacher' ? teacherId || undefined : undefined);
 
   return (
     <div>

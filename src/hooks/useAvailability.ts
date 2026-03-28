@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { MonthlyAvailability, TimeSlot } from '@/types';
-import { LESSON_DURATION_MINUTES, BREAK_DURATION_MINUTES, TEACHER_TIMEZONE } from '@/lib/constants';
+import { LESSON_DURATION_MINUTES, BREAK_DURATION_MINUTES, DEFAULT_TIMEZONE } from '@/lib/constants';
 import { format } from 'date-fns';
 
 export type WeeklyTemplate = Record<string, { from: string; to: string }[]>;
@@ -64,15 +64,21 @@ export function generateMonthSlots(
   return slots;
 }
 
-export function useWeeklyTemplate() {
+/** Helper to get the availability doc path for a teacher */
+function availabilityDocPath(teacherId: string, docId: string) {
+  return doc(db, 'teachers', teacherId, 'availability', docId);
+}
+
+export function useWeeklyTemplate(teacherId: string) {
   const [template, setTemplate] = useState<WeeklyTemplate | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!teacherId) return;
     const fetchTemplate = async () => {
       setLoading(true);
       try {
-        const snap = await getDoc(doc(db, 'availability', 'weeklyTemplate'));
+        const snap = await getDoc(availabilityDocPath(teacherId, 'weeklyTemplate'));
         if (snap.exists()) {
           setTemplate(snap.data().template as WeeklyTemplate);
         } else {
@@ -83,30 +89,30 @@ export function useWeeklyTemplate() {
       }
     };
     fetchTemplate();
-  }, []);
+  }, [teacherId]);
 
   const saveTemplate = useCallback(async (newTemplate: WeeklyTemplate) => {
-    await setDoc(doc(db, 'availability', 'weeklyTemplate'), {
+    await setDoc(availabilityDocPath(teacherId, 'weeklyTemplate'), {
       template: newTemplate,
       updatedAt: serverTimestamp(),
     });
     setTemplate(newTemplate);
-  }, []);
+  }, [teacherId]);
 
-  return { template, loading: loading, saveTemplate };
+  return { template, loading, saveTemplate };
 }
 
-export function useAvailability(yearMonth: string) {
+export function useAvailability(teacherId: string, yearMonth: string) {
   const [availability, setAvailability] = useState<MonthlyAvailability | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!yearMonth) return;
+    if (!teacherId || !yearMonth) return;
 
     const fetchAvailability = async () => {
       setLoading(true);
       try {
-        const snap = await getDoc(doc(db, 'availability', yearMonth));
+        const snap = await getDoc(availabilityDocPath(teacherId, yearMonth));
         if (snap.exists()) {
           setAvailability(snap.data() as MonthlyAvailability);
         } else {
@@ -118,38 +124,37 @@ export function useAvailability(yearMonth: string) {
     };
 
     fetchAvailability();
-  }, [yearMonth]);
+  }, [teacherId, yearMonth]);
 
   const saveAvailability = useCallback(
-    async (slots: Record<string, TimeSlot[]>) => {
+    async (slots: Record<string, TimeSlot[]>, timezone: string = DEFAULT_TIMEZONE) => {
       const data: Omit<MonthlyAvailability, 'updatedAt'> & { updatedAt: ReturnType<typeof serverTimestamp> } = {
         slots,
-        timezone: TEACHER_TIMEZONE,
+        timezone,
         updatedAt: serverTimestamp(),
       };
-      await setDoc(doc(db, 'availability', yearMonth), data);
+      await setDoc(availabilityDocPath(teacherId, yearMonth), data);
       setAvailability({ ...data, updatedAt: new Date() } as MonthlyAvailability);
     },
-    [yearMonth]
+    [teacherId, yearMonth]
   );
 
   return { availability, loading, saveAvailability };
 }
 
-export function useAvailableSlots(yearMonth: string) {
+export function useAvailableSlots(teacherId: string, yearMonth: string) {
   const [slots, setSlots] = useState<Record<string, TimeSlot[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!yearMonth) return;
+    if (!teacherId || !yearMonth) return;
 
     const fetch = async () => {
       setLoading(true);
       try {
-        const snap = await getDoc(doc(db, 'availability', yearMonth));
+        const snap = await getDoc(availabilityDocPath(teacherId, yearMonth));
         if (snap.exists()) {
           const data = snap.data() as MonthlyAvailability;
-          // Filter to only unbooked slots
           const available: Record<string, TimeSlot[]> = {};
           for (const [date, daySlots] of Object.entries(data.slots)) {
             const free = daySlots.filter((s) => !s.isBooked);
@@ -167,7 +172,7 @@ export function useAvailableSlots(yearMonth: string) {
     };
 
     fetch();
-  }, [yearMonth]);
+  }, [teacherId, yearMonth]);
 
   return { slots, loading };
 }

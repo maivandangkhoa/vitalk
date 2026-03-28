@@ -7,6 +7,7 @@ import {
   Users,
   Shield,
   UserCircle,
+  GraduationCap,
   Loader2,
   Search,
   Mail,
@@ -103,6 +104,7 @@ export default function AdminUsers() {
   });
 
   const adminCount = users.filter((u) => u.role === 'admin').length;
+  const teacherCount = users.filter((u) => u.role === 'teacher').length;
   const userCount = users.filter((u) => u.role === 'user').length;
 
   return (
@@ -114,7 +116,7 @@ export default function AdminUsers() {
       </AnimatedSection>
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50">
@@ -134,6 +136,17 @@ export default function AdminUsers() {
             <div>
               <p className="text-2xl font-bold font-mono">{adminCount}</p>
               <p className="text-xs text-muted-foreground">{t('users.admins')}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50">
+              <GraduationCap className="h-5 w-5 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold font-mono">{teacherCount}</p>
+              <p className="text-xs text-muted-foreground">{t('users.teachers', 'Teachers')}</p>
             </div>
           </CardContent>
         </Card>
@@ -183,10 +196,16 @@ export default function AdminUsers() {
                           className={
                             user.role === 'admin'
                               ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : user.role === 'teacher'
+                              ? 'bg-purple-50 text-purple-700 border-purple-200'
                               : 'bg-zinc-50 text-zinc-600 border-zinc-200'
                           }
                         >
-                          <Shield className="mr-1 h-3 w-3" />
+                          {user.role === 'teacher' ? (
+                            <GraduationCap className="mr-1 h-3 w-3" />
+                          ) : (
+                            <Shield className="mr-1 h-3 w-3" />
+                          )}
                           {user.role}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
@@ -215,20 +234,7 @@ export default function AdminUsers() {
                     </div>
 
                     <div className="flex gap-2">
-                      {user.role === 'user' ? (
-                        <Button
-                          size="sm"
-                          onClick={() => handleRoleChange(user.uid, 'admin')}
-                          disabled={actionLoading !== null}
-                        >
-                          {actionLoading === user.uid ? (
-                            <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Shield className="mr-1 h-3.5 w-3.5" />
-                          )}
-                          {t('users.makeAdmin')}
-                        </Button>
-                      ) : (
+                      {user.role !== 'user' && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -240,7 +246,36 @@ export default function AdminUsers() {
                           ) : (
                             <UserCircle className="mr-1 h-3.5 w-3.5" />
                           )}
-                          {t('users.removeAdmin')}
+                          {t('users.setUser', 'User')}
+                        </Button>
+                      )}
+                      {user.role !== 'teacher' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRoleChange(user.uid, 'teacher')}
+                          disabled={actionLoading !== null}
+                        >
+                          {actionLoading === user.uid ? (
+                            <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <GraduationCap className="mr-1 h-3.5 w-3.5" />
+                          )}
+                          {t('users.setTeacher', 'Teacher')}
+                        </Button>
+                      )}
+                      {user.role !== 'admin' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleRoleChange(user.uid, 'admin')}
+                          disabled={actionLoading !== null}
+                        >
+                          {actionLoading === user.uid ? (
+                            <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Shield className="mr-1 h-3.5 w-3.5" />
+                          )}
+                          {t('users.makeAdmin')}
                         </Button>
                       )}
                     </div>

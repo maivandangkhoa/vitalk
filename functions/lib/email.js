@@ -66,7 +66,6 @@ async function getTransporter() {
     });
     return transporter;
 }
-const TEACHER_EMAIL = process.env.TEACHER_EMAIL || "";
 async function sendEmail(params) {
     const mailer = await getTransporter();
     const senderEmail = process.env.TEACHER_EMAIL;
@@ -79,7 +78,7 @@ async function sendEmail(params) {
 }
 async function sendToTeacher(params) {
     await sendEmail({
-        to: TEACHER_EMAIL,
+        to: params.to,
         subject: params.subject,
         html: params.html,
     });

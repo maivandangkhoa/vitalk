@@ -2,6 +2,7 @@ import type { Language } from './common';
 
 export interface Review {
   id: string;
+  teacherId: string;
   studentId: string;
   studentName: string;
   studentAvatarUrl: string | null;

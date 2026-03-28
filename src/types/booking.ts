@@ -39,6 +39,8 @@ export interface Location {
 
 export interface Booking {
   id: string;
+  teacherId: string;
+  teacherName: string;
   studentId: string;
   studentName: string;
   studentEmail: string;

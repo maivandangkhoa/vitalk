@@ -16,7 +16,7 @@ export const setUserRole = onCall({ secrets: ["ADMIN_SETUP_KEY"], cors: true, in
     throw new HttpsError("invalid-argument", "uid and role are required");
   }
 
-  const validRoles = ["admin", "user"];
+  const validRoles = ["admin", "teacher", "user"];
   if (!validRoles.includes(role)) {
     throw new HttpsError("invalid-argument", `Invalid role: ${role}`);
   }

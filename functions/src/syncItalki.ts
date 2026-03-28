@@ -2,7 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 
 interface SyncRequest {
-  teacherId?: string;
+  teacherId: string;
 }
 
 interface ItalkiReview {
@@ -56,7 +56,14 @@ export const syncItalkiReviews = onCall(
       throw new HttpsError("permission-denied", "Admin only");
     }
 
-    const teacherId = (request.data as SyncRequest).teacherId || "12945599";
+    const { teacherId: firestoreTeacherId } = request.data as SyncRequest;
+    if (!firestoreTeacherId) {
+      throw new HttpsError("invalid-argument", "teacherId is required");
+    }
+
+    // Look up the italki teacher ID from the teacher document
+    const teacherDoc = await admin.firestore().doc(`teachers/${firestoreTeacherId}`).get();
+    const italkiTeacherId = teacherDoc.data()?.italkiId || "12945599";
 
     // Fetch existing italki reviews to deduplicate
     const existingSnap = await admin
@@ -74,7 +81,7 @@ export const syncItalkiReviews = onCall(
     let hasNext = true;
 
     while (hasNext) {
-      const url = `https://api.italki.com/api/v2/teacher/${teacherId}/reviews?page=${page}&page_size=100`;
+      const url = `https://api.italki.com/api/v2/teacher/${italkiTeacherId}/reviews?page=${page}&page_size=100`;
       const res = await fetch(url, {
         headers: {
           "User-Agent":
@@ -115,6 +122,7 @@ export const syncItalkiReviews = onCall(
 
       const ref = admin.firestore().collection("reviews").doc();
       batch.set(ref, {
+        teacherId: firestoreTeacherId,
         studentId: `italki_${review.user_info.user_id}`,
         studentName: review.user_info.nickname,
         studentAvatarUrl: null,

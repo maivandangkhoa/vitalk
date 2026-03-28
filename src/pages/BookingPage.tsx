@@ -1,6 +1,6 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ import { useAvailableSlots } from '@/hooks/useAvailability';
 import { useCreateBooking } from '@/hooks/useBookings';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
+import { useTeacherBySlug } from '@/hooks/useTeachers';
 import { useCurrencySettings } from '@/hooks/useCurrency';
 import { convertSlotToUserTz } from '@/lib/timezone';
 import { AnimatedSection } from '@/components/shared/motion';
@@ -63,6 +64,8 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [searchParams] = useSearchParams();
+  const { slug } = useParams<{ slug: string }>();
+  const { teacher, loading: teacherLoading } = useTeacherBySlug(slug);
 
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedLesson, setSelectedLesson] = useState<string>('');
@@ -79,20 +82,10 @@ export default function BookingPage() {
   const [showPaymentUI, setShowPaymentUI] = useState(false);
 
   const yearMonth = format(viewMonth, 'yyyy-MM');
-  const { slots: availableSlots, loading: slotsLoading } = useAvailableSlots(yearMonth);
+  const { slots: availableSlots, loading: slotsLoading } = useAvailableSlots(teacher?.id || '', yearMonth);
   const { createBooking, loading: bookingLoading } = useCreateBooking();
-  const { userTz, userTzLabel, teacherTzLabel, isSameAsTeacher } = useUserTimezone();
+  const { userTz, userTzLabel, teacherTzLabel, isSameAsTeacher } = useUserTimezone(teacher?.timezone);
   const { locations: offlineLocations } = useLocations();
-
-  // Handle Toss payment redirect
-  const tossRedirect = searchParams.get('toss');
-  if (tossRedirect) {
-    return (
-      <Suspense fallback={<div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-indigo-500" /></div>}>
-        <TossRedirectHandler />
-      </Suspense>
-    );
-  }
 
   const step: Step = STEPS[currentStep];
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
@@ -100,8 +93,8 @@ export default function BookingPage() {
 
   const convertedDaySlots = useMemo(() => {
     if (!selectedDateStr || isSameAsTeacher) return null;
-    return daySlots.map((slot) => convertSlotToUserTz(slot.startTime, slot.endTime, selectedDateStr, userTz));
-  }, [daySlots, selectedDateStr, userTz, isSameAsTeacher]);
+    return daySlots.map((slot) => convertSlotToUserTz(slot.startTime, slot.endTime, selectedDateStr, userTz, teacher?.timezone));
+  }, [daySlots, selectedDateStr, userTz, isSameAsTeacher, teacher?.timezone]);
 
   const datesWithSlots = useMemo(() => {
     return Object.keys(availableSlots)
@@ -115,6 +108,63 @@ export default function BookingPage() {
   const selectedLessonData = LESSON_OPTIONS.find((o) => o.id === selectedLesson);
   const selectedSlot = daySlots.find((s) => s.startTime === selectedTime);
   const selectedLocationData = offlineLocations.find((l) => l.id === selectedLocationId);
+
+  // Backward compat: if accessed via old /book route (no slug), prompt to select a teacher
+  if (!slug) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="px-8 py-10">
+            <h2 className="text-xl font-bold">{t('title')}</h2>
+            <p className="mt-3 text-muted-foreground">
+              {t('selectTeacherFirst', 'Please select a teacher to book a lesson with.')}
+            </p>
+            <Button className="mt-6 h-12" asChild>
+              <Link to="/teachers">{t('browseTeachers', 'Browse Teachers')}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show loading while teacher profile is being fetched
+  if (teacherLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
+  // Teacher not found
+  if (!teacher) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="px-8 py-10">
+            <h2 className="text-xl font-bold">{t('teacherNotFound', 'Teacher Not Found')}</h2>
+            <p className="mt-3 text-muted-foreground">
+              {t('teacherNotFoundDesc', 'The teacher you are looking for does not exist or is no longer active.')}
+            </p>
+            <Button className="mt-6 h-12" asChild>
+              <Link to="/teachers">{t('browseTeachers', 'Browse Teachers')}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Handle Toss payment redirect
+  const tossRedirect = searchParams.get('toss');
+  if (tossRedirect) {
+    return (
+      <Suspense fallback={<div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-indigo-500" /></div>}>
+        <TossRedirectHandler />
+      </Suspense>
+    );
+  }
 
   const canProceed = () => {
     switch (step) {
@@ -134,6 +184,8 @@ export default function BookingPage() {
 
     try {
       const bookingId = await createBooking({
+        teacherId: teacher!.id,
+        teacherName: teacher!.name,
         lessonTypeId: selectedLessonData.id,
         lessonTypeName: {
           en: i18n.getFixedT('en', 'lessons')(`${selectedLessonData.level}.name`),
@@ -222,6 +274,14 @@ export default function BookingPage() {
     <div className="px-4 py-16">
       <div className="container mx-auto max-w-3xl">
         <AnimatedSection>
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <img
+              src={teacher.profileImageUrl}
+              alt={teacher.name}
+              className="h-10 w-10 rounded-full object-cover"
+            />
+            <span className="text-lg font-medium text-muted-foreground">{teacher.name}</span>
+          </div>
           <h1 className="mb-2 text-center text-3xl font-bold">{t('title')}</h1>
         </AnimatedSection>
 
@@ -492,7 +552,7 @@ export default function BookingPage() {
                   <span className="font-mono">
                     {(() => {
                       if (!selectedSlot || !selectedDateStr) return '';
-                      const c = convertSlotToUserTz(selectedSlot.startTime, selectedSlot.endTime, selectedDateStr, userTz);
+                      const c = convertSlotToUserTz(selectedSlot.startTime, selectedSlot.endTime, selectedDateStr, userTz, teacher?.timezone);
                       return `${c.startTime} - ${c.endTime} ${userTzLabel}`;
                     })()}
                   </span>

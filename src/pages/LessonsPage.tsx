@@ -65,7 +65,7 @@ export default function LessonsPage() {
                     </ul>
                   </CardContent>
                   <CardFooter className="px-8 pb-8">
-                    <Button className="h-12 w-full" render={<Link to="/book" />}>
+                    <Button className="h-12 w-full" render={<Link to="/teachers" />}>
                       {t('bookNow')}
                     </Button>
                   </CardFooter>

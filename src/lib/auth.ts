@@ -41,10 +41,14 @@ export async function signOut() {
   await firebaseSignOut(auth);
 }
 
-export async function getUserRole(user: User): Promise<UserRole> {
+export async function getUserRole(user: User): Promise<{ role: UserRole; teacherId: string | null }> {
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
-  return (userSnap.data()?.role as UserRole) || 'user';
+  const data = userSnap.data();
+  return {
+    role: (data?.role as UserRole) || 'user',
+    teacherId: data?.teacherId || null,
+  };
 }
 
 async function ensureUserDoc(

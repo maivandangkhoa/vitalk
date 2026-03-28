@@ -9,22 +9,24 @@ import { Toaster } from '@/components/ui/sonner';
 import '@/lib/i18n';
 
 export default function App() {
-  const { setUser, setRole, setLoading } = useAuthStore();
+  const { setUser, setRole, setTeacherId, setLoading } = useAuthStore();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
       if (user) {
-        const role = await getUserRole(user);
+        const { role, teacherId } = await getUserRole(user);
         setRole(role);
+        setTeacherId(teacherId);
       } else {
         setRole('user');
+        setTeacherId(null);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [setUser, setRole, setLoading]);
+  }, [setUser, setRole, setTeacherId, setLoading]);
 
   return (
     <>

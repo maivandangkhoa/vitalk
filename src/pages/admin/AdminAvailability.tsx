@@ -9,6 +9,7 @@ import { Plus, Trash2, Save, Loader2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/useAvailability';
+import { useAuthStore } from '@/stores/authStore';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { TimeSlot } from '@/types';
 
@@ -22,12 +23,13 @@ interface TimeRange {
 
 export default function AdminAvailability() {
   const { t } = useTranslation('admin');
+  const { teacherId } = useAuthStore();
   const now = new Date();
   const [viewMonth, setViewMonth] = useState(now);
   const yearMonth = format(viewMonth, 'yyyy-MM');
 
-  const { availability, loading, saveAvailability } = useAvailability(yearMonth);
-  const { template: savedTemplate, loading: templateLoading, saveTemplate } = useWeeklyTemplate();
+  const { availability, loading, saveAvailability } = useAvailability(teacherId!, yearMonth);
+  const { template: savedTemplate, loading: templateLoading, saveTemplate } = useWeeklyTemplate(teacherId!);
   const [saving, setSaving] = useState(false);
   const [templateInitialized, setTemplateInitialized] = useState(false);
 
@@ -174,6 +176,14 @@ export default function AdminAvailability() {
       return updated;
     });
   };
+
+  if (!teacherId) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <p className="text-muted-foreground">Select a teacher to manage availability.</p>
+      </div>
+    );
+  }
 
   return (
     <div>

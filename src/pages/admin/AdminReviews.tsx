@@ -8,21 +8,27 @@ import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { useAdminReviews, toggleReviewVisibility, deleteReview } from '@/hooks/useReviews';
+import { useAuthStore } from '@/stores/authStore';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 
 export default function AdminReviews() {
   const { t } = useTranslation('admin');
-  const { reviews, loading, refetch } = useAdminReviews();
+  const { role, teacherId } = useAuthStore();
+  const { reviews, loading, refetch } = useAdminReviews(role === 'teacher' ? teacherId || undefined : undefined);
   const [syncing, setSyncing] = useState(false);
 
   const handleSync = async () => {
+    if (!teacherId) {
+      toast.error('No teacher selected for sync.');
+      return;
+    }
     setSyncing(true);
     try {
       const fn = httpsCallable<{ teacherId: string }, { imported: number; skipped: number; total: number }>(
         functions,
         'syncItalkiReviews'
       );
-      const result = await fn({ teacherId: '12945599' });
+      const result = await fn({ teacherId });
       const { imported, skipped } = result.data;
       toast.success(t('reviews.syncSuccess', { imported, skipped }));
       refetch();

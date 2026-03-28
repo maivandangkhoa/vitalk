@@ -14,8 +14,8 @@ import {
 import { db } from '@/lib/firebase';
 import type { Review } from '@/types';
 
-/** Public: fetch visible reviews */
-export function usePublicReviews() {
+/** Public: fetch visible reviews, optionally filtered by teacher */
+export function usePublicReviews(teacherId?: string) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,25 +23,31 @@ export function usePublicReviews() {
     const fetchReviews = async () => {
       setLoading(true);
       try {
+        // Fetch all visible reviews, then filter client-side if teacherId provided
+        // (avoids composite index requirement for isVisible + teacherId + createdAt)
         const q = query(
           collection(db, 'reviews'),
           where('isVisible', '==', true),
           orderBy('createdAt', 'desc')
         );
         const snap = await getDocs(q);
-        setReviews(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Review));
+        let result = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Review);
+        if (teacherId) {
+          result = result.filter((r) => r.teacherId === teacherId);
+        }
+        setReviews(result);
       } finally {
         setLoading(false);
       }
     };
     fetchReviews();
-  }, []);
+  }, [teacherId]);
 
   return { reviews, loading };
 }
 
-/** Admin: fetch all reviews */
-export function useAdminReviews() {
+/** Admin: fetch all reviews, optionally filtered by teacher */
+export function useAdminReviews(teacherId?: string) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,11 +56,15 @@ export function useAdminReviews() {
     try {
       const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
       const snap = await getDocs(q);
-      setReviews(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Review));
+      let result = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Review);
+      if (teacherId) {
+        result = result.filter((r) => r.teacherId === teacherId);
+      }
+      setReviews(result);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [teacherId]);
 
   useEffect(() => {
     fetchReviews();
@@ -82,7 +92,6 @@ export function useBookingReviewStatus(bookingIds: string[]) {
       setReviewedIds(new Set());
       return;
     }
-    // Firestore 'in' query limit is 30
     const batches = [];
     for (let i = 0; i < bookingIds.length; i += 30) {
       batches.push(bookingIds.slice(i, i + 30));
