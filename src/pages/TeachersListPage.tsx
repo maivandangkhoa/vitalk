@@ -5,14 +5,12 @@ import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/sha
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Loader2 } from 'lucide-react';
-import { useCurrencySettings } from '@/hooks/useCurrency';
 import type { Language } from '@/types';
 
 export default function TeachersListPage() {
   const { t } = useTranslation('teachers');
   const { i18n } = useTranslation();
   const { teachers, loading } = useTeachers();
-  const { formatLesson } = useCurrencySettings();
   const lang = i18n.language as Language;
 
   return (

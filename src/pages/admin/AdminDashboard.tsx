@@ -50,7 +50,7 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const constraints = [orderBy('createdAt', 'desc')];
+        const constraints: import('firebase/firestore').QueryConstraint[] = [orderBy('createdAt', 'desc')];
         if (role === 'teacher' && teacherId) {
           constraints.unshift(where('teacherId', '==', teacherId));
         }

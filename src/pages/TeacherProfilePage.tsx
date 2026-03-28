@@ -6,7 +6,6 @@ import { AnimatedSection } from '@/components/shared/motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Globe, GraduationCap, Calendar, Loader2 } from 'lucide-react';
-import { useCurrencySettings } from '@/hooks/useCurrency';
 import type { Language } from '@/types';
 
 export default function TeacherProfilePage() {
@@ -15,7 +14,6 @@ export default function TeacherProfilePage() {
   const { i18n } = useTranslation();
   const { teacher, loading } = useTeacherBySlug(slug);
   const { reviews, loading: reviewsLoading } = usePublicReviews(teacher?.id);
-  const { formatLesson } = useCurrencySettings();
   const lang = i18n.language as Language;
 
   if (loading) {

@@ -54,6 +54,7 @@ export function ReviewDialog({ booking, open, onOpenChange, onSuccess }: ReviewD
         lessonType: booking.lessonTypeName.en,
         language: lang,
         bookingId: booking.id,
+        teacherId: booking.teacherId,
       });
       toast.success(t('reviews.thankYou'));
       onOpenChange(false);

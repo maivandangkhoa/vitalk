@@ -60,7 +60,7 @@ export default function BookingPage() {
   const { t, i18n } = useTranslation('booking');
   const { t: tl } = useTranslation('lessons');
   const { t: tc } = useTranslation('common');
-  const { formatLesson, format: formatCurrency } = useCurrencySettings();
+  const { formatLesson } = useCurrencySettings();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [searchParams] = useSearchParams();
@@ -119,8 +119,8 @@ export default function BookingPage() {
             <p className="mt-3 text-muted-foreground">
               {t('selectTeacherFirst', 'Please select a teacher to book a lesson with.')}
             </p>
-            <Button className="mt-6 h-12" asChild>
-              <Link to="/teachers">{t('browseTeachers', 'Browse Teachers')}</Link>
+            <Button className="mt-6 h-12" render={<Link to="/teachers" />}>
+              {t('browseTeachers', 'Browse Teachers')}
             </Button>
           </CardContent>
         </Card>
@@ -147,8 +147,8 @@ export default function BookingPage() {
             <p className="mt-3 text-muted-foreground">
               {t('teacherNotFoundDesc', 'The teacher you are looking for does not exist or is no longer active.')}
             </p>
-            <Button className="mt-6 h-12" asChild>
-              <Link to="/teachers">{t('browseTeachers', 'Browse Teachers')}</Link>
+            <Button className="mt-6 h-12" render={<Link to="/teachers" />}>
+              {t('browseTeachers', 'Browse Teachers')}
             </Button>
           </CardContent>
         </Card>

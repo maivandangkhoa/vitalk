@@ -88,7 +88,7 @@ export default function AdminTeachers() {
         location: form.location,
         timezone: form.timezone,
         profileImageUrl: form.profileImageUrl,
-        bio: { en: form.bio },
+        bio: { en: form.bio, vi: '', ko: '', ja: '' },
         isActive: form.isActive,
         uid: form.uid,
       };
@@ -108,7 +108,7 @@ export default function AdminTeachers() {
           currency: 'USD',
           rating: 0,
           totalReviews: 0,
-          teachingStyle: { en: '' },
+          teachingStyle: { en: '', vi: '', ko: '', ja: '' },
           videoIntroUrl: '',
           socialLinks: {},
         });

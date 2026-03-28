@@ -19,7 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Language } from '@/types';
-import { CURRENCIES, CURRENCY_SYMBOLS, DEFAULT_CURRENCY_CONFIG, type CurrencyConfig, type SupportedCurrency } from '@/lib/currency';
+import { CURRENCIES, CURRENCY_SYMBOLS, DEFAULT_CURRENCY_CONFIG, type CurrencyConfig } from '@/lib/currency';
 
 const LANGS: Language[] = ['en', 'vi', 'ko', 'ja'];
 const LANG_LABELS: Record<Language, string> = { en: 'EN', vi: 'VI', ko: 'KO', ja: 'JA' };
