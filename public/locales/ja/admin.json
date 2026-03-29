@@ -191,7 +191,13 @@
     "saveFailed": "保存に失敗しました",
     "active": "アクティブ",
     "inactive": "非アクティブ",
-    "noTeachers": "まだ講師がいません。最初の講師を追加しましょう！"
+    "noTeachers": "まだ講師がいません。最初の講師を追加しましょう！",
+    "importItalki": "italkiから取り込み",
+    "pasteItalkiUrl": "italki講師のURLを貼り付けてください (例: https://www.italki.com/en/teacher/12345/...)",
+    "importing": "取り込み中...",
+    "importButton": "取り込み",
+    "importSuccess": "講師プロフィールを取り込みました！確認して保存してください。",
+    "importFailed": "取り込みに失敗しました。URLを確認して再試行してください。"
   },
   "migration": {
     "title": "データ移行",

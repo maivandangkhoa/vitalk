@@ -191,7 +191,13 @@
     "saveFailed": "저장에 실패했습니다",
     "active": "활성",
     "inactive": "비활성",
-    "noTeachers": "아직 선생님이 없습니다. 첫 번째 선생님을 추가하세요!"
+    "noTeachers": "아직 선생님이 없습니다. 첫 번째 선생님을 추가하세요!",
+    "importItalki": "italki에서 가져오기",
+    "pasteItalkiUrl": "italki 선생님 URL을 붙여넣으세요 (예: https://www.italki.com/en/teacher/12345/...)",
+    "importing": "가져오는 중...",
+    "importButton": "가져오기",
+    "importSuccess": "선생님 프로필을 가져왔습니다! 확인 후 저장하세요.",
+    "importFailed": "가져오기 실패. URL을 확인하고 다시 시도하세요."
   },
   "migration": {
     "title": "데이터 마이그레이션",

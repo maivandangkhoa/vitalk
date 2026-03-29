@@ -109,7 +109,7 @@ exports.createPaypalOrder = (0, https_1.onCall)({ secrets: ["PAYPAL_CLIENT_ID", 
                     currency_code: booking.currency || "USD",
                     value: String(booking.amount),
                 },
-                description: `ViTalk Lesson - ${booking.date} ${booking.startTime}`,
+                description: `haviTalk Lesson - ${booking.date} ${booking.startTime}`,
             },
         ],
     };

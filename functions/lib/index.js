@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.syncItalkiReviews = exports.scrapeNaverBlog = exports.translateBlogPost = exports.sendLessonReminders = exports.onBookingUpdated = exports.onBookingCreated = exports.setUserRole = exports.confirmTossPayment = exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
+exports.scrapeItalkiProfile = exports.syncItalkiReviews = exports.scrapeNaverBlog = exports.translateBlogPost = exports.sendLessonReminders = exports.onBookingUpdated = exports.onBookingCreated = exports.setUserRole = exports.confirmTossPayment = exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
 const admin = __importStar(require("firebase-admin"));
 admin.initializeApp();
 // Payment functions
@@ -61,4 +61,7 @@ Object.defineProperty(exports, "scrapeNaverBlog", { enumerable: true, get: funct
 // italki review sync
 var syncItalki_1 = require("./syncItalki");
 Object.defineProperty(exports, "syncItalkiReviews", { enumerable: true, get: function () { return syncItalki_1.syncItalkiReviews; } });
+// italki teacher profile import
+var scrapeItalki_1 = require("./scrapeItalki");
+Object.defineProperty(exports, "scrapeItalkiProfile", { enumerable: true, get: function () { return scrapeItalki_1.scrapeItalkiProfile; } });
 //# sourceMappingURL=index.js.map

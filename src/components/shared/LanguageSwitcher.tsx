@@ -6,16 +6,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Globe } from 'lucide-react';
 import { SUPPORTED_LANGUAGES } from '@/lib/constants';
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
+  const currentFlag = SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language)?.flag || '🌐';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" size="icon-lg" />}>
-        <Globe className="h-5 w-5" />
+        <span className="text-lg leading-none">{currentFlag}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {SUPPORTED_LANGUAGES.map((lang) => (

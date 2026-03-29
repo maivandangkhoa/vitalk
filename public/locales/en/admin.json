@@ -191,7 +191,13 @@
     "saveFailed": "Failed to save",
     "active": "Active",
     "inactive": "Inactive",
-    "noTeachers": "No teachers yet. Add your first teacher!"
+    "noTeachers": "No teachers yet. Add your first teacher!",
+    "importItalki": "Import from italki",
+    "pasteItalkiUrl": "Paste italki teacher URL (e.g. https://www.italki.com/en/teacher/12345/...)",
+    "importing": "Importing...",
+    "importButton": "Import",
+    "importSuccess": "Teacher profile imported! Review and save.",
+    "importFailed": "Failed to import. Check the URL and try again."
   },
   "migration": {
     "title": "Data Migration",

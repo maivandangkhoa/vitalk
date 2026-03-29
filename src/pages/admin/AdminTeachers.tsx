@@ -12,8 +12,11 @@ import {
   Users2,
   X,
   Check,
+  Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
 import {
   useAdminTeachers,
   createTeacher,
@@ -45,6 +48,21 @@ const EMPTY_FORM: TeacherForm = {
   uid: '',
 };
 
+interface ItalkiProfileResult {
+  name: string;
+  profileImageUrl: string;
+  location: string;
+  bio: string;
+  teachingStyle: string;
+  languages: Record<string, string>;
+  rating: number;
+  totalReviews: number;
+  lessonPrice: number;
+  currency: string;
+  videoIntroUrl: string;
+  italkiId: string;
+}
+
 export default function AdminTeachers() {
   const { t } = useTranslation('admin');
   const { teachers, loading, refetch } = useAdminTeachers();
@@ -52,13 +70,22 @@ export default function AdminTeachers() {
   const [form, setForm] = useState<TeacherForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
 
+  // italki import state
+  const [showImport, setShowImport] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [importing, setImporting] = useState(false);
+  // Store extra fields from italki that don't fit in the form
+  const [italkiExtra, setItalkiExtra] = useState<Partial<ItalkiProfileResult> | null>(null);
+
   const startAdd = () => {
     setEditing('new');
     setForm(EMPTY_FORM);
+    setItalkiExtra(null);
   };
 
   const startEdit = (teacher: typeof teachers[number]) => {
     setEditing(teacher.id);
+    setItalkiExtra(null);
     setForm({
       name: teacher.name,
       slug: teacher.slug,
@@ -75,6 +102,59 @@ export default function AdminTeachers() {
   const cancelEdit = () => {
     setEditing(null);
     setForm(EMPTY_FORM);
+    setItalkiExtra(null);
+  };
+
+  const handleImport = async () => {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    try {
+      const fn = httpsCallable<{ url: string }, ItalkiProfileResult>(
+        functions,
+        'scrapeItalkiProfile'
+      );
+      const result = await fn({ url: importUrl.trim() });
+      const data = result.data;
+
+      // Auto-generate slug from name
+      const slug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      setForm({
+        name: data.name,
+        slug,
+        email: '',
+        location: data.location,
+        timezone: '',
+        profileImageUrl: data.profileImageUrl,
+        bio: data.bio,
+        isActive: true,
+        uid: '',
+      });
+
+      // Save extra italki data for when we create the teacher
+      setItalkiExtra({
+        teachingStyle: data.teachingStyle,
+        languages: data.languages,
+        rating: data.rating,
+        totalReviews: data.totalReviews,
+        lessonPrice: data.lessonPrice,
+        currency: data.currency,
+        videoIntroUrl: data.videoIntroUrl,
+        italkiId: data.italkiId,
+      });
+
+      setEditing('new');
+      setShowImport(false);
+      setImportUrl('');
+      toast.success(t('teachers.importSuccess'));
+    } catch {
+      toast.error(t('teachers.importFailed'));
+    } finally {
+      setImporting(false);
+    }
   };
 
   const handleSave = async () => {
@@ -100,17 +180,20 @@ export default function AdminTeachers() {
           age: 0,
           locationSince: 0,
           origin: '',
-          languages: {},
+          languages: italkiExtra?.languages || {},
           education: '',
           previousLocations: [],
           interests: [],
-          lessonPrice: 0,
-          currency: 'USD',
-          rating: 0,
-          totalReviews: 0,
-          teachingStyle: { en: '', vi: '', ko: '', ja: '' },
-          videoIntroUrl: '',
+          lessonPrice: italkiExtra?.lessonPrice || 0,
+          currency: italkiExtra?.currency || 'USD',
+          rating: italkiExtra?.rating || 0,
+          totalReviews: italkiExtra?.totalReviews || 0,
+          teachingStyle: italkiExtra?.teachingStyle
+            ? { en: italkiExtra.teachingStyle, vi: '', ko: '', ja: '' }
+            : { en: '', vi: '', ko: '', ja: '' },
+          videoIntroUrl: italkiExtra?.videoIntroUrl || '',
           socialLinks: {},
+          ...(italkiExtra?.italkiId ? { italkiId: italkiExtra.italkiId } : {}),
         });
       } else if (editing) {
         await updateTeacher(editing, payload);
@@ -118,6 +201,7 @@ export default function AdminTeachers() {
       toast.success(t('teachers.saved'));
       setEditing(null);
       setForm(EMPTY_FORM);
+      setItalkiExtra(null);
       refetch();
     } catch {
       toast.error(t('teachers.saveFailed'));
@@ -143,11 +227,49 @@ export default function AdminTeachers() {
     <div>
       <AnimatedSection className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('teachers.title')}</h1>
-        <Button onClick={startAdd} disabled={editing === 'new'}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('teachers.addTeacher')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowImport(!showImport)}
+            disabled={editing !== null}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {t('teachers.importItalki')}
+          </Button>
+          <Button onClick={startAdd} disabled={editing === 'new'}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('teachers.addTeacher')}
+          </Button>
+        </div>
       </AnimatedSection>
+
+      {/* italki Import bar */}
+      {showImport && !editing && (
+        <AnimatedSection>
+          <Card className="mb-6">
+            <CardContent className="flex items-center gap-3 p-5">
+              <input
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                className={inputClass}
+                placeholder={t('teachers.pasteItalkiUrl')}
+                onKeyDown={(e) => e.key === 'Enter' && handleImport()}
+              />
+              <Button onClick={handleImport} disabled={importing || !importUrl.trim()}>
+                {importing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="mr-2 h-4 w-4" />
+                )}
+                {importing ? t('teachers.importing') : t('teachers.importButton')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setShowImport(false); setImportUrl(''); }}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </AnimatedSection>
+      )}
 
       {/* Add/Edit form */}
       {editing && (

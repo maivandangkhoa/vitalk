@@ -191,7 +191,13 @@
     "saveFailed": "Lưu thất bại",
     "active": "Hoạt động",
     "inactive": "Không hoạt động",
-    "noTeachers": "Chưa có giáo viên. Thêm giáo viên đầu tiên!"
+    "noTeachers": "Chưa có giáo viên. Thêm giáo viên đầu tiên!",
+    "importItalki": "Nhập từ italki",
+    "pasteItalkiUrl": "Dán link giáo viên italki (vd: https://www.italki.com/en/teacher/12345/...)",
+    "importing": "Đang nhập...",
+    "importButton": "Nhập",
+    "importSuccess": "Đã nhập hồ sơ giáo viên! Kiểm tra và lưu.",
+    "importFailed": "Nhập thất bại. Kiểm tra lại link và thử lại."
   },
   "migration": {
     "title": "Di chuyển dữ liệu",

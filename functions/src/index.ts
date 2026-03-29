@@ -23,3 +23,6 @@ export { scrapeNaverBlog } from "./scrapeNaver";
 
 // italki review sync
 export { syncItalkiReviews } from "./syncItalki";
+
+// italki teacher profile import
+export { scrapeItalkiProfile } from "./scrapeItalki";
