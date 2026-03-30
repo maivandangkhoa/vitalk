@@ -131,12 +131,13 @@ export default function BookingPage() {
 
   const selectedLessonData = LESSON_OPTIONS.find((o) => o.id === selectedLesson);
 
-  // Auto-select first available teacher when entering step 3
+  // Auto-select a random teacher when time slot changes
   useEffect(() => {
-    if (step === 'details' && availableTeachersForSlot.length > 0 && !selectedTeacherId) {
-      setSelectedTeacherId(availableTeachersForSlot[0].id);
+    if (availableTeachersForSlot.length > 0 && !availableTeachersForSlot.some((t) => t.id === selectedTeacherId)) {
+      const randomIndex = Math.floor(Math.random() * availableTeachersForSlot.length);
+      setSelectedTeacherId(availableTeachersForSlot[randomIndex].id);
     }
-  }, [step, availableTeachersForSlot, selectedTeacherId]);
+  }, [availableTeachersForSlot, selectedTeacherId]);
 
   // Handle Toss payment redirect
   const tossRedirect = searchParams.get('toss');
@@ -160,8 +161,8 @@ export default function BookingPage() {
   const canProceed = () => {
     switch (step) {
       case 'lessonType': return !!selectedLesson;
-      case 'dateTime': return !!selectedDate && !!selectedTime && !!selectedSlot;
-      case 'details': return !!selectedTeacherId && (lessonFormat === 'online' || !!selectedLocationId);
+      case 'dateTime': return !!selectedDate && !!selectedTime && !!selectedSlot && !!selectedTeacherId;
+      case 'details': return lessonFormat === 'online' || !!selectedLocationId;
       case 'payment': return true;
     }
   };
@@ -324,7 +325,7 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* Step 2: Date & Time */}
+        {/* Step 2: Date & Time + Teacher */}
         {step === 'dateTime' && (
           <div className="space-y-6">
             <p className="text-center text-muted-foreground">{t('selectDate')}</p>
@@ -345,47 +346,61 @@ export default function BookingPage() {
                   modifiersClassNames={{ hasSlots: 'bg-emerald-50 font-semibold text-emerald-600' }}
                 />
               </Card>
-              <div className="w-full max-w-xs">
-                <p className="mb-3 text-sm font-medium">{t('selectTime')}</p>
-                {slotsLoading ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {tc('common.loading')}
-                  </div>
-                ) : selectedDate ? (
-                  daySlots.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      {daySlots.map((slot) => (
-                        <Button
-                          key={slot.startTime}
-                          variant={selectedTime === slot.startTime ? 'default' : 'outline'}
-                          className="h-auto rounded-xl px-3 py-2.5"
-                          onClick={() => {
-                            setSelectedTime(slot.startTime);
-                            if (slot.teachers.length > 0) {
-                              setSelectedTeacherId(slot.teachers[0].id);
-                            }
-                          }}
-                        >
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="font-mono text-xs">{slot.startTime} - {slot.endTime}</span>
-                            <span className={`flex items-center gap-1 text-[10px] ${selectedTime === slot.startTime ? 'text-white/70' : 'text-muted-foreground'}`}>
-                              <Users className="h-3 w-3" />
-                              {t('teachersAvailable', { count: slot.teachers.length })}
-                            </span>
-                          </div>
-                        </Button>
+              <div className="w-full max-w-xs space-y-5">
+                <div>
+                  <p className="mb-3 text-sm font-medium">{t('selectTime')}</p>
+                  {slotsLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {tc('common.loading')}
+                    </div>
+                  ) : selectedDate ? (
+                    daySlots.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {daySlots.map((slot) => (
+                          <Button
+                            key={slot.startTime}
+                            variant={selectedTime === slot.startTime ? 'default' : 'outline'}
+                            className="h-auto rounded-xl px-3 py-2.5"
+                            onClick={() => setSelectedTime(slot.startTime)}
+                          >
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="font-mono text-xs">{slot.startTime} - {slot.endTime}</span>
+                              <span className={`flex items-center gap-1 text-[10px] ${selectedTime === slot.startTime ? 'text-white/70' : 'text-muted-foreground'}`}>
+                                <Users className="h-3 w-3" />
+                                {t('teachersAvailable', { count: slot.teachers.length })}
+                              </span>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{t('noSlots')}</p>
+                    )
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{t('selectDate')}</p>
+                  )}
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    {t('yourTimezone')}: {userTzLabel}
+                  </p>
+                </div>
+
+                {/* Available teachers for selected time */}
+                {selectedTime && availableTeachersForSlot.length > 0 && (
+                  <div>
+                    <p className="mb-3 text-sm font-medium">{t('selectTeacher')}</p>
+                    <div className="grid gap-2">
+                      {availableTeachersForSlot.map((teacher) => (
+                        <TeacherCard
+                          key={teacher.id}
+                          teacher={teacher}
+                          selected={selectedTeacherId === teacher.id}
+                          onClick={() => setSelectedTeacherId(teacher.id)}
+                        />
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">{t('noSlots')}</p>
-                  )
-                ) : (
-                  <p className="text-sm text-muted-foreground">{t('selectDate')}</p>
+                  </div>
                 )}
-                <p className="mt-3 text-xs text-muted-foreground">
-                  {t('yourTimezone')}: {userTzLabel}
-                </p>
               </div>
             </div>
           </div>
@@ -394,21 +409,6 @@ export default function BookingPage() {
         {/* Step 3: Details */}
         {step === 'details' && (
           <div className="mx-auto max-w-lg space-y-8">
-            {/* Available Teachers */}
-            <div>
-              <p className="mb-4 font-medium">{t('selectTeacher')}</p>
-              <div className="grid gap-3">
-                {availableTeachersForSlot.map((teacher) => (
-                  <TeacherCard
-                    key={teacher.id}
-                    teacher={teacher}
-                    selected={selectedTeacherId === teacher.id}
-                    onClick={() => setSelectedTeacherId(teacher.id)}
-                  />
-                ))}
-              </div>
-            </div>
-
             {/* Lesson Format */}
             <div>
               <p className="mb-4 font-medium">{t('format.title')}</p>
