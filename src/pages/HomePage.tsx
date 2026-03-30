@@ -2,13 +2,17 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Star,
   MapPin,
   Quote,
   ArrowRight,
   Loader2,
+  GraduationCap,
+  Award,
+  Globe,
+  Clock,
+  Users,
 } from 'lucide-react';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { useTeachers } from '@/hooks/useTeachers';
@@ -36,6 +40,13 @@ const REVIEWS_PREVIEW = [
   },
 ];
 
+const HIGHLIGHT_ICONS = [
+  { key: 'native', icon: GraduationCap, color: 'bg-indigo-100 text-indigo-600' },
+  { key: 'proven', icon: Award, color: 'bg-amber-100 text-amber-600' },
+  { key: 'multilingual', icon: Globe, color: 'bg-emerald-100 text-emerald-600' },
+  { key: 'flexible', icon: Clock, color: 'bg-purple-100 text-purple-600' },
+] as const;
+
 export default function HomePage() {
   const { t } = useTranslation('home');
   const { teachers, loading: teachersLoading } = useTeachers();
@@ -47,9 +58,9 @@ export default function HomePage() {
         <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-200/30 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-200/20 blur-3xl" />
         <AnimatedSection className="container relative mx-auto text-center">
-          <Badge variant="secondary" className="mb-5 text-sm">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-1.5 text-sm font-medium shadow-sm backdrop-blur">
             {t('hero.greeting')}
-          </Badge>
+          </div>
           <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-6xl md:leading-tight">
             {t('hero.title')}
           </h1>
@@ -65,19 +76,76 @@ export default function HomePage() {
               {t('cta.button')}
             </Button>
           </div>
-          <div className="mt-10 flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <span>{t('hero.reviewCount')}</span>
+          {/* Stats */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100">
+                <Users className="h-4 w-4 text-indigo-600" />
+              </div>
+              <span className="font-medium">{t('hero.stats.teachers', { count: teachers.length || 4 })}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100">
+                <Star className="h-4 w-4 text-amber-600" />
+              </div>
+              <span className="font-medium">{t('hero.stats.reviews', { count: 362 })}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
+                <Award className="h-4 w-4 text-emerald-600" />
+              </div>
+              <span className="font-medium">{t('hero.stats.rating', { rating: '5.0' })}</span>
+            </div>
           </div>
         </AnimatedSection>
       </section>
 
-      {/* Teachers */}
+      {/* Why Learn With Us */}
       <section className="px-4 py-16 md:py-24">
         <div className="container mx-auto">
-          <AnimatedSection>
-            <h2 className="text-center text-3xl font-bold md:text-4xl">
+          <AnimatedSection className="text-center">
+            <h2 className="text-3xl font-bold md:text-4xl">
               {t('highlights.title')}
             </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+              {t('highlights.subtitle')}
+            </p>
+          </AnimatedSection>
+
+          <StaggerContainer className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2">
+            {HIGHLIGHT_ICONS.map(({ key, icon: Icon, color }) => (
+              <StaggerItem key={key}>
+                <Card className="h-full border-0 bg-white transition-shadow hover:shadow-md">
+                  <CardContent className="flex gap-5 p-7">
+                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${color}`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {t(`highlights.${key}.title`)}
+                      </h3>
+                      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                        {t(`highlights.${key}.description`)}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
+      </section>
+
+      {/* Meet Our Teachers */}
+      <section className="bg-zinc-50/50 px-4 py-16 md:py-24">
+        <div className="container mx-auto">
+          <AnimatedSection className="text-center">
+            <h2 className="text-3xl font-bold md:text-4xl">
+              {t('teachers.title')}
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+              {t('teachers.subtitle')}
+            </p>
           </AnimatedSection>
 
           {teachersLoading ? (
@@ -133,7 +201,7 @@ export default function HomePage() {
 
           <div className="mt-8 text-center">
             <Button variant="outline" className="h-12" render={<Link to="/teachers" />}>
-              {t('cta.button')}
+              {t('teachers.viewAll')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>

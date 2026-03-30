@@ -1,46 +1,47 @@
 {
   "hero": {
-    "greeting": "Xin chào!",
-    "title": "Learn Vietnamese Naturally",
-    "subtitle": "With Win, a native Vietnamese speaker based in Seoul. 5-star rated teacher with 362+ positive reviews.",
+    "greeting": "Xin chào! 🇻🇳",
+    "title": "Master Vietnamese with Expert Native Teachers",
+    "subtitle": "haviTalk is a curated Vietnamese language center connecting you with passionate, experienced native teachers. Online or in-person in Seoul.",
     "cta": "Book Your First Lesson",
-    "trialNote": "Start your Vietnamese journey today",
-    "reviewCount": "362+ reviews",
-    "pricePerLesson": "{{price}} / lesson"
-  },
-  "highlights": {
-    "title": "Why Learn With Me?",
-    "native": {
-      "title": "Native Vietnamese Speaker",
-      "description": "From Central Vietnam, I bring authentic pronunciation and cultural insights to every lesson."
-    },
-    "experience": {
-      "title": "Proven Track Record",
-      "description": "5/5 rating with 362+ reviews. My students consistently achieve their learning goals."
-    },
-    "multilingual": {
-      "title": "Korean & English Fluent",
-      "description": "I can explain Vietnamese grammar and nuances in Korean or English for better understanding."
-    },
-    "flexible": {
-      "title": "Online & Offline Lessons",
-      "description": "Choose between online lessons via Zoom/Meet or in-person sessions in Seoul."
+    "stats": {
+      "teachers": "{{count}}+ Teachers",
+      "reviews": "{{count}}+ Reviews",
+      "rating": "{{rating}} Star Rating"
     }
   },
-  "about": {
-    "title": "About Me",
-    "description": "Hi! I'm Nguyên (Win/윈), a Vietnamese teacher living in Seoul since 2016. I hold a graduate degree in Tourism Science and I'm passionate about helping people discover the beauty of the Vietnamese language. I focus on speaking practice with lots of repetition to help you build real conversational confidence.",
-    "location": "Based in Seoul, South Korea",
-    "from": "Originally from Central Vietnam",
-    "education": "Tourism Science, Seoul"
+  "highlights": {
+    "title": "Why Learn With Us?",
+    "subtitle": "We're not just any language school. Here's what makes haviTalk different.",
+    "native": {
+      "title": "100% Native Teachers",
+      "description": "Every teacher at haviTalk is a native Vietnamese speaker, bringing authentic pronunciation, cultural depth, and real-world fluency to your lessons."
+    },
+    "proven": {
+      "title": "Proven Student Success",
+      "description": "With a 5-star average rating and hundreds of glowing reviews, our students consistently achieve their Vietnamese learning goals."
+    },
+    "multilingual": {
+      "title": "Multilingual Instruction",
+      "description": "Our teachers speak English, Korean, and Japanese — so they can explain grammar, tones, and nuances in the language you're most comfortable with."
+    },
+    "flexible": {
+      "title": "Learn on Your Schedule",
+      "description": "Choose online lessons via Zoom or Google Meet, or join in-person sessions in Seoul. Flexible scheduling that fits your lifestyle."
+    }
+  },
+  "teachers": {
+    "title": "Meet Our Teachers",
+    "subtitle": "Handpicked Vietnamese educators who are passionate about helping you succeed.",
+    "viewAll": "View All Teachers"
   },
   "testimonials": {
-    "title": "What My Students Say",
+    "title": "What Our Students Say",
     "viewAll": "View All Reviews"
   },
   "cta": {
-    "title": "Ready to Start Learning?",
-    "subtitle": "Choose from beginner, intermediate, or conversation lessons. Online or in-person in Seoul.",
+    "title": "Ready to Start Your Vietnamese Journey?",
+    "subtitle": "Join hundreds of students who have discovered the joy of learning Vietnamese with haviTalk. From complete beginner to advanced conversation — we have a lesson for you.",
     "button": "View Lessons & Book"
   }
 }

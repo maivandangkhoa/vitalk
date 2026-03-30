@@ -1,46 +1,47 @@
 {
   "hero": {
-    "greeting": "Xin chào!",
-    "title": "Học tiếng Việt một cách tự nhiên",
-    "subtitle": "Cùng Win, giáo viên bản ngữ người Việt tại Seoul. Đánh giá 5 sao với hơn 362 lượt đánh giá tích cực.",
+    "greeting": "Xin chào! 🇻🇳",
+    "title": "Học tiếng Việt cùng giáo viên bản ngữ chuyên nghiệp",
+    "subtitle": "haviTalk là trung tâm Việt ngữ trực tuyến kết nối bạn với đội ngũ giáo viên bản ngữ giàu kinh nghiệm và nhiệt huyết. Online hoặc trực tiếp tại Seoul.",
     "cta": "Đặt buổi học đầu tiên",
-    "trialNote": "Bắt đầu hành trình tiếng Việt ngay hôm nay",
-    "reviewCount": "362+ đánh giá",
-    "pricePerLesson": "{{price}} / buổi"
-  },
-  "highlights": {
-    "title": "Tại sao nên học cùng tôi?",
-    "native": {
-      "title": "Giáo viên bản ngữ",
-      "description": "Đến từ miền Trung Việt Nam, tôi mang đến phát âm chuẩn xác và hiểu biết văn hóa trong mỗi buổi học."
-    },
-    "experience": {
-      "title": "Thành tích đã được chứng minh",
-      "description": "Đánh giá 5/5 với hơn 362 lượt đánh giá. Học viên của tôi luôn đạt được mục tiêu học tập."
-    },
-    "multilingual": {
-      "title": "Thông thạo tiếng Hàn & Anh",
-      "description": "Tôi có thể giải thích ngữ pháp tiếng Việt bằng tiếng Hàn hoặc tiếng Anh để bạn dễ hiểu hơn."
-    },
-    "flexible": {
-      "title": "Học online & trực tiếp",
-      "description": "Chọn học online qua Zoom/Meet hoặc học trực tiếp tại Seoul."
+    "stats": {
+      "teachers": "{{count}}+ Giáo viên",
+      "reviews": "{{count}}+ Đánh giá",
+      "rating": "{{rating}} sao"
     }
   },
-  "about": {
-    "title": "Về tôi",
-    "description": "Xin chào! Tôi là Nguyên (Win/윈), giáo viên tiếng Việt sống tại Seoul từ 2016. Tôi có bằng Thạc sĩ Khoa học Du lịch và đam mê giúp mọi người khám phá vẻ đẹp của tiếng Việt. Tôi tập trung vào luyện nói với nhiều bài tập lặp lại để giúp bạn xây dựng sự tự tin trong giao tiếp.",
-    "location": "Hiện tại sống ở Seoul, Hàn Quốc",
-    "from": "Quê quán miền Trung Việt Nam",
-    "education": "Khoa học Du lịch, Seoul"
+  "highlights": {
+    "title": "Tại sao nên chọn chúng tôi?",
+    "subtitle": "haviTalk không chỉ là một trung tâm ngôn ngữ thông thường. Đây là điều khiến chúng tôi khác biệt.",
+    "native": {
+      "title": "100% Giáo viên bản ngữ",
+      "description": "Tất cả giáo viên tại haviTalk đều là người Việt Nam, mang đến phát âm chuẩn xác, chiều sâu văn hóa và khả năng giao tiếp thực tế trong mỗi buổi học."
+    },
+    "proven": {
+      "title": "Kết quả đã được chứng minh",
+      "description": "Đánh giá trung bình 5 sao và hàng trăm phản hồi tích cực. Học viên của chúng tôi luôn đạt được mục tiêu học tiếng Việt."
+    },
+    "multilingual": {
+      "title": "Hỗ trợ đa ngôn ngữ",
+      "description": "Giáo viên thông thạo tiếng Anh, Hàn, Nhật — có thể giải thích ngữ pháp, thanh điệu và sắc thái bằng ngôn ngữ bạn thoải mái nhất."
+    },
+    "flexible": {
+      "title": "Học theo lịch của bạn",
+      "description": "Chọn học online qua Zoom hoặc Google Meet, hoặc học trực tiếp tại Seoul. Lịch linh hoạt phù hợp cuộc sống của bạn."
+    }
+  },
+  "teachers": {
+    "title": "Đội ngũ giáo viên",
+    "subtitle": "Giáo viên Việt ngữ được tuyển chọn, nhiệt huyết giúp bạn thành công.",
+    "viewAll": "Xem tất cả giáo viên"
   },
   "testimonials": {
     "title": "Học viên nói gì",
     "viewAll": "Xem tất cả đánh giá"
   },
   "cta": {
-    "title": "Sẵn sàng bắt đầu?",
-    "subtitle": "Chọn lớp sơ cấp, trung cấp hoặc hội thoại. Online hoặc trực tiếp tại Seoul.",
+    "title": "Sẵn sàng bắt đầu hành trình tiếng Việt?",
+    "subtitle": "Hãy tham gia cùng hàng trăm học viên đã khám phá niềm vui học tiếng Việt tại haviTalk. Từ người mới bắt đầu đến hội thoại nâng cao — chúng tôi có lớp học phù hợp cho bạn.",
     "button": "Xem lớp học & Đặt lịch"
   }
 }
