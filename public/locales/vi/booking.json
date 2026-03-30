@@ -12,6 +12,8 @@
   "noSlots": "Không có khung giờ trống trong ngày này",
   "yourTimezone": "Múi giờ của bạn",
   "teacherTimezone": "Múi giờ giáo viên",
+  "teachersAvailable": "{{count}} giáo viên",
+  "selectTeacher": "Chọn giáo viên",
   "format": {
     "title": "Hình thức học",
     "online": "Học online",
@@ -47,7 +49,8 @@
     "lesson": "Buổi học",
     "date": "Ngày",
     "time": "Giờ",
-    "format": "Hình thức"
+    "format": "Hình thức",
+    "teacher": "Giáo viên"
   },
   "bookingFailed": "Đặt lịch thất bại. Vui lòng thử lại.",
   "confirmation": {

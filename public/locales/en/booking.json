@@ -12,6 +12,8 @@
   "noSlots": "No available slots on this date",
   "yourTimezone": "Your timezone",
   "teacherTimezone": "Teacher's timezone",
+  "teachersAvailable": "{{count}} teacher(s)",
+  "selectTeacher": "Choose your teacher",
   "format": {
     "title": "Lesson Format",
     "online": "Online Lesson",
@@ -47,7 +49,8 @@
     "lesson": "Lesson",
     "date": "Date",
     "time": "Time",
-    "format": "Format"
+    "format": "Format",
+    "teacher": "Teacher"
   },
   "bookingFailed": "Booking failed. Please try again.",
   "confirmation": {

@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
@@ -66,7 +66,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '/teachers/:slug/book',
-        element: <SuspenseWrapper><BookingPage /></SuspenseWrapper>,
+        element: <Navigate to="/book" replace />,
       },
       {
         path: '/blog',

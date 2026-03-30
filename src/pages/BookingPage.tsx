@@ -1,6 +1,6 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,15 +16,17 @@ import {
   Loader2,
   CheckCircle,
   ExternalLink,
+  Star,
+  Users,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useAvailableSlots } from '@/hooks/useAvailability';
+import { useTeachers } from '@/hooks/useTeachers';
+import { useAllTeachersAvailableSlots } from '@/hooks/useAllTeachersAvailability';
+import type { AggregatedSlot, AggregatedTeacher } from '@/hooks/useAllTeachersAvailability';
 import { useCreateBooking } from '@/hooks/useBookings';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
-import { useTeacherBySlug } from '@/hooks/useTeachers';
 import { useCurrencySettings } from '@/hooks/useCurrency';
-import { convertSlotToUserTz } from '@/lib/timezone';
 import { AnimatedSection } from '@/components/shared/motion';
 import { useLocations } from '@/hooks/useLocations';
 import type { OnlinePlatform, PaymentMethod } from '@/types';
@@ -64,14 +66,15 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [searchParams] = useSearchParams();
-  const { slug } = useParams<{ slug: string }>();
-  const { teacher, loading: teacherLoading } = useTeacherBySlug(slug);
+
+  const { teachers, loading: teachersLoading } = useTeachers();
 
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedLesson, setSelectedLesson] = useState<string>('');
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>('');
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
   const [lessonFormat, setLessonFormat] = useState<'online' | 'offline'>('online');
   const [platform, setPlatform] = useState('zoom');
   const [selectedLocationId, setSelectedLocationId] = useState('');
@@ -82,79 +85,58 @@ export default function BookingPage() {
   const [showPaymentUI, setShowPaymentUI] = useState(false);
 
   const yearMonth = format(viewMonth, 'yyyy-MM');
-  const { slots: availableSlots, loading: slotsLoading } = useAvailableSlots(teacher?.id || '', yearMonth);
+  const { slots: aggregatedSlots, loading: slotsLoading } = useAllTeachersAvailableSlots(teachers, yearMonth);
   const { createBooking, loading: bookingLoading } = useCreateBooking();
-  const { userTz, userTzLabel, teacherTzLabel, isSameAsTeacher } = useUserTimezone(teacher?.timezone);
   const { locations: offlineLocations } = useLocations();
+
+  // Selected teacher object
+  const selectedTeacher = useMemo(
+    () => teachers.find((t) => t.id === selectedTeacherId) ?? null,
+    [teachers, selectedTeacherId],
+  );
+
+  const { userTzLabel } = useUserTimezone(selectedTeacher?.timezone);
 
   const step: Step = STEPS[currentStep];
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const daySlots = selectedDateStr ? (availableSlots[selectedDateStr] || []) : [];
+  const daySlots: AggregatedSlot[] = selectedDateStr ? (aggregatedSlots[selectedDateStr] || []) : [];
 
-  const convertedDaySlots = useMemo(() => {
-    if (!selectedDateStr || isSameAsTeacher) return null;
-    return daySlots.map((slot) => convertSlotToUserTz(slot.startTime, slot.endTime, selectedDateStr, userTz, teacher?.timezone));
-  }, [daySlots, selectedDateStr, userTz, isSameAsTeacher, teacher?.timezone]);
+  // Find the selected aggregated slot
+  const selectedSlot = useMemo(
+    () => daySlots.find((s) => s.startTime === selectedTime),
+    [daySlots, selectedTime],
+  );
 
+  // Available teachers for the selected time slot
+  const availableTeachersForSlot = useMemo(
+    () => selectedSlot?.teachers ?? [],
+    [selectedSlot],
+  );
+
+  // Find the selected teacher's slot info (for booking creation with original times)
+  const selectedTeacherSlotInfo = useMemo(
+    () => availableTeachersForSlot.find((t) => t.id === selectedTeacherId),
+    [availableTeachersForSlot, selectedTeacherId],
+  );
+
+  // Dates that have any available slots
   const datesWithSlots = useMemo(() => {
-    return Object.keys(availableSlots)
+    return Object.keys(aggregatedSlots)
       .filter((d) => {
         const date = new Date(d + 'T00:00:00');
         return date >= new Date(new Date().toDateString());
       })
       .map((d) => new Date(d + 'T00:00:00'));
-  }, [availableSlots]);
+  }, [aggregatedSlots]);
 
   const selectedLessonData = LESSON_OPTIONS.find((o) => o.id === selectedLesson);
-  const selectedSlot = daySlots.find((s) => s.startTime === selectedTime);
-  const selectedLocationData = offlineLocations.find((l) => l.id === selectedLocationId);
 
-  // Backward compat: if accessed via old /book route (no slug), prompt to select a teacher
-  if (!slug) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="px-8 py-10">
-            <h2 className="text-xl font-bold">{t('title')}</h2>
-            <p className="mt-3 text-muted-foreground">
-              {t('selectTeacherFirst', 'Please select a teacher to book a lesson with.')}
-            </p>
-            <Button className="mt-6 h-12" render={<Link to="/teachers" />}>
-              {t('browseTeachers', 'Browse Teachers')}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Show loading while teacher profile is being fetched
-  if (teacherLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-      </div>
-    );
-  }
-
-  // Teacher not found
-  if (!teacher) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="px-8 py-10">
-            <h2 className="text-xl font-bold">{t('teacherNotFound', 'Teacher Not Found')}</h2>
-            <p className="mt-3 text-muted-foreground">
-              {t('teacherNotFoundDesc', 'The teacher you are looking for does not exist or is no longer active.')}
-            </p>
-            <Button className="mt-6 h-12" render={<Link to="/teachers" />}>
-              {t('browseTeachers', 'Browse Teachers')}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Auto-select first available teacher when entering step 3
+  useEffect(() => {
+    if (step === 'details' && availableTeachersForSlot.length > 0 && !selectedTeacherId) {
+      setSelectedTeacherId(availableTeachersForSlot[0].id);
+    }
+  }, [step, availableTeachersForSlot, selectedTeacherId]);
 
   // Handle Toss payment redirect
   const tossRedirect = searchParams.get('toss');
@@ -166,11 +148,20 @@ export default function BookingPage() {
     );
   }
 
+  // Loading teachers
+  if (teachersLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
   const canProceed = () => {
     switch (step) {
       case 'lessonType': return !!selectedLesson;
       case 'dateTime': return !!selectedDate && !!selectedTime && !!selectedSlot;
-      case 'details': return lessonFormat === 'online' || !!selectedLocationId;
+      case 'details': return !!selectedTeacherId && (lessonFormat === 'online' || !!selectedLocationId);
       case 'payment': return true;
     }
   };
@@ -180,12 +171,13 @@ export default function BookingPage() {
       navigate('/login');
       return;
     }
-    if (!selectedLessonData || !selectedDate || !selectedSlot) return;
+    if (!selectedLessonData || !selectedDate || !selectedTeacherSlotInfo || !selectedTeacher) return;
 
     try {
+      const selectedLocation = offlineLocations.find((l) => l.id === selectedLocationId);
       const bookingId = await createBooking({
-        teacherId: teacher!.id,
-        teacherName: teacher!.name,
+        teacherId: selectedTeacher.id,
+        teacherName: selectedTeacher.name,
         lessonTypeId: selectedLessonData.id,
         lessonTypeName: {
           en: i18n.getFixedT('en', 'lessons')(`${selectedLessonData.level}.name`),
@@ -193,13 +185,13 @@ export default function BookingPage() {
           ko: i18n.getFixedT('ko', 'lessons')(`${selectedLessonData.level}.name`),
           ja: i18n.getFixedT('ja', 'lessons')(`${selectedLessonData.level}.name`),
         },
-        date: selectedDateStr,
-        startTime: selectedSlot.startTime,
-        endTime: selectedSlot.endTime,
+        date: selectedTeacherSlotInfo.originalDate,
+        startTime: selectedTeacherSlotInfo.originalStartTime,
+        endTime: selectedTeacherSlotInfo.originalEndTime,
         format: lessonFormat,
         platform: lessonFormat === 'online' ? PLATFORM_MAP[platform] : null,
-        offlineLocation: lessonFormat === 'offline' && selectedLocationData
-          ? { name: selectedLocationData.name, address: selectedLocationData.address }
+        offlineLocation: lessonFormat === 'offline' && selectedLocation
+          ? { name: selectedLocation.name, address: selectedLocation.address }
           : null,
         paymentMethod,
         notes,
@@ -208,12 +200,7 @@ export default function BookingPage() {
       });
 
       setCreatedBookingId(bookingId);
-
-      if (paymentMethod === 'bank_transfer') {
-        setShowPaymentUI(true);
-      } else {
-        setShowPaymentUI(true);
-      }
+      setShowPaymentUI(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('bookingFailed'));
     }
@@ -236,6 +223,7 @@ export default function BookingPage() {
     setSelectedLesson('');
     setSelectedDate(undefined);
     setSelectedTime('');
+    setSelectedTeacherId('');
     setSelectedLocationId('');
     setNotes('');
   };
@@ -274,14 +262,6 @@ export default function BookingPage() {
     <div className="px-4 py-16">
       <div className="container mx-auto max-w-3xl">
         <AnimatedSection>
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <img
-              src={teacher.profileImageUrl}
-              alt={teacher.name}
-              className="h-10 w-10 rounded-full object-cover"
-            />
-            <span className="text-lg font-medium text-muted-foreground">{teacher.name}</span>
-          </div>
           <h1 className="mb-2 text-center text-3xl font-bold">{t('title')}</h1>
         </AnimatedSection>
 
@@ -356,6 +336,7 @@ export default function BookingPage() {
                   onSelect={(d) => {
                     setSelectedDate(d);
                     setSelectedTime('');
+                    setSelectedTeacherId('');
                   }}
                   month={viewMonth}
                   onMonthChange={setViewMonth}
@@ -374,21 +355,27 @@ export default function BookingPage() {
                 ) : selectedDate ? (
                   daySlots.length > 0 ? (
                     <div className="grid grid-cols-2 gap-3">
-                      {daySlots.map((slot, index) => {
-                        const display = convertedDaySlots?.[index];
-                        const displayStart = display?.startTime ?? slot.startTime;
-                        const displayEnd = display?.endTime ?? slot.endTime;
-                        return (
-                          <Button
-                            key={slot.startTime}
-                            variant={selectedTime === slot.startTime ? 'default' : 'outline'}
-                            className="h-12 rounded-xl"
-                            onClick={() => setSelectedTime(slot.startTime)}
-                          >
-                            <span className="font-mono text-xs">{displayStart} - {displayEnd}</span>
-                          </Button>
-                        );
-                      })}
+                      {daySlots.map((slot) => (
+                        <Button
+                          key={slot.startTime}
+                          variant={selectedTime === slot.startTime ? 'default' : 'outline'}
+                          className="h-auto rounded-xl px-3 py-2.5"
+                          onClick={() => {
+                            setSelectedTime(slot.startTime);
+                            if (slot.teachers.length > 0) {
+                              setSelectedTeacherId(slot.teachers[0].id);
+                            }
+                          }}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="font-mono text-xs">{slot.startTime} - {slot.endTime}</span>
+                            <span className={`flex items-center gap-1 text-[10px] ${selectedTime === slot.startTime ? 'text-white/70' : 'text-muted-foreground'}`}>
+                              <Users className="h-3 w-3" />
+                              {t('teachersAvailable', { count: slot.teachers.length })}
+                            </span>
+                          </div>
+                        </Button>
+                      ))}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">{t('noSlots')}</p>
@@ -397,9 +384,7 @@ export default function BookingPage() {
                   <p className="text-sm text-muted-foreground">{t('selectDate')}</p>
                 )}
                 <p className="mt-3 text-xs text-muted-foreground">
-                  {isSameAsTeacher
-                    ? `${t('yourTimezone')}: ${userTzLabel}`
-                    : `${t('yourTimezone')}: ${userTzLabel} · ${t('teacherTimezone')}: ${teacherTzLabel}`}
+                  {t('yourTimezone')}: {userTzLabel}
                 </p>
               </div>
             </div>
@@ -409,6 +394,22 @@ export default function BookingPage() {
         {/* Step 3: Details */}
         {step === 'details' && (
           <div className="mx-auto max-w-lg space-y-8">
+            {/* Available Teachers */}
+            <div>
+              <p className="mb-4 font-medium">{t('selectTeacher')}</p>
+              <div className="grid gap-3">
+                {availableTeachersForSlot.map((teacher) => (
+                  <TeacherCard
+                    key={teacher.id}
+                    teacher={teacher}
+                    selected={selectedTeacherId === teacher.id}
+                    onClick={() => setSelectedTeacherId(teacher.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Lesson Format */}
             <div>
               <p className="mb-4 font-medium">{t('format.title')}</p>
               <div className="grid grid-cols-2 gap-4">
@@ -544,17 +545,17 @@ export default function BookingPage() {
                   <span>{selectedLesson && tl(`${selectedLesson}.name`)}</span>
                 </div>
                 <div className="flex justify-between py-0.5">
+                  <span className="text-muted-foreground">{t('summary.teacher')}</span>
+                  <span>{selectedTeacher?.name}</span>
+                </div>
+                <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.date')}</span>
                   <span>{selectedDate && format(selectedDate, 'EEE, MMM d, yyyy')}</span>
                 </div>
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.time')}</span>
                   <span className="font-mono">
-                    {(() => {
-                      if (!selectedSlot || !selectedDateStr) return '';
-                      const c = convertSlotToUserTz(selectedSlot.startTime, selectedSlot.endTime, selectedDateStr, userTz, teacher?.timezone);
-                      return `${c.startTime} - ${c.endTime} ${userTzLabel}`;
-                    })()}
+                    {selectedSlot ? `${selectedSlot.startTime} - ${selectedSlot.endTime} ${userTzLabel}` : ''}
                   </span>
                 </div>
                 <div className="flex justify-between py-0.5">
@@ -562,8 +563,8 @@ export default function BookingPage() {
                   <span>
                     {lessonFormat === 'online'
                       ? `${t('format.online')} (${t(`format.${platform}`)})`
-                      : selectedLocationData
-                        ? `${t('format.offline')} — ${selectedLocationData.name}`
+                      : offlineLocations.find((l) => l.id === selectedLocationId)
+                        ? `${t('format.offline')} — ${offlineLocations.find((l) => l.id === selectedLocationId)!.name}`
                         : t('format.offline')}
                   </span>
                 </div>
@@ -679,5 +680,54 @@ export default function BookingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Teacher card for step 3 */
+function TeacherCard({
+  teacher,
+  selected,
+  onClick,
+}: {
+  teacher: AggregatedTeacher;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-all ${
+        selected
+          ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-500'
+          : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-sm'
+      }`}
+    >
+      {teacher.profileImageUrl ? (
+        <img
+          src={teacher.profileImageUrl}
+          alt={teacher.name}
+          className="h-12 w-12 shrink-0 rounded-full object-cover"
+        />
+      ) : (
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-600">
+          {teacher.name.split(' ').map((n) => n[0]).join('').toUpperCase()}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="font-medium">{teacher.name}</div>
+        {teacher.rating > 0 && (
+          <div className="mt-0.5 flex items-center gap-1 text-sm text-muted-foreground">
+            <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+            <span>{teacher.rating.toFixed(1)}</span>
+          </div>
+        )}
+      </div>
+      {selected && (
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500">
+          <Check className="h-3.5 w-3.5 text-white" />
+        </div>
+      )}
+    </button>
   );
 }

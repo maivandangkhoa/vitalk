@@ -193,7 +193,7 @@ export default function TeacherProfilePage() {
           <Button
             size="lg"
             className="h-12 px-8 shadow-md hover:shadow-lg"
-            render={<Link to={`/teachers/${slug}/book`} />}
+            render={<Link to="/book" />}
           >
             {t('bookLesson')}
           </Button>

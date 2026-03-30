@@ -12,6 +12,8 @@
   "noSlots": "この日は空きがありません",
   "yourTimezone": "あなたのタイムゾーン",
   "teacherTimezone": "講師のタイムゾーン",
+  "teachersAvailable": "{{count}}名の講師",
+  "selectTeacher": "講師を選択",
   "format": {
     "title": "レッスン形式",
     "online": "オンラインレッスン",
@@ -47,7 +49,8 @@
     "lesson": "レッスン",
     "date": "日付",
     "time": "時間",
-    "format": "形式"
+    "format": "形式",
+    "teacher": "講師"
   },
   "bookingFailed": "予約に失敗しました。もう一度お試しください。",
   "confirmation": {
