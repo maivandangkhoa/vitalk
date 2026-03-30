@@ -33,7 +33,8 @@
   "teachers": {
     "title": "Meet Our Teachers",
     "subtitle": "Handpicked Vietnamese educators who are passionate about helping you succeed.",
-    "viewAll": "View All Teachers"
+    "viewAll": "View All Teachers",
+    "viewProfile": "View Profile"
   },
   "testimonials": {
     "title": "What Our Students Say",

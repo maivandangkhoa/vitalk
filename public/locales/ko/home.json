@@ -33,7 +33,8 @@
   "teachers": {
     "title": "선생님 소개",
     "subtitle": "여러분의 성공을 돕기 위해 엄선된 열정적인 베트남어 교육자들.",
-    "viewAll": "모든 선생님 보기"
+    "viewAll": "모든 선생님 보기",
+    "viewProfile": "프로필 보기"
   },
   "testimonials": {
     "title": "학생들의 후기",
