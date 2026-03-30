@@ -8,6 +8,29 @@ import { Button } from '@/components/ui/button';
 import { Star, MapPin, Globe, GraduationCap, Calendar, Loader2 } from 'lucide-react';
 import type { Language } from '@/types';
 
+function toEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    // Already an embed URL
+    if (u.pathname.startsWith('/embed/')) return url;
+    // youtube.com/watch?v=ID
+    if (u.hostname.includes('youtube.com') && u.searchParams.has('v')) {
+      return `https://www.youtube.com/embed/${u.searchParams.get('v')}`;
+    }
+    // youtu.be/ID
+    if (u.hostname === 'youtu.be') {
+      return `https://www.youtube.com/embed${u.pathname}`;
+    }
+    // youtube.com/shorts/ID
+    if (u.pathname.startsWith('/shorts/')) {
+      return `https://www.youtube.com/embed/${u.pathname.split('/shorts/')[1]}`;
+    }
+    return url;
+  } catch {
+    return null;
+  }
+}
+
 export default function TeacherProfilePage() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation('teachers');
@@ -103,12 +126,12 @@ export default function TeacherProfilePage() {
         )}
 
         {/* Video intro */}
-        {teacher.videoIntroUrl && (
+        {teacher.videoIntroUrl && toEmbedUrl(teacher.videoIntroUrl) && (
           <AnimatedSection className="mt-12">
             <Card className="overflow-hidden rounded-xl">
               <div className="aspect-video">
                 <iframe
-                  src={teacher.videoIntroUrl}
+                  src={toEmbedUrl(teacher.videoIntroUrl)!}
                   title={t('videoIntro')}
                   className="h-full w-full"
                   allowFullScreen
