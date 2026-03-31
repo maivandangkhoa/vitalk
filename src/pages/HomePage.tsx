@@ -191,7 +191,7 @@ export default function HomePage() {
             </div>
           ) : teacherCount > 0 ? (
             <div
-              className="relative mx-auto mt-12 max-w-3xl"
+              className="relative mx-auto mt-12 max-w-5xl"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
             >
@@ -238,70 +238,76 @@ export default function HomePage() {
                         transition={{ duration: 0.35, ease: 'easeInOut' }}
                       >
                         <Card className="border-0 bg-white shadow-sm">
-                          <CardContent className="flex flex-col items-center p-8 text-center md:p-12">
-                            {teacher.profileImageUrl ? (
-                              <img
-                                src={teacher.profileImageUrl}
-                                alt={teacher.name}
-                                className="h-28 w-28 rounded-full object-cover shadow-md"
-                              />
-                            ) : (
-                              <div className="flex h-28 w-28 items-center justify-center rounded-full bg-indigo-100 text-3xl font-bold text-indigo-600 shadow-md">
-                                {initials}
-                              </div>
-                            )}
+                          <CardContent className="flex flex-col items-center p-8 text-center md:flex-row md:items-start md:gap-10 md:p-10 md:text-left">
+                            {/* Avatar */}
+                            <div className="shrink-0">
+                              {teacher.profileImageUrl ? (
+                                <img
+                                  src={teacher.profileImageUrl}
+                                  alt={teacher.name}
+                                  className="h-32 w-32 rounded-full object-cover shadow-md"
+                                />
+                              ) : (
+                                <div className="flex h-32 w-32 items-center justify-center rounded-full bg-indigo-100 text-3xl font-bold text-indigo-600 shadow-md">
+                                  {initials}
+                                </div>
+                              )}
+                            </div>
 
-                            <h3 className="mt-5 text-2xl font-bold">{teacher.name}</h3>
+                            {/* Info */}
+                            <div className="mt-5 flex-1 md:mt-0">
+                              <h3 className="text-2xl font-bold">{teacher.name}</h3>
 
-                            {teacher.location && (
-                              <div className="mt-2 flex items-center gap-1.5 text-muted-foreground">
-                                <MapPin className="h-4 w-4" />
-                                <span>{teacher.location}</span>
-                              </div>
-                            )}
+                              {teacher.location && (
+                                <div className="mt-2 flex items-center justify-center gap-1.5 text-muted-foreground md:justify-start">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{teacher.location}</span>
+                                </div>
+                              )}
 
-                            {teacher.rating > 0 && (
-                              <div className="mt-2 flex items-center gap-2">
-                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                <span className="font-semibold">{teacher.rating.toFixed(1)}</span>
-                                {teacher.totalReviews > 0 && (
-                                  <span className="text-sm text-muted-foreground">
-                                    ({teacher.totalReviews})
-                                  </span>
-                                )}
-                              </div>
-                            )}
+                              {teacher.rating > 0 && (
+                                <div className="mt-2 flex items-center justify-center gap-2 md:justify-start">
+                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                  <span className="font-semibold">{teacher.rating.toFixed(1)}</span>
+                                  {teacher.totalReviews > 0 && (
+                                    <span className="text-sm text-muted-foreground">
+                                      ({teacher.totalReviews})
+                                    </span>
+                                  )}
+                                </div>
+                              )}
 
-                            {/* Languages */}
-                            {teacher.languages && Object.keys(teacher.languages).length > 0 && (
-                              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                                {Object.entries(teacher.languages).map(([code, level]) => (
-                                  <span
-                                    key={code}
-                                    className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600"
-                                  >
-                                    <Globe className="h-3 w-3" />
-                                    {code.toUpperCase()} · {level}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                              {/* Languages */}
+                              {teacher.languages && Object.keys(teacher.languages).length > 0 && (
+                                <div className="mt-3 flex flex-wrap justify-center gap-2 md:justify-start">
+                                  {Object.entries(teacher.languages).map(([code, level]) => (
+                                    <span
+                                      key={code}
+                                      className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600"
+                                    >
+                                      <Globe className="h-3 w-3" />
+                                      {code.toUpperCase()} · {level}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
 
-                            {/* Bio */}
-                            {bio && (
-                              <p className="mx-auto mt-5 line-clamp-3 max-w-xl leading-relaxed text-muted-foreground">
-                                {bio}
-                              </p>
-                            )}
+                              {/* Bio */}
+                              {bio && (
+                                <p className="mt-4 line-clamp-3 leading-relaxed text-muted-foreground">
+                                  {bio}
+                                </p>
+                              )}
 
-                            <Button
-                              variant="outline"
-                              className="mt-6"
-                              render={<Link to={`/teachers/${teacher.slug}`} />}
-                            >
-                              {t('teachers.viewProfile')}
-                              <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
+                              <Button
+                                variant="outline"
+                                className="mt-5"
+                                render={<Link to={`/teachers/${teacher.slug}`} />}
+                              >
+                                {t('teachers.viewProfile')}
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       </motion.div>
