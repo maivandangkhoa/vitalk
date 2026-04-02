@@ -27,6 +27,7 @@
     "confirmPassword": "Confirm Password",
     "loginWithGoogle": "Continue with Google",
     "loginWithKakao": "Continue with Kakao",
+    "loginWithNaver": "Continue with Naver",
     "loginWithEmail": "Login with Email",
     "signupWithEmail": "Sign Up with Email",
     "noAccount": "Don't have an account?",

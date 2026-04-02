@@ -16,6 +16,7 @@ const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const MyBookingsPage = lazy(() => import('@/pages/MyBookingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const AdminSetupPage = lazy(() => import('@/pages/AdminSetupPage'));
+const NaverCallbackPage = lazy(() => import('@/pages/NaverCallbackPage'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
@@ -91,6 +92,10 @@ export const router = createBrowserRouter([
             <SuspenseWrapper><MyBookingsPage /></SuspenseWrapper>
           </ProtectedRoute>
         ),
+      },
+      {
+        path: '/auth/naver/callback',
+        element: <SuspenseWrapper><NaverCallbackPage /></SuspenseWrapper>,
       },
       {
         path: '/admin-setup',

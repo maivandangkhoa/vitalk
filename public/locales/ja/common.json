@@ -27,6 +27,7 @@
     "confirmPassword": "パスワード確認",
     "loginWithGoogle": "Googleで続ける",
     "loginWithKakao": "Kakaoで続ける",
+    "loginWithNaver": "Naverで続ける",
     "loginWithEmail": "メールでログイン",
     "signupWithEmail": "メールで登録",
     "noAccount": "アカウントをお持ちでないですか？",

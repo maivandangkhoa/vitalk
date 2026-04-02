@@ -37,6 +37,12 @@ export async function signInWithKakaoToken(customToken: string) {
   return result.user;
 }
 
+export async function signInWithNaverToken(customToken: string) {
+  const result = await signInWithCustomToken(auth, customToken);
+  await ensureUserDoc(result.user, 'naver');
+  return result.user;
+}
+
 export async function signOut() {
   await firebaseSignOut(auth);
 }
@@ -53,7 +59,7 @@ export async function getUserRole(user: User): Promise<{ role: UserRole; teacher
 
 async function ensureUserDoc(
   user: User,
-  provider: 'google' | 'kakao' | 'email'
+  provider: 'google' | 'kakao' | 'naver' | 'email'
 ) {
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);

@@ -10,7 +10,7 @@ export interface AppUser {
   email: string;
   photoURL: string | null;
   role: UserRole;
-  provider: 'google' | 'kakao' | 'email';
+  provider: 'google' | 'kakao' | 'naver' | 'email';
   preferredLanguage: Language;
   teacherId?: string;
   createdAt: Date;

@@ -1,6 +1,13 @@
 import * as admin from "firebase-admin";
+import * as path from "path";
 
-admin.initializeApp();
+const serviceAccountPath = path.join(__dirname, "../service-account.json");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const serviceAccount = require(serviceAccountPath);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 // Payment functions
 export { createPaypalOrder, capturePaypalOrder } from "./paypal";
@@ -8,6 +15,7 @@ export { confirmTossPayment } from "./toss";
 
 // Auth
 export { setUserRole } from "./auth";
+export { naverLogin } from "./naverAuth";
 
 // Email triggers (Firestore)
 export { onBookingCreated, onBookingUpdated } from "./bookingTriggers";

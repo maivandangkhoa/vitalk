@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const handleNaverMessage = useCallback(
+    (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type === 'NAVER_LOGIN_SUCCESS') {
+        navigate('/');
+      } else if (event.data?.type === 'NAVER_LOGIN_ERROR') {
+        toast.error(event.data.error || 'Naver login failed');
+      }
+    },
+    [navigate]
+  );
+
+  useEffect(() => {
+    window.addEventListener('message', handleNaverMessage);
+    return () => window.removeEventListener('message', handleNaverMessage);
+  }, [handleNaverMessage]);
+
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -32,6 +49,41 @@ export default function LoginPage() {
 
   const handleKakaoLogin = () => {
     toast.info('Kakao login coming soon');
+  };
+
+  const handleNaverLogin = () => {
+    const clientId = import.meta.env.VITE_NAVER_CLIENT_ID;
+    if (!clientId) {
+      toast.error('Naver login is not configured');
+      return;
+    }
+
+    const state = crypto.randomUUID();
+    localStorage.setItem('naver_oauth_state', state);
+
+    const redirectUri = `${window.location.origin}/auth/naver/callback`;
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      state,
+    });
+
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?${params.toString()}`;
+
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    const popup = window.open(
+      naverAuthUrl,
+      'naver-login',
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    if (!popup) {
+      toast.error('Popup blocked. Please allow popups for this site.');
+    }
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -108,6 +160,21 @@ export default function LoginPage() {
                 />
               </svg>
               {t('auth.loginWithKakao')}
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-12 w-full rounded-xl bg-[#03C75A] text-white hover:bg-[#02b351]"
+              onClick={handleNaverLogin}
+              disabled={loading}
+            >
+              <svg className="mr-2.5 h-4 w-4" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727v12.845z"
+                />
+              </svg>
+              {t('auth.loginWithNaver')}
             </Button>
 
             <div className="flex items-center gap-4">
