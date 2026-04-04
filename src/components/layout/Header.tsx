@@ -51,7 +51,7 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight">
-            havi<span className="text-indigo-500">Talk</span>
+            Havi<span className="text-indigo-500">Talk</span>
           </span>
         </Link>
 

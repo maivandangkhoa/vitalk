@@ -614,7 +614,7 @@ export default function BookingPage() {
                     amount={selectedLessonData?.price || 14}
                     customerName={user.displayName || ''}
                     customerEmail={user.email || ''}
-                    orderName={`haviTalk - ${selectedLesson} lesson`}
+                    orderName={`HaviTalk - ${selectedLesson} lesson`}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                   />

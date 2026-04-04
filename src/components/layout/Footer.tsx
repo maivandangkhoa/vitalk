@@ -11,7 +11,7 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-3">
           <div>
             <Link to="/" className="text-lg font-bold">
-              havi<span className="text-indigo-500">Talk</span>
+              Havi<span className="text-indigo-500">Talk</span>
             </Link>
             <p className="mt-2 text-sm text-muted-foreground">
               {t('footer.tagline')}

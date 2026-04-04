@@ -2,7 +2,7 @@
   "hero": {
     "greeting": "Xin chào! 🇻🇳",
     "title": "Học tiếng Việt cùng giáo viên bản ngữ chuyên nghiệp",
-    "subtitle": "haviTalk là trung tâm Việt ngữ trực tuyến kết nối bạn với đội ngũ giáo viên bản ngữ giàu kinh nghiệm và nhiệt huyết. Online hoặc trực tiếp tại Seoul.",
+    "subtitle": "HaviTalk là trung tâm Việt ngữ trực tuyến kết nối bạn với đội ngũ giáo viên bản ngữ giàu kinh nghiệm và nhiệt huyết. Online hoặc trực tiếp tại Seoul.",
     "cta": "Đặt buổi học đầu tiên",
     "stats": {
       "teachers": "{{count}}+ Giáo viên",
@@ -12,10 +12,10 @@
   },
   "highlights": {
     "title": "Tại sao nên chọn chúng tôi?",
-    "subtitle": "haviTalk không chỉ là một trung tâm ngôn ngữ thông thường. Đây là điều khiến chúng tôi khác biệt.",
+    "subtitle": "HaviTalk không chỉ là một trung tâm ngôn ngữ thông thường. Đây là điều khiến chúng tôi khác biệt.",
     "native": {
       "title": "100% Giáo viên bản ngữ",
-      "description": "Tất cả giáo viên tại haviTalk đều là người Việt Nam, mang đến phát âm chuẩn xác, chiều sâu văn hóa và khả năng giao tiếp thực tế trong mỗi buổi học."
+      "description": "Tất cả giáo viên tại HaviTalk đều là người Việt Nam, mang đến phát âm chuẩn xác, chiều sâu văn hóa và khả năng giao tiếp thực tế trong mỗi buổi học."
     },
     "proven": {
       "title": "Kết quả đã được chứng minh",
@@ -42,7 +42,7 @@
   },
   "cta": {
     "title": "Sẵn sàng bắt đầu hành trình tiếng Việt?",
-    "subtitle": "Hãy tham gia cùng hàng trăm học viên đã khám phá niềm vui học tiếng Việt tại haviTalk. Từ người mới bắt đầu đến hội thoại nâng cao — chúng tôi có lớp học phù hợp cho bạn.",
+    "subtitle": "Hãy tham gia cùng hàng trăm học viên đã khám phá niềm vui học tiếng Việt tại HaviTalk. Từ người mới bắt đầu đến hội thoại nâng cao — chúng tôi có lớp học phù hợp cho bạn.",
     "button": "Xem lớp học & Đặt lịch"
   }
 }

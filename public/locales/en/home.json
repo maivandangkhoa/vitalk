@@ -2,7 +2,7 @@
   "hero": {
     "greeting": "Xin chào! 🇻🇳",
     "title": "Master Vietnamese with Expert Native Teachers",
-    "subtitle": "haviTalk is a curated Vietnamese language center connecting you with passionate, experienced native teachers. Online or in-person in Seoul.",
+    "subtitle": "HaviTalk is a curated Vietnamese language center connecting you with passionate, experienced native teachers. Online or in-person in Seoul.",
     "cta": "Book Your First Lesson",
     "stats": {
       "teachers": "{{count}}+ Teachers",
@@ -12,10 +12,10 @@
   },
   "highlights": {
     "title": "Why Learn With Us?",
-    "subtitle": "We're not just any language school. Here's what makes haviTalk different.",
+    "subtitle": "We're not just any language school. Here's what makes HaviTalk different.",
     "native": {
       "title": "100% Native Teachers",
-      "description": "Every teacher at haviTalk is a native Vietnamese speaker, bringing authentic pronunciation, cultural depth, and real-world fluency to your lessons."
+      "description": "Every teacher at HaviTalk is a native Vietnamese speaker, bringing authentic pronunciation, cultural depth, and real-world fluency to your lessons."
     },
     "proven": {
       "title": "Proven Student Success",
@@ -42,7 +42,7 @@
   },
   "cta": {
     "title": "Ready to Start Your Vietnamese Journey?",
-    "subtitle": "Join hundreds of students who have discovered the joy of learning Vietnamese with haviTalk. From complete beginner to advanced conversation — we have a lesson for you.",
+    "subtitle": "Join hundreds of students who have discovered the joy of learning Vietnamese with HaviTalk. From complete beginner to advanced conversation — we have a lesson for you.",
     "button": "View Lessons & Book"
   }
 }

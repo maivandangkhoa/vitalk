@@ -92,7 +92,7 @@ export function AdminLayout() {
       <aside className="hidden w-64 flex-shrink-0 border-r border-zinc-100 bg-white/80 backdrop-blur-md md:block">
         <div className="flex h-16 items-center justify-between border-b border-zinc-100 px-4">
           <Link to="/" className="text-lg font-bold">
-            havi<span className="text-indigo-500">Talk</span>
+            Havi<span className="text-indigo-500">Talk</span>
             <span className="ml-2 text-xs text-muted-foreground">Admin</span>
           </Link>
         </div>
@@ -117,7 +117,7 @@ export function AdminLayout() {
             <SheetContent side="left" className="w-64 p-0">
               <div className="flex h-16 items-center border-b border-zinc-100 px-4">
                 <span className="text-lg font-bold">
-                  havi<span className="text-indigo-500">Talk</span>
+                  Havi<span className="text-indigo-500">Talk</span>
                   <span className="ml-2 text-xs text-muted-foreground">Admin</span>
                 </span>
               </div>

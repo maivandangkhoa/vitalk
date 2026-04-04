@@ -16,8 +16,8 @@ interface BookingEmailData {
 
 function baseLayout(content: string, teacherName?: string): string {
   const footerText = teacherName
-    ? `haviTalk - Vietnamese Language Lessons with ${teacherName}`
-    : "haviTalk - Vietnamese Language Lessons";
+    ? `HaviTalk - Vietnamese Language Lessons with ${teacherName}`
+    : "HaviTalk - Vietnamese Language Lessons";
   return `
 <!DOCTYPE html>
 <html>
@@ -44,7 +44,7 @@ function baseLayout(content: string, teacherName?: string): string {
 <body>
   <div class="container">
     <div class="card">
-      <div class="header"><span class="logo">haviTalk</span></div>
+      <div class="header"><span class="logo">HaviTalk</span></div>
       ${content}
     </div>
     <div class="footer">
