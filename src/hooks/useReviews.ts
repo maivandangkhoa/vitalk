@@ -78,6 +78,11 @@ export async function toggleReviewVisibility(id: string, visible: boolean) {
   await updateDoc(doc(db, 'reviews', id), { isVisible: visible });
 }
 
+/** Update review fields */
+export async function updateReview(id: string, data: { studentName?: string; content?: string; rating?: number }) {
+  await updateDoc(doc(db, 'reviews', id), data);
+}
+
 /** Delete review */
 export async function deleteReview(id: string) {
   await deleteDoc(doc(db, 'reviews', id));
