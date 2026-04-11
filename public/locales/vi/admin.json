@@ -197,7 +197,10 @@
     "importing": "Đang nhập...",
     "importButton": "Nhập",
     "importSuccess": "Đã nhập hồ sơ giáo viên! Kiểm tra và lưu.",
-    "importFailed": "Nhập thất bại. Kiểm tra lại link và thử lại."
+    "importFailed": "Nhập thất bại. Kiểm tra lại link và thử lại.",
+    "deleteConfirm": "Xóa?",
+    "deleted": "Đã xóa giáo viên",
+    "deleteFailed": "Xóa thất bại"
   },
   "migration": {
     "title": "Di chuyển dữ liệu",

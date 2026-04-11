@@ -13,6 +13,7 @@ import {
   X,
   Check,
   Download,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
@@ -21,6 +22,7 @@ import {
   useAdminTeachers,
   createTeacher,
   updateTeacher,
+  deleteTeacher,
 } from '@/hooks/useTeachers';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 
@@ -69,6 +71,7 @@ export default function AdminTeachers() {
   const [editing, setEditing] = useState<string | null>(null); // teacher id or 'new'
   const [form, setForm] = useState<TeacherForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null); // teacher id pending delete confirmation
 
   // italki import state
   const [showImport, setShowImport] = useState(false);
@@ -207,6 +210,17 @@ export default function AdminTeachers() {
       toast.error(t('teachers.saveFailed'));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTeacher(id);
+      toast.success(t('teachers.deleted'));
+      setDeleting(null);
+      refetch();
+    } catch {
+      toast.error(t('teachers.deleteFailed'));
     }
   };
 
@@ -421,13 +435,37 @@ export default function AdminTeachers() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex items-center gap-1">
                     <Button variant="ghost" size="sm" onClick={() => startEdit(teacher)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleToggle(teacher.id, teacher.isActive)}>
                       {teacher.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
+                    {deleting === teacher.id ? (
+                      <div className="flex items-center gap-1 ml-1">
+                        <span className="text-xs text-destructive whitespace-nowrap">{t('teachers.deleteConfirm')}</span>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(teacher.id)}
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleting(null)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleting(teacher.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

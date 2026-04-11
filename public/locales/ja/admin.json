@@ -197,7 +197,10 @@
     "importing": "取り込み中...",
     "importButton": "取り込み",
     "importSuccess": "講師プロフィールを取り込みました！確認して保存してください。",
-    "importFailed": "取り込みに失敗しました。URLを確認して再試行してください。"
+    "importFailed": "取り込みに失敗しました。URLを確認して再試行してください。",
+    "deleteConfirm": "削除？",
+    "deleted": "講師を削除しました",
+    "deleteFailed": "削除に失敗しました"
   },
   "migration": {
     "title": "データ移行",

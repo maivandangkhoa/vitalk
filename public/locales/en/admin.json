@@ -197,7 +197,10 @@
     "importing": "Importing...",
     "importButton": "Import",
     "importSuccess": "Teacher profile imported! Review and save.",
-    "importFailed": "Failed to import. Check the URL and try again."
+    "importFailed": "Failed to import. Check the URL and try again.",
+    "deleteConfirm": "Delete?",
+    "deleted": "Teacher deleted",
+    "deleteFailed": "Failed to delete"
   },
   "migration": {
     "title": "Data Migration",

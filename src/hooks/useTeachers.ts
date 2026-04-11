@@ -4,6 +4,7 @@ import {
   doc,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
@@ -149,4 +150,9 @@ export async function updateTeacher(
     ...data,
     updatedAt: serverTimestamp(),
   });
+}
+
+/** Delete a teacher profile */
+export async function deleteTeacher(teacherId: string): Promise<void> {
+  await deleteDoc(doc(db, 'teachers', teacherId));
 }
