@@ -1,8 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 
-// const PAYPAL_API_BASE = "https://api-m.paypal.com"; // Production
-const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com"; // Sandbox for testing
+const PAYPAL_API_BASE = "https://api-m.paypal.com";
 
 async function getPaypalAccessToken(): Promise<string> {
   const clientId = process.env.PAYPAL_CLIENT_ID;

@@ -61,7 +61,7 @@ export default function BankTransferInfo({
           />
           <InfoRow
             label={t('payment.reference')}
-            value={bookingId.substring(0, 8).toUpperCase()}
+            value={`HAVI${Array.from(bookingId.substring(0, 4)).map(c => c.charCodeAt(0) % 10).join('')}`}
             copied={copied}
             onCopy={copyToClipboard}
           />

@@ -9,8 +9,8 @@ exports.lessonReminderStudent = lessonReminderStudent;
 exports.lessonReminderTeacher = lessonReminderTeacher;
 function baseLayout(content, teacherName) {
     const footerText = teacherName
-        ? `haviTalk - Vietnamese Language Lessons with ${teacherName}`
-        : "haviTalk - Vietnamese Language Lessons";
+        ? `HaviTalk - Vietnamese Language Lessons with ${teacherName}`
+        : "HaviTalk - Vietnamese Language Lessons";
     return `
 <!DOCTYPE html>
 <html>
@@ -37,7 +37,7 @@ function baseLayout(content, teacherName) {
 <body>
   <div class="container">
     <div class="card">
-      <div class="header"><span class="logo">haviTalk</span></div>
+      <div class="header"><span class="logo">HaviTalk</span></div>
       ${content}
     </div>
     <div class="footer">

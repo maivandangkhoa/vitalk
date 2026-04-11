@@ -33,9 +33,15 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scrapeItalkiProfile = exports.syncItalkiReviews = exports.scrapeNaverBlog = exports.translateBlogPost = exports.sendLessonReminders = exports.onBookingUpdated = exports.onBookingCreated = exports.setUserRole = exports.confirmTossPayment = exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
+exports.scrapeItalkiProfile = exports.syncItalkiReviews = exports.scrapeNaverBlog = exports.translateBlogPost = exports.sendLessonReminders = exports.onBookingUpdated = exports.onBookingCreated = exports.naverLogin = exports.setUserRole = exports.confirmTossPayment = exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
 const admin = __importStar(require("firebase-admin"));
-admin.initializeApp();
+const path = __importStar(require("path"));
+const serviceAccountPath = path.join(__dirname, "../service-account.json");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const serviceAccount = require(serviceAccountPath);
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
 // Payment functions
 var paypal_1 = require("./paypal");
 Object.defineProperty(exports, "createPaypalOrder", { enumerable: true, get: function () { return paypal_1.createPaypalOrder; } });
@@ -45,6 +51,8 @@ Object.defineProperty(exports, "confirmTossPayment", { enumerable: true, get: fu
 // Auth
 var auth_1 = require("./auth");
 Object.defineProperty(exports, "setUserRole", { enumerable: true, get: function () { return auth_1.setUserRole; } });
+var naverAuth_1 = require("./naverAuth");
+Object.defineProperty(exports, "naverLogin", { enumerable: true, get: function () { return naverAuth_1.naverLogin; } });
 // Email triggers (Firestore)
 var bookingTriggers_1 = require("./bookingTriggers");
 Object.defineProperty(exports, "onBookingCreated", { enumerable: true, get: function () { return bookingTriggers_1.onBookingCreated; } });

@@ -36,8 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.capturePaypalOrder = exports.createPaypalOrder = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
-// const PAYPAL_API_BASE = "https://api-m.paypal.com"; // Production
-const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com"; // Sandbox for testing
+const PAYPAL_API_BASE = "https://api-m.paypal.com";
 async function getPaypalAccessToken() {
     const clientId = process.env.PAYPAL_CLIENT_ID;
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
@@ -109,7 +108,7 @@ exports.createPaypalOrder = (0, https_1.onCall)({ secrets: ["PAYPAL_CLIENT_ID", 
                     currency_code: booking.currency || "USD",
                     value: String(booking.amount),
                 },
-                description: `haviTalk Lesson - ${booking.date} ${booking.startTime}`,
+                description: `HaviTalk Lesson - ${booking.date} ${booking.startTime}`,
             },
         ],
     };
