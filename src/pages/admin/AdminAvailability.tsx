@@ -162,6 +162,16 @@ export default function AdminAvailability() {
     });
   };
 
+  const updateOverrideSlot = (dateStr: string, index: number, field: 'startTime' | 'endTime', value: string) => {
+    setOverrideSlots((prev) => {
+      const updated = { ...prev };
+      const daySlots = [...(updated[dateStr] || currentSlots[dateStr] || [])];
+      daySlots[index] = { ...daySlots[index], [field]: value };
+      updated[dateStr] = daySlots;
+      return updated;
+    });
+  };
+
   const addOverrideSlot = (dateStr: string) => {
     setOverrideSlots((prev) => {
       const updated = { ...prev };
@@ -300,9 +310,27 @@ export default function AdminAvailability() {
                     {selectedDaySlots.map((slot, i) => (
                       <div key={i} className="flex items-center justify-between rounded-xl border border-zinc-100 px-3 py-2 transition-all duration-200 hover:bg-zinc-50">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">
-                            {slot.startTime} - {slot.endTime}
-                          </span>
+                          {slot.isBooked ? (
+                            <span className="text-sm font-medium">
+                              {slot.startTime} - {slot.endTime}
+                            </span>
+                          ) : (
+                            <>
+                              <input
+                                type="time"
+                                value={slot.startTime}
+                                onChange={(e) => updateOverrideSlot(selectedDateStr, i, 'startTime', e.target.value)}
+                                className="rounded-xl border border-input bg-background px-2 py-1 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                              />
+                              <span className="text-sm text-muted-foreground">-</span>
+                              <input
+                                type="time"
+                                value={slot.endTime}
+                                onChange={(e) => updateOverrideSlot(selectedDateStr, i, 'endTime', e.target.value)}
+                                className="rounded-xl border border-input bg-background px-2 py-1 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                              />
+                            </>
+                          )}
                           {slot.isBooked && (
                             <Badge variant="secondary" className="text-xs">{t('availability.booked')}</Badge>
                           )}
