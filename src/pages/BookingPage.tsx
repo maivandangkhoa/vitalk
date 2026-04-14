@@ -24,12 +24,13 @@ import { useTeachers } from '@/hooks/useTeachers';
 import { useAllTeachersAvailableSlots } from '@/hooks/useAllTeachersAvailability';
 import type { AggregatedSlot, AggregatedTeacher } from '@/hooks/useAllTeachersAvailability';
 import { useCreateBooking } from '@/hooks/useBookings';
+import { useLessonTypes } from '@/hooks/useLessonTypes';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
 import { useCurrencySettings } from '@/hooks/useCurrency';
 import { AnimatedSection } from '@/components/shared/motion';
 import { useLocations } from '@/hooks/useLocations';
-import type { OnlinePlatform, PaymentMethod } from '@/types';
+import type { OnlinePlatform, PaymentMethod, Language } from '@/types';
 import { toast } from 'sonner';
 
 const PaypalCheckout = lazy(() => import('@/components/booking/PaypalCheckout'));
@@ -39,12 +40,6 @@ const TossRedirectHandler = lazy(() => import('@/components/booking/TossRedirect
 
 const STEPS = ['lessonType', 'dateTime', 'details', 'payment'] as const;
 type Step = (typeof STEPS)[number];
-
-const LESSON_OPTIONS = [
-  { id: 'beginner', level: 'beginner', price: 14, duration: 50 },
-  { id: 'intermediate', level: 'intermediate', price: 14, duration: 50 },
-  { id: 'conversation', level: 'conversation', price: 14, duration: 50 },
-] as const;
 
 const LEVEL_COLORS: Record<string, string> = {
   beginner: 'bg-emerald-50 text-emerald-600',
@@ -60,14 +55,15 @@ const PLATFORM_MAP: Record<string, OnlinePlatform> = {
 
 export default function BookingPage() {
   const { t, i18n } = useTranslation('booking');
-  const { t: tl } = useTranslation('lessons');
   const { t: tc } = useTranslation('common');
+  const lang = i18n.language as Language;
   const { formatLesson } = useCurrencySettings();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [searchParams] = useSearchParams();
 
   const { teachers, loading: teachersLoading } = useTeachers();
+  const { lessonTypes, loading: lessonTypesLoading } = useLessonTypes();
 
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedLesson, setSelectedLesson] = useState<string>('');
@@ -129,7 +125,7 @@ export default function BookingPage() {
       .map((d) => new Date(d + 'T00:00:00'));
   }, [aggregatedSlots]);
 
-  const selectedLessonData = LESSON_OPTIONS.find((o) => o.id === selectedLesson);
+  const selectedLessonData = lessonTypes.find((o) => o.id === selectedLesson);
 
   // Auto-select a random teacher when time slot changes
   useEffect(() => {
@@ -149,8 +145,8 @@ export default function BookingPage() {
     );
   }
 
-  // Loading teachers
-  if (teachersLoading) {
+  // Loading teachers or lesson types
+  if (teachersLoading || lessonTypesLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
@@ -180,12 +176,7 @@ export default function BookingPage() {
         teacherId: selectedTeacher.id,
         teacherName: selectedTeacher.name,
         lessonTypeId: selectedLessonData.id,
-        lessonTypeName: {
-          en: i18n.getFixedT('en', 'lessons')(`${selectedLessonData.level}.name`),
-          vi: i18n.getFixedT('vi', 'lessons')(`${selectedLessonData.level}.name`),
-          ko: i18n.getFixedT('ko', 'lessons')(`${selectedLessonData.level}.name`),
-          ja: i18n.getFixedT('ja', 'lessons')(`${selectedLessonData.level}.name`),
-        },
+        lessonTypeName: selectedLessonData.title,
         date: selectedTeacherSlotInfo.originalDate,
         startTime: selectedTeacherSlotInfo.originalStartTime,
         endTime: selectedTeacherSlotInfo.originalEndTime,
@@ -297,31 +288,37 @@ export default function BookingPage() {
         {step === 'lessonType' && (
           <div className="space-y-6">
             <p className="text-center text-muted-foreground">{t('selectLesson')}</p>
-            <div className="grid gap-6 md:grid-cols-3">
-              {LESSON_OPTIONS.map((opt) => (
-                <Card
-                  key={opt.id}
-                  className={`cursor-pointer transition-all ${
-                    selectedLesson === opt.id ? 'ring-2 ring-indigo-500 shadow-md' : ''
-                  }`}
-                  onClick={() => setSelectedLesson(opt.id)}
-                >
-                  <CardContent className="p-8">
-                    <Badge className={`mb-3 ${LEVEL_COLORS[opt.level]}`}>{opt.level}</Badge>
-                    <h3 className="font-semibold">{tl(`${opt.level}.name`)}</h3>
-                    <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5" />
-                        {opt.duration}{tc('common.minutes')}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="font-mono">{formatLesson({ price: opt.price })}</span>
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {lessonTypesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-3">
+                {lessonTypes.map((opt) => (
+                  <Card
+                    key={opt.id}
+                    className={`cursor-pointer transition-all ${
+                      selectedLesson === opt.id ? 'ring-2 ring-indigo-500 shadow-md' : ''
+                    }`}
+                    onClick={() => setSelectedLesson(opt.id)}
+                  >
+                    <CardContent className="p-8">
+                      <Badge className={`mb-3 ${LEVEL_COLORS[opt.level] ?? 'bg-zinc-50 text-zinc-600'}`}>{opt.level}</Badge>
+                      <h3 className="font-semibold">{opt.title[lang] || opt.title.en}</h3>
+                      <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5" />
+                          {opt.duration}{tc('common.minutes')}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="font-mono">{formatLesson({ price: opt.price })}</span>
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -542,7 +539,7 @@ export default function BookingPage() {
               <CardContent className="space-y-3 px-8 pb-8 text-sm">
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.lesson')}</span>
-                  <span>{selectedLesson && tl(`${selectedLesson}.name`)}</span>
+                  <span>{selectedLessonData && (selectedLessonData.title[lang] || selectedLessonData.title.en)}</span>
                 </div>
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.teacher')}</span>
@@ -614,7 +611,7 @@ export default function BookingPage() {
                     amount={selectedLessonData?.price || 14}
                     customerName={user.displayName || ''}
                     customerEmail={user.email || ''}
-                    orderName={`HaviTalk - ${selectedLesson} lesson`}
+                    orderName={`HaviTalk - ${selectedLessonData?.title?.en ?? 'Lesson'}`}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                   />

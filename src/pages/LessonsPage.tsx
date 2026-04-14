@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Clock } from 'lucide-react';
+import { Check, Clock, Loader2 } from 'lucide-react';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { useCurrencySettings } from '@/hooks/useCurrency';
-
-const LESSON_LEVELS = ['beginner', 'intermediate', 'conversation'] as const;
+import { useLessonTypes } from '@/hooks/useLessonTypes';
+import type { Language } from '@/types';
 
 const LEVEL_COLORS: Record<string, string> = {
   beginner: 'bg-emerald-50 text-emerald-600',
@@ -16,9 +16,11 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 
 export default function LessonsPage() {
-  const { t } = useTranslation('lessons');
+  const { t, i18n } = useTranslation('lessons');
   const { t: tc } = useTranslation('common');
   const { formatLesson } = useCurrencySettings();
+  const { lessonTypes, loading } = useLessonTypes();
+  const lang = i18n.language as Language;
 
   return (
     <div className="px-4 py-16 md:py-24">
@@ -28,52 +30,69 @@ export default function LessonsPage() {
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{t('subtitle')}</p>
         </AnimatedSection>
 
-        <StaggerContainer className="mx-auto mt-12 grid max-w-5xl gap-8 md:grid-cols-3">
-          {LESSON_LEVELS.map((level) => {
-            const features: string[] = t(`${level}.features`, { returnObjects: true }) as string[];
-            return (
-              <StaggerItem key={level}>
-                <Card className="flex h-full flex-col">
-                  <CardHeader className="px-8 pb-3 pt-8">
-                    <Badge className={`mb-2 w-fit ${LEVEL_COLORS[level]}`}>
-                      {level.charAt(0).toUpperCase() + level.slice(1)}
-                    </Badge>
-                    <h2 className="text-xl font-bold leading-snug">{t(`${level}.name`)}</h2>
-                    <p className="mt-3 leading-relaxed text-sm text-muted-foreground">
-                      {t(`${level}.description`)}
-                    </p>
-                  </CardHeader>
-                  <CardContent className="flex-1 px-8 pt-3">
-                    <div className="mb-6 flex items-center gap-5 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="h-4 w-4" />
-                        {t('duration', { minutes: 50 })}
-                      </span>
-                      <span className="font-mono">
-                        {formatLesson({ price: 14 })} {tc('common.perLesson')}
-                      </span>
-                    </div>
-                    <ul className="space-y-3.5">
-                      {Array.isArray(features) && features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed">
-                          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50">
-                            <Check className="h-3 w-3 text-emerald-500" />
-                          </span>
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter className="px-8 pb-8">
-                    <Button className="h-12 w-full" render={<Link to="/teachers" />}>
-                      {t('bookNow')}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </StaggerItem>
-            );
-          })}
-        </StaggerContainer>
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+          </div>
+        ) : (
+          <StaggerContainer className="mx-auto mt-12 grid max-w-5xl gap-8 md:grid-cols-3">
+            {lessonTypes.map((lesson) => {
+              const title = lesson.title[lang] || lesson.title.en;
+              const description = lesson.description[lang] || lesson.description.en;
+              const features = lesson.features ?? [];
+
+              return (
+                <StaggerItem key={lesson.id}>
+                  <Card className="flex h-full flex-col">
+                    <CardHeader className="px-8 pb-3 pt-8">
+                      <Badge className={`mb-2 w-fit ${LEVEL_COLORS[lesson.level] ?? 'bg-zinc-50 text-zinc-600'}`}>
+                        {lesson.level.charAt(0).toUpperCase() + lesson.level.slice(1)}
+                      </Badge>
+                      <h2 className="text-xl font-bold leading-snug">{title}</h2>
+                      {description && (
+                        <p className="mt-3 leading-relaxed text-sm text-muted-foreground">
+                          {description}
+                        </p>
+                      )}
+                    </CardHeader>
+                    <CardContent className="flex-1 px-8 pt-3">
+                      <div className="mb-6 flex items-center gap-5 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="h-4 w-4" />
+                          {t('duration', { minutes: lesson.duration })}
+                        </span>
+                        <span className="font-mono">
+                          {formatLesson({ price: lesson.price })} {tc('common.perLesson')}
+                        </span>
+                      </div>
+                      {features.length > 0 && (
+                        <ul className="space-y-3.5">
+                          {features.map((feature, i) => {
+                            const text = feature[lang] || feature.en;
+                            if (!text) return null;
+                            return (
+                              <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed">
+                                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50">
+                                  <Check className="h-3 w-3 text-emerald-500" />
+                                </span>
+                                <span>{text}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </CardContent>
+                    <CardFooter className="px-8 pb-8">
+                      <Button className="h-12 w-full" render={<Link to="/teachers" />}>
+                        {t('bookNow')}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </StaggerItem>
+              );
+            })}
+          </StaggerContainer>
+        )}
       </div>
     </div>
   );
