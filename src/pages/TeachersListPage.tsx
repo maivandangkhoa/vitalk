@@ -1,38 +1,307 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useTeachers } from '@/hooks/useTeachers';
+import { usePublicReviews } from '@/hooks/useReviews';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { AnimatedSection } from '@/components/shared/motion';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Star,
+  MapPin,
+  GraduationCap,
+  Calendar,
+  Loader2,
+} from 'lucide-react';
 import type { Language } from '@/types';
+import type { TeacherProfile } from '@/types/profile';
 
-const AUTO_SLIDE_MS = 5000;
+const LANG_INFO: Record<string, { name: string; flag: string }> = {
+  vietnamese: { name: 'Vietnamese', flag: '🇻🇳' },
+  english:    { name: 'English',    flag: '🇬🇧' },
+  korean:     { name: 'Korean',     flag: '🇰🇷' },
+  french:     { name: 'French',     flag: '🇫🇷' },
+  japanese:   { name: 'Japanese',   flag: '🇯🇵' },
+  chinese:    { name: 'Chinese',    flag: '🇨🇳' },
+  spanish:    { name: 'Spanish',    flag: '🇪🇸' },
+  german:     { name: 'German',     flag: '🇩🇪' },
+  thai:       { name: 'Thai',       flag: '🇹🇭' },
+  portuguese: { name: 'Portuguese', flag: '🇵🇹' },
+  russian:    { name: 'Russian',    flag: '🇷🇺' },
+  italian:    { name: 'Italian',    flag: '🇮🇹' },
+};
+
+const SHORT_CODE_MAP: Record<string, string> = {
+  vi: 'vietnamese', en: 'english', ko: 'korean', fr: 'french',
+  ja: 'japanese', zh: 'chinese', es: 'spanish', de: 'german', th: 'thai',
+  pt: 'portuguese', ru: 'russian', it: 'italian',
+};
+
+function langInfo(code: string): { name: string; flag: string } {
+  // Normalize: "lang_vietnamese" → "vietnamese", "LANG_KOREAN" → "korean", "en" → "english"
+  const lower = code.toLowerCase().replace(/^lang_/, '');
+  const key = SHORT_CODE_MAP[lower] ?? lower;
+  return LANG_INFO[key] ?? { name: code, flag: '' };
+}
+
+function levelToNumber(level: string): number | null {
+  const m = level.match(/level[_\s]?(\d)/i);
+  if (m) return Number(m[1]);
+  return null;
+}
+
+const MAX_BARS = 5;
+
+function ProficiencyBars({ filled }: { filled: number }) {
+  return (
+    <div className="flex gap-[3px]">
+      {Array.from({ length: MAX_BARS }).map((_, i) => (
+        <div
+          key={i}
+          className={`h-4 w-[5px] rounded-sm ${
+            i < filled ? 'bg-emerald-400' : 'bg-zinc-200'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function toEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.pathname.startsWith('/embed/')) return url;
+    if (u.hostname.includes('youtube.com') && u.searchParams.has('v')) {
+      return `https://www.youtube.com/embed/${u.searchParams.get('v')}`;
+    }
+    if (u.hostname === 'youtu.be') {
+      return `https://www.youtube.com/embed${u.pathname}`;
+    }
+    if (u.pathname.startsWith('/shorts/')) {
+      return `https://www.youtube.com/embed/${u.pathname.split('/shorts/')[1]}`;
+    }
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+function TeacherFullCard({ teacher, lang }: { teacher: TeacherProfile; lang: Language }) {
+  const { t } = useTranslation('teachers');
+  const { reviews } = usePublicReviews(teacher.id);
+  const recentReviews = reviews.slice(0, 5);
+
+  const bio = teacher.bio?.[lang] || teacher.bio?.en || '';
+  const teachingStyle =
+    teacher.teachingStyle?.[lang] || teacher.teachingStyle?.en || '';
+  const initials = teacher.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase();
+
+  return (
+    <AnimatedSection>
+      <div className="rounded-2xl border bg-white p-8 md:p-12">
+        {/* Hero */}
+        <div className="text-center">
+          <div className="flex flex-col items-center">
+            {teacher.profileImageUrl ? (
+              <img
+                src={teacher.profileImageUrl}
+                alt={teacher.name}
+                className="h-32 w-32 rounded-full object-cover shadow-md"
+              />
+            ) : (
+              <div className="flex h-32 w-32 items-center justify-center rounded-full bg-indigo-100 text-3xl font-bold text-indigo-600 shadow-md">
+                {initials}
+              </div>
+            )}
+            <h2 className="mt-6 text-3xl font-bold tracking-tight md:text-4xl">
+              {teacher.name}
+            </h2>
+            {teacher.location && (
+              <div className="mt-3 flex items-center gap-1.5 text-lg text-muted-foreground">
+                <MapPin className="h-5 w-5" />
+                <span>{teacher.location}</span>
+              </div>
+            )}
+            {teacher.rating > 0 && (
+              <div className="mt-3 flex items-center gap-2">
+                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                <span className="font-mono text-lg font-semibold">
+                  {teacher.rating.toFixed(1)}
+                </span>
+                {teacher.totalReviews > 0 && (
+                  <span className="text-muted-foreground">
+                    ({teacher.totalReviews} {t('reviews')})
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Languages */}
+        {teacher.languages && Object.keys(teacher.languages).length > 0 && (() => {
+          const entries = Object.entries(teacher.languages);
+          const teaches = entries.filter(
+            ([, lvl]) => lvl === 'community' || lvl.toLowerCase() === 'native',
+          );
+          const speaks = entries.filter(
+            ([, lvl]) => lvl !== 'community' && lvl.toLowerCase() !== 'native',
+          );
+
+          return (
+            <div className="mx-auto mt-8 max-w-md space-y-4">
+              {teaches.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <span className="w-20 shrink-0 text-sm font-medium text-muted-foreground">
+                    Teaches
+                  </span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {teaches.map(([code]) => {
+                      const info = langInfo(code);
+                      return (
+                        <div key={code} className="flex items-center gap-2">
+                          {info.flag && <span className="text-lg">{info.flag}</span>}
+                          <span className="text-base font-semibold">{info.name}</span>
+                          <span className="rounded-full bg-emerald-50 px-3 py-0.5 text-xs font-medium text-emerald-600">
+                            Native
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {speaks.length > 0 && (
+                <div className="flex items-start gap-4">
+                  <span className="mt-0.5 w-20 shrink-0 text-sm font-medium text-muted-foreground">
+                    Speaks
+                  </span>
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    {speaks.map(([code, lvl]) => {
+                      const level = levelToNumber(lvl) ?? 3;
+                      const info = langInfo(code);
+                      return (
+                        <div key={code} className="flex items-center gap-2">
+                          {info.flag && <span className="text-lg">{info.flag}</span>}
+                          <span className="text-base font-semibold">{info.name}</span>
+                          <ProficiencyBars filled={level} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Video intro */}
+        {teacher.videoIntroUrl && toEmbedUrl(teacher.videoIntroUrl) && (
+          <div className="mx-auto mt-10 max-w-3xl">
+            <Card className="overflow-hidden rounded-xl">
+              <div className="aspect-video">
+                <iframe
+                  src={toEmbedUrl(teacher.videoIntroUrl)!}
+                  title={t('videoIntro')}
+                  className="h-full w-full"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Bio */}
+        {bio && (
+          <div className="mx-auto mt-10 max-w-3xl">
+            <Card className="rounded-xl">
+              <CardContent className="p-8">
+                <h3 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                  <GraduationCap className="h-6 w-6 text-indigo-500" />
+                  {t('aboutMe')}
+                </h3>
+                <div className="whitespace-pre-line leading-relaxed text-muted-foreground">
+                  {bio}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Teaching style */}
+        {teachingStyle && (
+          <div className="mx-auto mt-6 max-w-3xl">
+            <Card className="rounded-xl">
+              <CardContent className="p-8">
+                <h3 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                  <Calendar className="h-6 w-6 text-indigo-500" />
+                  {t('teachingStyle')}
+                </h3>
+                <div className="whitespace-pre-line leading-relaxed text-muted-foreground">
+                  {teachingStyle}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Recent reviews */}
+        {recentReviews.length > 0 && (
+          <div className="mx-auto mt-10 max-w-3xl">
+            <h3 className="mb-6 text-center text-2xl font-bold">
+              {t('recentReviews')}
+            </h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              {recentReviews.map((review) => (
+                <Card key={review.id} className="rounded-xl border-0 bg-zinc-50">
+                  <CardContent className="p-6">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {review.studentName}
+                      </span>
+                      <div className="flex">
+                        {Array.from({ length: review.rating }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="leading-relaxed text-muted-foreground italic">
+                      &ldquo;{review.content}&rdquo;
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Book a Lesson CTA */}
+        <div className="mt-10 text-center">
+          <Button
+            size="lg"
+            className="h-12 px-8 shadow-md hover:shadow-lg"
+            render={<Link to="/book" />}
+          >
+            {t('bookLesson')}
+          </Button>
+        </div>
+      </div>
+    </AnimatedSection>
+  );
+}
 
 export default function TeachersListPage() {
   const { t } = useTranslation('teachers');
   const { i18n } = useTranslation();
   const { teachers, loading } = useTeachers();
   const lang = i18n.language as Language;
-  const [current, setCurrent] = useState(0);
-
-  const count = teachers.length;
-  const hasMultiple = count > 1;
-
-  const next = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % count);
-  }, [count]);
-
-  const prev = useCallback(() => {
-    setCurrent((prev) => (prev - 1 + count) % count);
-  }, [count]);
-
-  // Auto-slide
-  useEffect(() => {
-    if (!hasMultiple) return;
-    const timer = setInterval(next, AUTO_SLIDE_MS);
-    return () => clearInterval(timer);
-  }, [hasMultiple, next]);
 
   return (
     <div className="px-4 py-16 md:py-24">
@@ -48,139 +317,15 @@ export default function TeachersListPage() {
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
           </div>
-        ) : count === 0 ? (
+        ) : teachers.length === 0 ? (
           <AnimatedSection className="mx-auto mt-12 max-w-md text-center">
             <p className="text-lg text-muted-foreground">{t('empty')}</p>
           </AnimatedSection>
         ) : (
-          <div className="relative mx-auto mt-12 max-w-5xl">
-            {/* Navigation arrows */}
-            {hasMultiple && (
-              <>
-                <button
-                  onClick={prev}
-                  className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-lg backdrop-blur transition-all hover:bg-white hover:shadow-xl md:-left-4 md:p-3"
-                >
-                  <ChevronLeft className="h-5 w-5 text-zinc-700 md:h-6 md:w-6" />
-                </button>
-                <button
-                  onClick={next}
-                  className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-lg backdrop-blur transition-all hover:bg-white hover:shadow-xl md:-right-4 md:p-3"
-                >
-                  <ChevronRight className="h-5 w-5 text-zinc-700 md:h-6 md:w-6" />
-                </button>
-              </>
-            )}
-
-            {/* Carousel */}
-            <div className="overflow-hidden rounded-2xl">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${current * 100}%)` }}
-              >
-                {teachers.map((teacher) => {
-                  const bioText = teacher.bio?.[lang] || teacher.bio?.en || '';
-                  const initials = teacher.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .toUpperCase();
-
-                  return (
-                    <div
-                      key={teacher.id}
-                      className="w-full flex-shrink-0"
-                    >
-                      <div className="rounded-2xl border bg-white p-8 md:p-12">
-                        <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">
-                          {/* Profile image */}
-                          <div className="flex flex-col items-center gap-4">
-                            {teacher.profileImageUrl ? (
-                              <img
-                                src={teacher.profileImageUrl}
-                                alt={teacher.name}
-                                className="h-32 w-32 rounded-full object-cover shadow-md md:h-40 md:w-40"
-                              />
-                            ) : (
-                              <div className="flex h-32 w-32 items-center justify-center rounded-full bg-indigo-100 text-3xl font-bold text-indigo-600 shadow-md md:h-40 md:w-40">
-                                {initials}
-                              </div>
-                            )}
-                            {teacher.rating > 0 && (
-                              <div className="flex items-center gap-1.5">
-                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                <span className="text-sm font-medium">
-                                  {teacher.rating.toFixed(1)}
-                                </span>
-                                {teacher.totalReviews > 0 && (
-                                  <span className="text-sm text-muted-foreground">
-                                    ({teacher.totalReviews})
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Info */}
-                          <div className="flex flex-1 flex-col items-center text-center md:items-start md:text-left">
-                            <h2 className="text-2xl font-bold md:text-3xl">{teacher.name}</h2>
-                            {teacher.location && (
-                              <div className="mt-2 flex items-center gap-1.5 text-muted-foreground">
-                                <MapPin className="h-4 w-4" />
-                                <span>{teacher.location}</span>
-                              </div>
-                            )}
-
-                            {teacher.languages && Object.keys(teacher.languages).length > 0 && (
-                              <div className="mt-4 flex flex-wrap justify-center gap-2 md:justify-start">
-                                {Object.entries(teacher.languages).map(([code, level]) => (
-                                  <span
-                                    key={code}
-                                    className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600"
-                                  >
-                                    {code.toUpperCase()} &middot; {level}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-
-                            {bioText && (
-                              <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-                                {bioText.length > 300 ? `${bioText.slice(0, 300)}...` : bioText}
-                              </p>
-                            )}
-
-                            <Button
-                              className="mt-6 h-12 px-8"
-                              render={<Link to={`/teachers/${teacher.slug}`} />}
-                            >
-                              {t('viewProfile')}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Dots indicator */}
-            {hasMultiple && (
-              <div className="mt-6 flex justify-center gap-2">
-                {teachers.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrent(i)}
-                    className={`h-2.5 rounded-full transition-all ${
-                      i === current
-                        ? 'w-8 bg-indigo-500'
-                        : 'w-2.5 bg-zinc-300 hover:bg-zinc-400'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
+          <div className="mx-auto mt-12 max-w-5xl space-y-12">
+            {teachers.map((teacher) => (
+              <TeacherFullCard key={teacher.id} teacher={teacher} lang={lang} />
+            ))}
           </div>
         )}
       </div>
