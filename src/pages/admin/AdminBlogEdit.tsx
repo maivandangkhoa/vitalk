@@ -9,7 +9,7 @@ import { Save, Loader2, Wand2, Eye, ArrowLeft, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
 import { functions, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes } from 'firebase/storage';
 import { useAdminBlogPost, useSaveBlogPost } from '@/hooks/useBlog';
 import type { Language, MultiLangText } from '@/types';
 
@@ -66,7 +66,7 @@ export default function AdminBlogEdit() {
       const filePath = `blog-covers/${Date.now()}.${ext}`;
       const storageRef = ref(storage, filePath);
       await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const url = `https://storage.googleapis.com/vietalky.firebasestorage.app/${filePath}`;
       setCoverImageUrl(url);
       toast.success(t('blog.coverUploaded'));
     } catch {

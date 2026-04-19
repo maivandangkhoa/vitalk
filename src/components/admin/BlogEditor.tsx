@@ -5,7 +5,7 @@ import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
 import { useRef, useState } from 'react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import { toast } from 'sonner';
 import {
@@ -88,7 +88,7 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
       const filePath = `blog-images/inline/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
       const storageRef = ref(storage, filePath);
       await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const url = `https://storage.googleapis.com/vietalky.firebasestorage.app/${filePath}`;
       insertImage(url);
       toast.success('Image uploaded');
     } catch {
