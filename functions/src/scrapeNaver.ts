@@ -276,19 +276,10 @@ async function uploadNaverImages(
 ): Promise<{ content: string; coverImageUrl: string }> {
   const bucket = admin.storage().bucket();
   const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
-  const naverDomains = [
-    "postfiles.pstatic.net",
-    "blogfiles.pstatic.net",
-    "mblogthumb-phinf.pstatic.net",
-    "phinf.pstatic.net",
-    "storep-phinf.pstatic.net",
-    "ssl.pstatic.net",
-  ];
-
   const isNaverImage = (url: string) => {
     try {
       const u = new URL(url);
-      return naverDomains.some((d) => u.hostname.includes(d));
+      return u.hostname.endsWith(".pstatic.net") || u.hostname === "pstatic.net";
     } catch {
       return false;
     }
