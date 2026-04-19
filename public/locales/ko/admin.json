@@ -276,6 +276,8 @@
     "back": "뒤로",
     "slug": "Slug",
     "coverImageUrl": "커버 이미지 URL",
+    "coverUploaded": "커버 이미지 업로드 완료",
+    "coverUploadFailed": "이미지 업로드 실패",
     "tags": "태그 (쉼표로 구분)",
     "saveFailed": "저장에 실패했습니다",
     "titleLabel": "제목",

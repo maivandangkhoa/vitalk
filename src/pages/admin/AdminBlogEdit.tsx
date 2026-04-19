@@ -1,14 +1,15 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Loader2, Wand2, Eye, ArrowLeft } from 'lucide-react';
+import { Save, Loader2, Wand2, Eye, ArrowLeft, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
+import { functions, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAdminBlogPost, useSaveBlogPost } from '@/hooks/useBlog';
 import type { Language, MultiLangText } from '@/types';
 
@@ -49,6 +50,32 @@ export default function AdminBlogEdit() {
   const [tags, setTags] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filePath = `blog-covers/${Date.now()}.${ext}`;
+      const storageRef = ref(storage, filePath);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setCoverImageUrl(url);
+      toast.success(t('blog.coverUploaded'));
+    } catch {
+      toast.error(t('blog.coverUploadFailed'));
+    } finally {
+      setUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = '';
+    }
+  };
 
   // Load existing post data
   useEffect(() => {
@@ -231,12 +258,31 @@ export default function AdminBlogEdit() {
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium">{t('blog.coverImageUrl')}</label>
-              <input
-                value={coverImageUrl}
-                onChange={(e) => setCoverImageUrl(e.target.value)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                placeholder="https://..."
-              />
+              <div className="flex gap-2">
+                <input
+                  value={coverImageUrl}
+                  onChange={(e) => setCoverImageUrl(e.target.value)}
+                  className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="https://..."
+                />
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleCoverUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 self-stretch"
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           </div>
           <div>

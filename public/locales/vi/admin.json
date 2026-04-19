@@ -276,6 +276,8 @@
     "back": "Quay lại",
     "slug": "Slug",
     "coverImageUrl": "URL ảnh bìa",
+    "coverUploaded": "Đã tải ảnh bìa lên",
+    "coverUploadFailed": "Tải ảnh thất bại",
     "tags": "Thẻ (phân cách bằng dấu phẩy)",
     "saveFailed": "Lưu thất bại",
     "titleLabel": "Tiêu đề",

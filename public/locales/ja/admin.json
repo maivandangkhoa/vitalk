@@ -276,6 +276,8 @@
     "back": "戻る",
     "slug": "Slug",
     "coverImageUrl": "カバー画像URL",
+    "coverUploaded": "カバー画像をアップロードしました",
+    "coverUploadFailed": "画像のアップロードに失敗しました",
     "tags": "タグ（カンマ区切り）",
     "saveFailed": "保存に失敗しました",
     "titleLabel": "タイトル",

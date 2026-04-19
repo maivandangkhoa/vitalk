@@ -276,6 +276,8 @@
     "back": "Back",
     "slug": "Slug",
     "coverImageUrl": "Cover Image URL",
+    "coverUploaded": "Cover image uploaded",
+    "coverUploadFailed": "Failed to upload image",
     "tags": "Tags (comma separated)",
     "saveFailed": "Failed to save",
     "titleLabel": "Title",
