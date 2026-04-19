@@ -24,6 +24,9 @@
     "googleMeet": "Google Meet",
     "teams": "Microsoft Teams",
     "noLocations": "Chưa có địa điểm. Vui lòng liên hệ giáo viên.",
+    "customLocation": "Đề xuất địa điểm khác",
+    "customLocationHint": "Nhập địa chỉ hoặc tên quán bạn muốn gặp. Giáo viên sẽ xem xét trước khi xác nhận.",
+    "customLocationPlaceholder": "VD: Starbucks Gangnam, 123 Gangnam-daero...",
     "viewOnGoogleMaps": "Google Maps",
     "viewOnNaverMap": "Naver Map"
   },

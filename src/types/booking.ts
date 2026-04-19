@@ -23,6 +23,7 @@ export interface MonthlyAvailability {
 export interface OfflineLocation {
   name: string;
   address: string;
+  isCustom?: boolean;
 }
 
 /** Full location document from the 'locations' collection */

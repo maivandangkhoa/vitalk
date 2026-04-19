@@ -152,6 +152,7 @@
     "save": "保存",
     "online": "オンライン",
     "inPerson": "対面",
+    "customLocation": "生徒提案の場所",
     "actionSuccess": "処理完了",
     "actionFailed": "処理に失敗しました",
     "noBookings": "予約はありません"

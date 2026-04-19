@@ -24,6 +24,9 @@
     "googleMeet": "Google Meet",
     "teams": "Microsoft Teams",
     "noLocations": "利用可能な場所がありません。講師にお問い合わせください。",
+    "customLocation": "別の場所を提案する",
+    "customLocationHint": "希望する場所の住所や名前を入力してください。講師が確認後に承認します。",
+    "customLocationPlaceholder": "例：スターバックス江南駅店、ソウル江南区...",
     "viewOnGoogleMaps": "Google Maps",
     "viewOnNaverMap": "Naver Map"
   },

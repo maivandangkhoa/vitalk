@@ -152,6 +152,7 @@
     "save": "저장",
     "online": "온라인",
     "inPerson": "대면",
+    "customLocation": "학생 제안 장소",
     "actionSuccess": "처리 완료",
     "actionFailed": "처리 실패",
     "noBookings": "예약이 없습니다"

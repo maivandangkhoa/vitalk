@@ -74,6 +74,7 @@ export default function BookingPage() {
   const [lessonFormat, setLessonFormat] = useState<'online' | 'offline'>('online');
   const [platform, setPlatform] = useState('zoom');
   const [selectedLocationId, setSelectedLocationId] = useState('');
+  const [customLocationAddress, setCustomLocationAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paypal');
   const [bookingComplete, setBookingComplete] = useState(false);
@@ -158,7 +159,7 @@ export default function BookingPage() {
     switch (step) {
       case 'lessonType': return !!selectedLesson;
       case 'dateTime': return !!selectedDate && !!selectedTime && !!selectedSlot && !!selectedTeacherId;
-      case 'details': return lessonFormat === 'online' || !!selectedLocationId;
+      case 'details': return lessonFormat === 'online' || !!selectedLocationId || (selectedLocationId === 'custom' && !!customLocationAddress.trim());
       case 'payment': return true;
     }
   };
@@ -172,6 +173,13 @@ export default function BookingPage() {
 
     try {
       const selectedLocation = offlineLocations.find((l) => l.id === selectedLocationId);
+      const offlineLocation = lessonFormat === 'offline'
+        ? selectedLocationId === 'custom'
+          ? { name: t('format.customLocation'), address: customLocationAddress.trim(), isCustom: true }
+          : selectedLocation
+            ? { name: selectedLocation.name, address: selectedLocation.address }
+            : null
+        : null;
       const bookingId = await createBooking({
         teacherId: selectedTeacher.id,
         teacherName: selectedTeacher.name,
@@ -182,9 +190,7 @@ export default function BookingPage() {
         endTime: selectedTeacherSlotInfo.originalEndTime,
         format: lessonFormat,
         platform: lessonFormat === 'online' ? PLATFORM_MAP[platform] : null,
-        offlineLocation: lessonFormat === 'offline' && selectedLocation
-          ? { name: selectedLocation.name, address: selectedLocation.address }
-          : null,
+        offlineLocation,
         paymentMethod,
         notes,
         amount: selectedLessonData.price,
@@ -458,60 +464,79 @@ export default function BookingPage() {
             {lessonFormat === 'offline' && (
               <div>
                 <p className="mb-3 text-sm font-medium">{t('format.selectLocation')}</p>
-                {offlineLocations.length > 0 ? (
-                  <div className="space-y-3">
-                    {offlineLocations.map((loc) => (
-                      <Button
-                        key={loc.id}
-                        variant={selectedLocationId === loc.id ? 'default' : 'outline'}
-                        className="h-auto w-full justify-start rounded-xl px-5 py-4 text-left"
-                        onClick={() => setSelectedLocationId(loc.id)}
-                      >
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 shrink-0" />
-                            <span className="font-medium">{loc.name}</span>
-                          </div>
-                          <span className={`ml-6 text-xs ${selectedLocationId === loc.id ? 'text-white/70' : 'text-muted-foreground'}`}>
-                            {loc.address}
-                          </span>
-                          <div className="ml-6 mt-1 flex gap-3">
-                            {loc.googleMapsUrl && (
-                              <a
-                                href={loc.googleMapsUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className={`flex items-center gap-1 text-xs font-medium ${selectedLocationId === loc.id ? 'text-white/80 hover:text-white' : 'text-indigo-500 hover:underline'}`}
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                                {t('format.viewOnGoogleMaps')}
-                              </a>
-                            )}
-                            {loc.naverMapUrl && (
-                              <a
-                                href={loc.naverMapUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className={`flex items-center gap-1 text-xs font-medium ${selectedLocationId === loc.id ? 'text-white/80 hover:text-white' : 'text-emerald-600 hover:underline'}`}
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                                {t('format.viewOnNaverMap')}
-                              </a>
-                            )}
-                          </div>
+                <div className="space-y-3">
+                  {offlineLocations.map((loc) => (
+                    <Button
+                      key={loc.id}
+                      variant={selectedLocationId === loc.id ? 'default' : 'outline'}
+                      className="h-auto w-full justify-start rounded-xl px-5 py-4 text-left"
+                      onClick={() => setSelectedLocationId(loc.id)}
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 shrink-0" />
+                          <span className="font-medium">{loc.name}</span>
                         </div>
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <Card className="border-dashed">
-                    <CardContent className="py-4 text-center text-sm text-muted-foreground">
-                      {t('format.noLocations')}
-                    </CardContent>
-                  </Card>
-                )}
+                        <span className={`ml-6 text-xs ${selectedLocationId === loc.id ? 'text-white/70' : 'text-muted-foreground'}`}>
+                          {loc.address}
+                        </span>
+                        <div className="ml-6 mt-1 flex gap-3">
+                          {loc.googleMapsUrl && (
+                            <a
+                              href={loc.googleMapsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className={`flex items-center gap-1 text-xs font-medium ${selectedLocationId === loc.id ? 'text-white/80 hover:text-white' : 'text-indigo-500 hover:underline'}`}
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              {t('format.viewOnGoogleMaps')}
+                            </a>
+                          )}
+                          {loc.naverMapUrl && (
+                            <a
+                              href={loc.naverMapUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className={`flex items-center gap-1 text-xs font-medium ${selectedLocationId === loc.id ? 'text-white/80 hover:text-white' : 'text-emerald-600 hover:underline'}`}
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              {t('format.viewOnNaverMap')}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+
+                  {/* Custom location option */}
+                  <Button
+                    variant={selectedLocationId === 'custom' ? 'default' : 'outline'}
+                    className="h-auto w-full justify-start rounded-xl border-dashed px-5 py-4 text-left"
+                    onClick={() => setSelectedLocationId('custom')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span className="font-medium">{t('format.customLocation')}</span>
+                    </div>
+                  </Button>
+
+                  {selectedLocationId === 'custom' && (
+                    <div className="ml-1">
+                      <label className="mb-1.5 block text-sm text-muted-foreground">
+                        {t('format.customLocationHint')}
+                      </label>
+                      <textarea
+                        value={customLocationAddress}
+                        onChange={(e) => setCustomLocationAddress(e.target.value)}
+                        placeholder={t('format.customLocationPlaceholder')}
+                        rows={2}
+                        className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

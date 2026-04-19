@@ -100,8 +100,15 @@ function AdminBookingCard({
                 <span>
                   {booking.format === 'online'
                     ? `${t('bookings.online')}${booking.platform ? ` (${booking.platform.replace('_', ' ')})` : ''}`
-                    : t('bookings.inPerson')}
+                    : booking.offlineLocation
+                      ? `${booking.offlineLocation.name} — ${booking.offlineLocation.address}`
+                      : t('bookings.inPerson')}
                 </span>
+                {booking.offlineLocation?.isCustom && (
+                  <Badge className="bg-amber-50 text-amber-600 border-amber-200 text-xs">
+                    {t('bookings.customLocation')}
+                  </Badge>
+                )}
               </div>
             </div>
 

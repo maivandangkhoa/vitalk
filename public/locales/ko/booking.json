@@ -24,6 +24,9 @@
     "googleMeet": "Google Meet",
     "teams": "Microsoft Teams",
     "noLocations": "이용 가능한 장소가 없습니다. 선생님에게 문의하세요.",
+    "customLocation": "다른 장소 제안하기",
+    "customLocationHint": "만나고 싶은 장소의 주소나 이름을 입력하세요. 선생님이 확인 후 승인합니다.",
+    "customLocationPlaceholder": "예: 스타벅스 강남역점, 서울 강남구 강남대로...",
     "viewOnGoogleMaps": "Google Maps",
     "viewOnNaverMap": "네이버 지도"
   },

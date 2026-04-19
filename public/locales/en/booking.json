@@ -24,6 +24,9 @@
     "googleMeet": "Google Meet",
     "teams": "Microsoft Teams",
     "noLocations": "No locations available. Contact the teacher.",
+    "customLocation": "Suggest a different location",
+    "customLocationHint": "Enter the address or place name you'd like to meet at. The teacher will review before confirming.",
+    "customLocationPlaceholder": "e.g. Starbucks Gangnam Station, 123 Gangnam-daero...",
     "viewOnGoogleMaps": "Google Maps",
     "viewOnNaverMap": "Naver Map"
   },

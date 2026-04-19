@@ -152,6 +152,7 @@
     "save": "Save",
     "online": "Online",
     "inPerson": "In-person",
+    "customLocation": "Custom location",
     "actionSuccess": "Action completed",
     "actionFailed": "Action failed",
     "noBookings": "No bookings found"
