@@ -2,22 +2,17 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Copy, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { formatPrice, type SupportedCurrency } from '@/lib/currency';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface BankTransferInfoProps {
   bookingId: string;
   amount: number;
   currency: string;
 }
-
-// Bank info - will come from siteConfig/general in Firestore later
-const BANK_INFO = {
-  bankName: 'Shinhan Bank (신한은행)',
-  accountNumber: '110-XXX-XXXXXX',
-  accountHolder: 'Nguyen (윈)',
-};
 
 export default function BankTransferInfo({
   bookingId,
@@ -27,6 +22,18 @@ export default function BankTransferInfo({
   const { t } = useTranslation('booking');
   const { t: tc } = useTranslation('common');
   const [copied, setCopied] = useState('');
+  const [bankInfo, setBankInfo] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
+
+  useEffect(() => {
+    getDoc(doc(db, 'siteConfig', 'general')).then((snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.bankTransfer) {
+          setBankInfo(data.bankTransfer);
+        }
+      }
+    });
+  }, []);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -43,19 +50,19 @@ export default function BankTransferInfo({
         <CardContent className="space-y-3 pt-4">
           <InfoRow
             label={t('payment.bankName')}
-            value={BANK_INFO.bankName}
+            value={bankInfo.bankName}
             copied={copied}
             onCopy={copyToClipboard}
           />
           <InfoRow
             label={t('payment.accountNumber')}
-            value={BANK_INFO.accountNumber}
+            value={bankInfo.accountNumber}
             copied={copied}
             onCopy={copyToClipboard}
           />
           <InfoRow
             label={t('payment.accountHolder')}
-            value={BANK_INFO.accountHolder}
+            value={bankInfo.accountHolder}
             copied={copied}
             onCopy={copyToClipboard}
           />
