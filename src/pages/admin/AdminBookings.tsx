@@ -238,7 +238,7 @@ export default function AdminBookings() {
 
   return (
     <div>
-      <AnimatedSection className="mb-6 flex items-center justify-between">
+      <AnimatedSection className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('bookings.title')}</h1>
         {isAdmin && (
           <TeacherSelector teacherId={teacherId} teachers={teachers} onChange={setTeacherId} />
@@ -246,9 +246,9 @@ export default function AdminBookings() {
       </AnimatedSection>
 
       <Tabs value={activeStatus} onValueChange={setActiveStatus}>
-        <TabsList>
+        <TabsList className="flex w-full flex-wrap gap-1">
           {STATUSES.map((status) => (
-            <TabsTrigger key={status} value={status}>
+            <TabsTrigger key={status} value={status} className="flex-1 min-w-0 text-xs sm:text-sm">
               {t(`bookings.${status}`)}
             </TabsTrigger>
           ))}

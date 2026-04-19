@@ -226,15 +226,15 @@ export default function AdminDashboard() {
                     {recentBookings.map((b) => (
                       <div
                         key={b.id}
-                        className="flex items-center justify-between rounded-xl border border-zinc-100 px-4 py-3.5 text-sm transition-all duration-200 hover:bg-zinc-50"
+                        className="flex flex-col gap-2 rounded-xl border border-zinc-100 px-4 py-3 text-sm transition-all duration-200 hover:bg-zinc-50 sm:flex-row sm:items-center sm:justify-between"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-medium">{b.studentName}</span>
-                          <span className="font-mono text-muted-foreground">
+                          <span className="font-mono text-xs text-muted-foreground sm:text-sm">
                             {b.date} {b.startTime}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <Badge className={statusColors[b.status] || ''}>
                             {t(`bookings.${b.status}`)}
                           </Badge>

@@ -239,20 +239,23 @@ export default function AdminTeachers() {
 
   return (
     <div>
-      <AnimatedSection className="mb-6 flex items-center justify-between">
+      <AnimatedSection className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('teachers.title')}</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setShowImport(!showImport)}
             disabled={editing !== null}
           >
             <Download className="mr-2 h-4 w-4" />
-            {t('teachers.importItalki')}
+            <span className="hidden sm:inline">{t('teachers.importItalki')}</span>
+            <span className="sm:hidden">Import</span>
           </Button>
-          <Button onClick={startAdd} disabled={editing === 'new'}>
+          <Button size="sm" onClick={startAdd} disabled={editing === 'new'}>
             <Plus className="mr-2 h-4 w-4" />
-            {t('teachers.addTeacher')}
+            <span className="hidden sm:inline">{t('teachers.addTeacher')}</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
       </AnimatedSection>
@@ -403,69 +406,70 @@ export default function AdminTeachers() {
           {teachers.map((teacher) => (
             <StaggerItem key={teacher.id}>
               <Card>
-                <CardContent className="flex items-start justify-between gap-4 p-5">
-                  <div className="flex min-w-0 flex-1 gap-4">
-                    {/* Profile image / avatar */}
-                    {teacher.profileImageUrl ? (
-                      <img
-                        src={teacher.profileImageUrl}
-                        alt={teacher.name}
-                        className="h-12 w-12 shrink-0 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-50">
-                        <Users2 className="h-5 w-5 text-indigo-400" />
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                    <div className="flex min-w-0 flex-1 gap-3">
+                      {teacher.profileImageUrl ? (
+                        <img
+                          src={teacher.profileImageUrl}
+                          alt={teacher.name}
+                          className="h-10 w-10 shrink-0 rounded-full object-cover sm:h-12 sm:w-12"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 sm:h-12 sm:w-12">
+                          <Users2 className="h-5 w-5 text-indigo-400" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold">{teacher.name}</span>
+                          <Badge
+                            className={teacher.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''}
+                            variant={teacher.isActive ? 'default' : 'secondary'}
+                          >
+                            {teacher.isActive ? t('teachers.active') : t('teachers.inactive')}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 truncate text-sm text-muted-foreground">
+                          {teacher.slug} &middot; {teacher.email}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {teacher.location} &middot; {teacher.timezone}
+                        </p>
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="font-semibold">{teacher.name}</span>
-                        <Badge
-                          className={teacher.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''}
-                          variant={teacher.isActive ? 'default' : 'secondary'}
-                        >
-                          {teacher.isActive ? t('teachers.active') : t('teachers.inactive')}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {teacher.slug} &middot; {teacher.email}
-                      </p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {teacher.location} &middot; {teacher.timezone}
-                      </p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => startEdit(teacher)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleToggle(teacher.id, teacher.isActive)}>
-                      {teacher.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                    {deleting === teacher.id ? (
-                      <div className="flex items-center gap-1 ml-1">
-                        <span className="text-xs text-destructive whitespace-nowrap">{t('teachers.deleteConfirm')}</span>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(teacher.id)}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleting(null)}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleting(teacher.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => startEdit(teacher)}>
+                        <Pencil className="h-4 w-4" />
                       </Button>
-                    )}
+                      <Button variant="ghost" size="sm" onClick={() => handleToggle(teacher.id, teacher.isActive)}>
+                        {teacher.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                      {deleting === teacher.id ? (
+                        <div className="flex items-center gap-1 ml-1">
+                          <span className="text-xs text-destructive whitespace-nowrap">{t('teachers.deleteConfirm')}</span>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(teacher.id)}
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setDeleting(null)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleting(teacher.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

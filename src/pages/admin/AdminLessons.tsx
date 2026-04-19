@@ -158,14 +158,15 @@ export default function AdminLessons() {
 
   return (
     <div>
-      <AnimatedSection className="mb-6 flex items-center justify-between">
+      <AnimatedSection className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('nav.lessons')}</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={addLesson}>
+          <Button variant="outline" size="sm" onClick={addLesson}>
             <Plus className="mr-2 h-4 w-4" />
-            {t('lessons.addLessonType')}
+            <span className="hidden sm:inline">{t('lessons.addLessonType')}</span>
+            <span className="sm:hidden">Add</span>
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button size="sm" onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             {t('lessons.saveAll')}
           </Button>
@@ -203,7 +204,7 @@ export default function AdminLessons() {
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
                   <label className="mb-1 block text-xs font-medium">{t('lessons.level')}</label>
                   <select
@@ -226,9 +227,9 @@ export default function AdminLessons() {
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                   />
                 </div>
-                <div>
+                <div className="sm:col-span-2 lg:col-span-1">
                   <label className="mb-1 block text-xs font-medium">{t('lessons.priceUsd')}</label>
-                  <div className="grid grid-cols-4 gap-1.5">
+                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                     {CURRENCIES.map((cur) => (
                       <div key={cur} className="relative">
                         <span className="absolute left-2 top-2 text-xs text-muted-foreground">{CURRENCY_SYMBOLS[cur]}</span>
@@ -239,7 +240,6 @@ export default function AdminLessons() {
                             const val = Number(e.target.value);
                             const newPrices = { ...lesson.prices, [cur]: val };
                             if (cur === 'USD') {
-                              // Auto-fill other currencies from USD
                               for (const c of CURRENCIES) {
                                 if (c === 'USD') continue;
                                 newPrices[c] = Math.round(val * (currencyConfig.exchangeRates[c] ?? 1));
@@ -259,7 +259,7 @@ export default function AdminLessons() {
 
               <div>
                 <label className="mb-1 block text-xs font-medium">{t('lessons.titleLabel')}</label>
-                <div className="grid gap-2 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {LANGS.map((lang) => (
                     <div key={lang} className="relative">
                       <span className="absolute left-2 top-2 text-xs text-muted-foreground">{LANG_LABELS[lang]}</span>

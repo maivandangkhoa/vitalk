@@ -109,16 +109,18 @@ export default function AdminBlog() {
 
   return (
     <div>
-      <AnimatedSection className="mb-6 flex items-center justify-between">
+      <AnimatedSection className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('blog.title')}</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setNaverOpen(true)}>
+          <Button variant="outline" size="sm" onClick={() => setNaverOpen(true)}>
             <Globe className="mr-2 h-4 w-4" />
-            {t('blog.importNaver')}
+            <span className="hidden sm:inline">{t('blog.importNaver')}</span>
+            <span className="sm:hidden">Import</span>
           </Button>
-          <Button render={<Link to="/admin/blog/new/edit" />}>
+          <Button size="sm" render={<Link to="/admin/blog/new/edit" />}>
             <Plus className="mr-2 h-4 w-4" />
-            {t('blog.newPost')}
+            <span className="hidden sm:inline">{t('blog.newPost')}</span>
+            <span className="sm:hidden">New</span>
           </Button>
         </div>
       </AnimatedSection>
@@ -132,47 +134,49 @@ export default function AdminBlog() {
           {posts.map((post) => (
             <StaggerItem key={post.id}>
             <Card>
-              <CardContent className="flex items-center justify-between p-5">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2.5">
-                    <h3 className="truncate font-semibold">
-                      {post.title.ko || post.title.en || t('blog.untitled')}
-                    </h3>
-                    <Badge className={post.isPublished ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''} variant={post.isPublished ? 'default' : 'secondary'}>
-                      {post.isPublished ? t('blog.publishedBadge') : t('blog.draftBadge')}
-                    </Badge>
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="truncate font-semibold">
+                        {post.title.ko || post.title.en || t('blog.untitled')}
+                      </h3>
+                      <Badge className={post.isPublished ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : ''} variant={post.isPublished ? 'default' : 'secondary'}>
+                        {post.isPublished ? t('blog.publishedBadge') : t('blog.draftBadge')}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 truncate text-sm text-muted-foreground">
+                      /{post.slug}
+                      {post.tags.length > 0 && ` · ${post.tags.join(', ')}`}
+                    </p>
                   </div>
-                  <p className="mt-2 truncate text-sm text-muted-foreground">
-                    /{post.slug}
-                    {post.tags.length > 0 && ` · ${post.tags.join(', ')}`}
-                  </p>
-                </div>
-                <div className="ml-4 flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleTogglePublish(post.id, post.isPublished)}
-                  >
-                    {post.isPublished ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    render={<Link to={`/admin/blog/${post.id}/edit`} />}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(post.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleTogglePublish(post.id, post.isPublished)}
+                    >
+                      {post.isPublished ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      render={<Link to={`/admin/blog/${post.id}/edit`} />}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(post.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

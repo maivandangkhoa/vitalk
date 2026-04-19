@@ -83,32 +83,32 @@ export default function AdminReviews() {
 
   return (
     <div>
-      <AnimatedSection className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <AnimatedSection className="mb-6 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">{t('reviews.title')}</h1>
-          {isAdmin && teachers.length > 0 && (
-            <select
-              value={filterTeacherId}
-              onChange={(e) => setFilterTeacherId(e.target.value)}
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm font-medium outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-            >
-              <option value="all">{t('bookings.all')}</option>
-              {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.name} ({teacher.slug})
-                </option>
-              ))}
-            </select>
-          )}
+          <Button onClick={handleSync} disabled={syncing} variant="outline" size="sm">
+            {syncing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            {syncing ? t('reviews.syncing') : t('reviews.syncItalki')}
+          </Button>
         </div>
-        <Button onClick={handleSync} disabled={syncing} variant="outline">
-          {syncing ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
-          )}
-          {syncing ? t('reviews.syncing') : t('reviews.syncItalki')}
-        </Button>
+        {isAdmin && teachers.length > 0 && (
+          <select
+            value={filterTeacherId}
+            onChange={(e) => setFilterTeacherId(e.target.value)}
+            className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-medium outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 sm:w-auto"
+          >
+            <option value="all">{t('bookings.all')}</option>
+            {teachers.map((teacher) => (
+              <option key={teacher.id} value={teacher.id}>
+                {teacher.name} ({teacher.slug})
+              </option>
+            ))}
+          </select>
+        )}
       </AnimatedSection>
 
       {loading ? (
