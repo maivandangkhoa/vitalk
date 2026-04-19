@@ -4,6 +4,10 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
+import { useRef, useState } from 'react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
+import { toast } from 'sonner';
 import {
   Bold,
   Italic,
@@ -20,6 +24,9 @@ import {
   Undo,
   Redo,
   Code,
+  Upload,
+  Loader2,
+  X,
 } from 'lucide-react';
 
 interface BlogEditorProps {
@@ -29,6 +36,11 @@ interface BlogEditorProps {
 }
 
 export default function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) {
+  const [showImageDialog, setShowImageDialog] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -51,10 +63,39 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
     }
   };
 
-  const addImage = () => {
-    const url = window.prompt('Enter image URL:');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
+  const insertImage = (url: string) => {
+    editor.chain().focus().setImage({ src: url }).run();
+    setShowImageDialog(false);
+    setImageUrl('');
+  };
+
+  const handleImageUrl = () => {
+    if (imageUrl.trim()) {
+      insertImage(imageUrl.trim());
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filePath = `blog-images/inline/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+      const storageRef = ref(storage, filePath);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      insertImage(url);
+      toast.success('Image uploaded');
+    } catch {
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -126,13 +167,56 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
         <div className="mx-1 w-px bg-border" />
 
         <ToolbarButton onClick={addLink} active={editor.isActive('link')} icon={<Link2 className="h-4 w-4" />} />
-        <ToolbarButton onClick={addImage} icon={<ImageIcon className="h-4 w-4" />} />
+        <ToolbarButton onClick={() => setShowImageDialog(true)} icon={<ImageIcon className="h-4 w-4" />} />
 
         <div className="mx-1 w-px bg-border" />
 
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} icon={<Undo className="h-4 w-4" />} />
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()} icon={<Redo className="h-4 w-4" />} />
       </div>
+
+      {/* Image insert dialog */}
+      {showImageDialog && (
+        <div className="border-b bg-zinc-50 p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Insert Image</span>
+            <button onClick={() => { setShowImageDialog(false); setImageUrl(''); }} className="text-muted-foreground hover:text-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="Paste image URL..."
+              className="flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              onKeyDown={(e) => e.key === 'Enter' && handleImageUrl()}
+            />
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleImageUrl} disabled={!imageUrl.trim()}>
+                <Link2 className="mr-1.5 h-3.5 w-3.5" />
+                URL
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Upload className="mr-1.5 h-3.5 w-3.5" />}
+                Upload
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Editor */}
       <EditorContent
