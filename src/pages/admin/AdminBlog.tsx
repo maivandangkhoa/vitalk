@@ -75,12 +75,13 @@ export default function AdminBlog() {
       const result = await fn({ url: naverUrl.trim() });
       const { title, content, coverImageUrl } = result.data;
 
-      // Create slug from title
+      // Create slug from title (support Unicode characters like Korean)
       const slug = title
         .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
+        .replace(/[^\p{L}\p{N}\s-]/gu, '')
         .replace(/[\s_]+/g, '-')
         .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
         .trim() || `naver-import-${Date.now()}`;
 
       // Save as draft with Korean content (from Naver)

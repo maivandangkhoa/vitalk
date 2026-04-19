@@ -24,10 +24,11 @@ const LANGUAGES: { code: Language; label: string }[] = [
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
+    .replace(/[^\p{L}\p{N}\s-]/gu, '')
     .replace(/[\s_]+/g, '-')
     .replace(/-+/g, '-')
-    .trim();
+    .replace(/^-|-$/g, '')
+    .trim() || `post-${Date.now()}`;
 }
 
 export default function AdminBlogEdit() {
