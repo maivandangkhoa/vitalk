@@ -41,7 +41,7 @@ async function getPaypalAccessToken(): Promise<string> {
  * Called from client before showing PayPal button.
  */
 export const createPaypalOrder = onCall(
-  { secrets: ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"], cors: true, invoker: "public" },
+  { cors: true, invoker: "public" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
@@ -130,7 +130,7 @@ export const createPaypalOrder = onCall(
  * Updates booking payment status on success.
  */
 export const capturePaypalOrder = onCall(
-  { secrets: ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"], cors: true, invoker: "public" },
+  { cors: true, invoker: "public" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
