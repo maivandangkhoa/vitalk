@@ -7,6 +7,7 @@ const serviceAccount = require(serviceAccountPath);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  storageBucket: "vietalky.firebasestorage.app",
 });
 
 // Payment functions

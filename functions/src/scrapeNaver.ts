@@ -358,7 +358,7 @@ async function uploadNaverImages(
  */
 export const scrapeNaverBlog = onCall(
   {
-    timeoutSeconds: 60,
+    timeoutSeconds: 300,
     memory: "512MiB",
     cors: true,
     invoker: "public",
@@ -479,6 +479,7 @@ export const scrapeNaverBlog = onCall(
       );
       result.content = uploaded.content;
       result.coverImageUrl = uploaded.coverImageUrl;
+      console.log("Image upload complete. Cover:", result.coverImageUrl);
 
       return result;
     } catch (err) {
