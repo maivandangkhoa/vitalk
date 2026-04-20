@@ -7,7 +7,7 @@ const serviceAccount = require(serviceAccountPath);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "havitalk.firebasestorage.app",
+  storageBucket: "havitalk",
 });
 
 // Payment functions

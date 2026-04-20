@@ -66,7 +66,7 @@ export default function AdminBlogEdit() {
       const filePath = `blog-covers/${Date.now()}.${ext}`;
       const storageRef = ref(storage, filePath);
       await uploadBytes(storageRef, file);
-      const url = `https://storage.googleapis.com/havitalk.firebasestorage.app/${filePath}`;
+      const url = `https://storage.googleapis.com/havitalk/${filePath}`;
       setCoverImageUrl(url);
       toast.success(t('blog.coverUploaded'));
     } catch {

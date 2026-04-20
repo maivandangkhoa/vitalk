@@ -88,7 +88,7 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
       const filePath = `blog-images/inline/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
       const storageRef = ref(storage, filePath);
       await uploadBytes(storageRef, file);
-      const url = `https://storage.googleapis.com/havitalk.firebasestorage.app/${filePath}`;
+      const url = `https://storage.googleapis.com/havitalk/${filePath}`;
       insertImage(url);
       toast.success('Image uploaded');
     } catch {
