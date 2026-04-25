@@ -267,6 +267,10 @@ function cleanTitle(title: string): string {
 /**
  * Download images from Naver and upload to Firebase Storage.
  * Returns content with replaced image URLs.
+ *
+ * Naver serves inline images as resized thumbnails (?type=w773); stripping the
+ * `type` query yields the original full-res file. Same canonical URL is only
+ * uploaded once and shared between cover + inline occurrences.
  */
 async function uploadNaverImages(
   contentHtml: string,
@@ -282,6 +286,17 @@ async function uploadNaverImages(
       return u.hostname.endsWith(".pstatic.net") || u.hostname === "pstatic.net";
     } catch {
       return false;
+    }
+  };
+
+  // Strip Naver's ?type=wXXX resize directive to fetch the original asset.
+  const canonicalNaverUrl = (url: string): string => {
+    try {
+      const u = new URL(url);
+      u.searchParams.delete("type");
+      return u.toString();
+    } catch {
+      return url;
     }
   };
 
@@ -317,37 +332,59 @@ async function uploadNaverImages(
     }
   };
 
-  // Collect all Naver image URLs from content
-  const matches: { original: string; index: number }[] = [];
-  let match;
-  let idx = 0;
-  while ((match = imgRegex.exec(contentHtml)) !== null) {
-    const src = match[1];
-    if (isNaverImage(src)) {
-      matches.push({ original: src, index: idx++ });
-    }
-  }
+  // Build the unique upload set: every Naver URL (cover + inline) keyed by its
+  // canonical form, so the same source file is fetched and stored once.
+  const canonicalToUpload = new Map<string, { fetchUrl: string; index: number }>();
+  const originalToCanonical = new Map<string, string>();
 
-  // Upload images in parallel (max 5 concurrent)
-  let updatedContent = contentHtml;
+  const registerNaverUrl = (originalUrl: string) => {
+    if (!isNaverImage(originalUrl)) return;
+    const canonical = canonicalNaverUrl(originalUrl);
+    originalToCanonical.set(originalUrl, canonical);
+    if (!canonicalToUpload.has(canonical)) {
+      canonicalToUpload.set(canonical, {
+        fetchUrl: canonical,
+        index: canonicalToUpload.size,
+      });
+    }
+  };
+
+  let match;
+  while ((match = imgRegex.exec(contentHtml)) !== null) {
+    registerNaverUrl(match[1]);
+  }
+  if (coverImageUrl) registerNaverUrl(coverImageUrl);
+
+  const uploadedByCanonical = new Map<string, string>();
+  const tasks = Array.from(canonicalToUpload.values());
   const batchSize = 5;
-  for (let i = 0; i < matches.length; i += batchSize) {
-    const batch = matches.slice(i, i + batchSize);
+  for (let i = 0; i < tasks.length; i += batchSize) {
+    const batch = tasks.slice(i, i + batchSize);
     const results = await Promise.all(
-      batch.map((m) => uploadImage(m.original, m.index))
+      batch.map((t) => uploadImage(t.fetchUrl, t.index))
     );
     results.forEach((newUrl, j) => {
       if (newUrl) {
-        updatedContent = updatedContent.split(batch[j].original).join(newUrl);
+        uploadedByCanonical.set(batch[j].fetchUrl, newUrl);
       }
     });
   }
 
-  // Upload cover image if it's from Naver
+  let updatedContent = contentHtml;
+  originalToCanonical.forEach((canonical, original) => {
+    const uploaded = uploadedByCanonical.get(canonical);
+    if (uploaded) {
+      updatedContent = updatedContent.split(original).join(uploaded);
+    }
+  });
+
   let updatedCover = coverImageUrl;
-  if (coverImageUrl && isNaverImage(coverImageUrl)) {
-    const newCoverUrl = await uploadImage(coverImageUrl, 999);
-    if (newCoverUrl) updatedCover = newCoverUrl;
+  if (coverImageUrl) {
+    const canonical = originalToCanonical.get(coverImageUrl);
+    if (canonical) {
+      const uploaded = uploadedByCanonical.get(canonical);
+      if (uploaded) updatedCover = uploaded;
+    }
   }
 
   return { content: updatedContent, coverImageUrl: updatedCover };
