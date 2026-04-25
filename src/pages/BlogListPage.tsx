@@ -23,15 +23,13 @@ function BlogCard({ post }: { post: BlogPost }) {
 
   return (
     <Link to={`/blog/${post.slug}`} className="group block">
-      <Card className="overflow-hidden">
+      <Card className="gap-0 overflow-hidden pb-0">
         {post.coverImageUrl && (
-          <div className="aspect-video overflow-hidden bg-zinc-100">
-            <img
-              src={post.coverImageUrl}
-              alt={title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-          </div>
+          <img
+            src={post.coverImageUrl}
+            alt={title}
+            className="aspect-video w-full bg-zinc-100 object-cover transition-transform duration-300 group-hover:scale-105"
+          />
         )}
         <CardContent className="p-6">
           <div className="mb-3 flex flex-wrap gap-1.5">
