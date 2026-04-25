@@ -28,6 +28,7 @@ import { useLessonTypes } from '@/hooks/useLessonTypes';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
 import { useCurrencySettings } from '@/hooks/useCurrency';
+import { getLessonPrice } from '@/lib/currency';
 import { AnimatedSection } from '@/components/shared/motion';
 import { useLocations } from '@/hooks/useLocations';
 import type { OnlinePlatform, PaymentMethod, Language } from '@/types';
@@ -57,7 +58,7 @@ export default function BookingPage() {
   const { t, i18n } = useTranslation('booking');
   const { t: tc } = useTranslation('common');
   const lang = i18n.language as Language;
-  const { formatLesson } = useCurrencySettings();
+  const { formatLesson, currency, config } = useCurrencySettings();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [searchParams] = useSearchParams();
@@ -76,7 +77,7 @@ export default function BookingPage() {
   const [selectedLocationId, setSelectedLocationId] = useState('');
   const [customLocationAddress, setCustomLocationAddress] = useState('');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paypal');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer');
   const [bookingComplete, setBookingComplete] = useState(false);
   const [createdBookingId, setCreatedBookingId] = useState<string>('');
   const [showPaymentUI, setShowPaymentUI] = useState(false);
@@ -465,6 +466,33 @@ export default function BookingPage() {
               <div>
                 <p className="mb-3 text-sm font-medium">{t('format.selectLocation')}</p>
                 <div className="space-y-3">
+                  {/* Custom location option */}
+                  <Button
+                    variant={selectedLocationId === 'custom' ? 'default' : 'outline'}
+                    className="h-auto w-full justify-start rounded-xl border-dashed px-5 py-4 text-left"
+                    onClick={() => setSelectedLocationId('custom')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span className="font-medium">{t('format.customLocation')}</span>
+                    </div>
+                  </Button>
+
+                  {selectedLocationId === 'custom' && (
+                    <div className="ml-1">
+                      <label className="mb-1.5 block text-sm text-muted-foreground">
+                        {t('format.customLocationHint')}
+                      </label>
+                      <textarea
+                        value={customLocationAddress}
+                        onChange={(e) => setCustomLocationAddress(e.target.value)}
+                        placeholder={t('format.customLocationPlaceholder')}
+                        rows={2}
+                        className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                      />
+                    </div>
+                  )}
+
                   {offlineLocations.map((loc) => (
                     <Button
                       key={loc.id}
@@ -509,33 +537,6 @@ export default function BookingPage() {
                       </div>
                     </Button>
                   ))}
-
-                  {/* Custom location option */}
-                  <Button
-                    variant={selectedLocationId === 'custom' ? 'default' : 'outline'}
-                    className="h-auto w-full justify-start rounded-xl border-dashed px-5 py-4 text-left"
-                    onClick={() => setSelectedLocationId('custom')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 shrink-0" />
-                      <span className="font-medium">{t('format.customLocation')}</span>
-                    </div>
-                  </Button>
-
-                  {selectedLocationId === 'custom' && (
-                    <div className="ml-1">
-                      <label className="mb-1.5 block text-sm text-muted-foreground">
-                        {t('format.customLocationHint')}
-                      </label>
-                      <textarea
-                        value={customLocationAddress}
-                        onChange={(e) => setCustomLocationAddress(e.target.value)}
-                        placeholder={t('format.customLocationPlaceholder')}
-                        rows={2}
-                        className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -602,7 +603,7 @@ export default function BookingPage() {
               <div>
                 <p className="mb-4 font-medium">{t('payment.title')}</p>
                 <div className="space-y-3">
-                  {(['paypal', 'toss', 'bank_transfer'] as const).map((method) => (
+                  {(['bank_transfer', 'paypal'] as const).map((method) => (
                     <Button
                       key={method}
                       variant={paymentMethod === method ? 'default' : 'outline'}
@@ -646,8 +647,8 @@ export default function BookingPage() {
                   <div>
                     <BankTransferInfo
                       bookingId={createdBookingId}
-                      amount={selectedLessonData?.price || 14}
-                      currency="USD"
+                      amount={selectedLessonData ? getLessonPrice(selectedLessonData, currency, config) : 14}
+                      currency={currency}
                     />
                     <Button
                       className="mt-4 h-12 w-full"
