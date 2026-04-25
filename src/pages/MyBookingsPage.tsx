@@ -22,7 +22,8 @@ import { convertSlotToUserTz } from '@/lib/timezone';
 import { statusColors } from '@/lib/utils';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { ReviewDialog } from '@/components/reviews/ReviewDialog';
-import { formatPrice, type SupportedCurrency } from '@/lib/currency';
+import { formatPrice, getLessonPrice, type SupportedCurrency } from '@/lib/currency';
+import { useCurrencySettings } from '@/hooks/useCurrency';
 import type { Booking } from '@/types';
 
 function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Booking; isReviewed: boolean; onReviewSubmitted: () => void }) {
@@ -33,6 +34,13 @@ function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Book
   const { userTz, userTzLabel } = useUserTimezone();
   const converted = convertSlotToUserTz(booking.startTime, booking.endTime, booking.date, userTz);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const { currency: displayCurrency, config } = useCurrencySettings();
+  const storedCurrency = (booking.currency || 'USD') as SupportedCurrency;
+  const displayAmount =
+    storedCurrency === 'USD'
+      ? getLessonPrice({ price: booking.amount }, displayCurrency, config)
+      : booking.amount;
+  const finalCurrency = storedCurrency === 'USD' ? displayCurrency : storedCurrency;
 
   return (
     <Card>
@@ -96,7 +104,7 @@ function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Book
           </div>
 
           <div className="text-right text-sm">
-            <p className="font-mono font-semibold">{formatPrice(booking.amount, (booking.currency || 'USD') as SupportedCurrency)}</p>
+            <p className="font-mono font-semibold">{formatPrice(displayAmount, finalCurrency)}</p>
             {booking.meetingLink && booking.status === 'confirmed' && (
               <a
                 href={booking.meetingLink}
