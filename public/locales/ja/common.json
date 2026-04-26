@@ -107,5 +107,17 @@
     "joinMeeting": "参加",
     "loginRequired": "予約を確認するにはログインしてください。",
     "noBookings": "まだ予約がありません。"
+  },
+  "notifications": {
+    "title": "通知",
+    "empty": "通知はありません",
+    "markAllRead": "すべて既読にする",
+    "enable": "プッシュ通知を有効にする",
+    "enabled": "プッシュ通知が有効になりました",
+    "denied": "通知がブロックされています。ブラウザの設定から許可してください。",
+    "bookingCreated": {
+      "title": "{{student}}さんからの新しい予約",
+      "body": "{{date}} {{time}} {{lesson}}"
+    }
   }
 }

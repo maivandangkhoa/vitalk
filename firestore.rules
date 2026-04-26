@@ -84,10 +84,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Reviews - public read visible, auth create, teacher+admin manage own
+    // Reviews - public read visible, auth create, teacher+admin manage own, student reads own
     match /reviews/{reviewId} {
       allow read: if resource.data.isVisible == true || isAdmin()
-        || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId());
+        || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId())
+        || (isAuthenticated() && resource.data.studentId == request.auth.uid);
       allow create: if isAuthenticated();
       allow update, delete: if isAdmin()
         || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId());
@@ -120,6 +121,15 @@ service cloud.firestore {
     // Mail - only Cloud Functions (deny all client access)
     match /mail/{mailId} {
       allow read, write: if false;
+    }
+
+    // Notifications - users read/update own (mark-as-read), Cloud Functions write
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create, delete: if false;
     }
   }
 }

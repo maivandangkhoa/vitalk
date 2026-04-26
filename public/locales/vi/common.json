@@ -107,5 +107,17 @@
     "joinMeeting": "Tham gia",
     "loginRequired": "Vui lòng đăng nhập để xem lịch học.",
     "noBookings": "Bạn chưa có lịch đặt nào."
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "empty": "Chưa có thông báo nào",
+    "markAllRead": "Đánh dấu đã đọc tất cả",
+    "enable": "Bật thông báo đẩy",
+    "enabled": "Đã bật thông báo đẩy",
+    "denied": "Thông báo đã bị chặn. Vui lòng bật trong cài đặt trình duyệt.",
+    "bookingCreated": {
+      "title": "Đặt lịch mới từ {{student}}",
+      "body": "{{lesson}} ngày {{date}} lúc {{time}}"
+    }
   }
 }

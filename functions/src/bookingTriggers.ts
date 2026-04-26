@@ -2,6 +2,7 @@ import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/fire
 import { logger } from "firebase-functions/v2";
 import * as admin from "firebase-admin";
 import { sendToTeacher, sendToStudent } from "./email";
+import { notifyBookingCreated } from "./notifications";
 import {
   newBookingTeacher,
   bookingConfirmationStudent,
@@ -92,6 +93,18 @@ export const onBookingCreated = onDocumentCreated(
       logger.info(`Sent booking confirmation to ${data.studentEmail}`);
     } catch (err) {
       logger.error("Failed to send student email", err);
+    }
+
+    try {
+      await notifyBookingCreated(bookingId, {
+        teacherId: data.teacherId,
+        studentName: data.studentName,
+        lessonTypeName: data.lessonTypeName,
+        date: data.date,
+        startTime: data.startTime,
+      });
+    } catch (err) {
+      logger.error("Failed to write/send booking notifications", err);
     }
   }
 );

@@ -107,5 +107,17 @@
     "joinMeeting": "Join",
     "loginRequired": "Please log in to view your bookings.",
     "noBookings": "You don't have any bookings yet."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "markAllRead": "Mark all as read",
+    "enable": "Enable push notifications",
+    "enabled": "Push notifications enabled",
+    "denied": "Notifications were blocked. Enable them in your browser settings.",
+    "bookingCreated": {
+      "title": "New booking from {{student}}",
+      "body": "{{lesson}} on {{date}} at {{time}}"
+    }
   }
 }

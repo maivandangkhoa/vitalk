@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { signOut } from '@/lib/auth';
@@ -65,6 +66,7 @@ export function Header() {
 
           {user ? (
             <div className="hidden items-center gap-2 md:flex">
+              <NotificationBell />
               {(role === 'admin' || role === 'teacher') && (
                 <Button variant="outline" size="lg" render={<Link to="/admin" />}>
                   {t('nav.admin')}
