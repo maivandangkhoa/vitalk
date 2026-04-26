@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Save, Loader2, CreditCard, Building2, Landmark, FileText, Coins } from 'lucide-react';
+import { Save, Loader2, CreditCard, Building2, Landmark, FileText, Coins, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AnimatedSection } from '@/components/shared/motion';
 import { CURRENCIES, CURRENCY_SYMBOLS, DEFAULT_CURRENCY_CONFIG, type CurrencyConfig, type SupportedCurrency } from '@/lib/currency';
+import type { MultiLangText, Language } from '@/types';
 
 interface SiteConfig {
   paypal: { email: string };
@@ -19,6 +20,7 @@ interface SiteConfig {
   };
   cancellationPolicy: string;
   currency: CurrencyConfig;
+  contact: { address: MultiLangText };
 }
 
 const DEFAULT_CONFIG: SiteConfig = {
@@ -31,6 +33,7 @@ const DEFAULT_CONFIG: SiteConfig = {
   },
   cancellationPolicy: '',
   currency: DEFAULT_CURRENCY_CONFIG,
+  contact: { address: { en: '', vi: '', ko: '', ja: '' } },
 };
 
 export default function AdminSettings() {
@@ -235,6 +238,39 @@ export default function AdminSettings() {
               className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               placeholder={t('settings.cancellationPolicyPlaceholder')}
             />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="space-y-4 pt-6">
+            <h3 className="flex items-center gap-2 font-semibold">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50"><MapPin className="h-4 w-4 text-rose-500" /></div>
+              {t('settings.contact')}
+            </h3>
+            <p className="text-sm text-muted-foreground">{t('settings.contactNote')}</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(['en', 'vi', 'ko', 'ja'] as const satisfies readonly Language[]).map((lang) => (
+                <div key={lang}>
+                  <label className="mb-1 block text-xs text-muted-foreground">
+                    {t('settings.addressLabel', { lang: lang.toUpperCase() })}
+                  </label>
+                  <input
+                    value={config.contact.address[lang] ?? ''}
+                    onChange={(e) =>
+                      setConfig((c) => ({
+                        ...c,
+                        contact: {
+                          ...c.contact,
+                          address: { ...c.contact.address, [lang]: e.target.value },
+                        },
+                      }))
+                    }
+                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder={t('settings.addressPlaceholder')}
+                  />
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>

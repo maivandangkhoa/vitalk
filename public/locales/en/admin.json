@@ -57,6 +57,10 @@
     "displayCurrency": "Display Currency by Language",
     "cancellationPolicy": "Cancellation Policy",
     "cancellationPolicyPlaceholder": "Describe your cancellation policy...",
+    "contact": "Contact (Footer)",
+    "contactNote": "Address shown in the footer's Contact section. Leave a language blank to fall back to English.",
+    "addressLabel": "Address ({{lang}})",
+    "addressPlaceholder": "Seoul, South Korea",
     "saved": "Settings saved!",
     "saveFailed": "Failed to save"
   },

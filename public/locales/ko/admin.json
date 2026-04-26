@@ -57,6 +57,10 @@
     "displayCurrency": "언어별 표시 통화",
     "cancellationPolicy": "취소 정책",
     "cancellationPolicyPlaceholder": "취소 정책을 설명하세요...",
+    "contact": "연락처 (푸터)",
+    "contactNote": "푸터의 연락처 섹션에 표시되는 주소입니다. 비워두면 영어로 대체됩니다.",
+    "addressLabel": "주소 ({{lang}})",
+    "addressPlaceholder": "서울, 대한민국",
     "saved": "설정이 저장되었습니다!",
     "saveFailed": "저장에 실패했습니다"
   },

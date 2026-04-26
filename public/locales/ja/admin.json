@@ -57,6 +57,10 @@
     "displayCurrency": "言語別表示通貨",
     "cancellationPolicy": "キャンセルポリシー",
     "cancellationPolicyPlaceholder": "キャンセルポリシーを記入してください...",
+    "contact": "連絡先 (フッター)",
+    "contactNote": "フッターの「連絡先」セクションに表示される住所です。空欄にした言語は英語が代わりに表示されます。",
+    "addressLabel": "住所 ({{lang}})",
+    "addressPlaceholder": "ソウル、大韓民国",
     "saved": "設定を保存しました！",
     "saveFailed": "保存に失敗しました"
   },

@@ -1,9 +1,33 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { Language, MultiLangText } from '@/types';
 
 export function Footer() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const year = new Date().getFullYear();
+  const lang = (i18n.language || 'en').split('-')[0] as Language;
+  const [address, setAddress] = useState<string>('');
+
+  useEffect(() => {
+    let cancelled = false;
+    getDoc(doc(db, 'siteConfig', 'general'))
+      .then((snap) => {
+        if (cancelled) return;
+        const data = snap.data() as { contact?: { address?: MultiLangText } } | undefined;
+        const addr = data?.contact?.address;
+        const value = addr?.[lang] || addr?.en || '';
+        setAddress(value);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
+
+  const displayAddress = address || t('footer.location');
 
   return (
     <footer className="border-t border-zinc-100 bg-white">
@@ -35,7 +59,7 @@ export function Footer() {
 
           <div>
             <h3 className="mb-3 text-sm font-semibold">{t('footer.contact')}</h3>
-            <p className="text-sm text-muted-foreground">{t('footer.location')}</p>
+            <p className="whitespace-pre-line text-sm text-muted-foreground">{displayAddress}</p>
           </div>
         </div>
 

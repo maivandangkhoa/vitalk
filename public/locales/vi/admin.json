@@ -57,6 +57,10 @@
     "displayCurrency": "Đơn vị tiền tệ theo ngôn ngữ",
     "cancellationPolicy": "Chính sách hủy",
     "cancellationPolicyPlaceholder": "Mô tả chính sách hủy của bạn...",
+    "contact": "Liên hệ (Footer)",
+    "contactNote": "Địa chỉ hiển thị trong mục Liên hệ ở footer. Để trống ngôn ngữ nào sẽ dùng tiếng Anh thay thế.",
+    "addressLabel": "Địa chỉ ({{lang}})",
+    "addressPlaceholder": "Seoul, Hàn Quốc",
     "saved": "Đã lưu cài đặt!",
     "saveFailed": "Lưu thất bại"
   },
