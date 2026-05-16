@@ -16,6 +16,14 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // Teacher profile images - authenticated upload, public read
+    match /teacher-profiles/{fileName} {
+      allow read;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Default: deny all
     match /{allPaths=**} {
       allow read, write: if false;

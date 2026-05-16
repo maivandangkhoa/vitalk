@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,10 +14,12 @@ import {
   Check,
   Download,
   Trash2,
+  Upload,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { functions, storage } from '@/lib/firebase';
 import {
   useAdminTeachers,
   createTeacher,
@@ -79,6 +81,33 @@ export default function AdminTeachers() {
   const [importing, setImporting] = useState(false);
   // Store extra fields from italki that don't fit in the form
   const [italkiExtra, setItalkiExtra] = useState<Partial<ItalkiProfileResult> | null>(null);
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('teachers.invalidImage'));
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filePath = `teacher-profiles/${Date.now()}.${ext}`;
+      const storageRef = ref(storage, filePath);
+      const snapshot = await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+      setForm((prev) => ({ ...prev, profileImageUrl: url }));
+      toast.success(t('teachers.imageUploaded'));
+    } catch {
+      toast.error(t('teachers.imageUploadFailed'));
+    } finally {
+      setUploadingImage(false);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  };
 
   const startAdd = () => {
     setEditing('new');
@@ -353,12 +382,46 @@ export default function AdminTeachers() {
                 </div>
                 <div className="md:col-span-2">
                   <label className="mb-1.5 block text-sm font-medium">{t('teachers.profileImageUrl')}</label>
-                  <input
-                    value={form.profileImageUrl}
-                    onChange={(e) => setForm({ ...form, profileImageUrl: e.target.value })}
-                    className={inputClass}
-                    placeholder="https://example.com/photo.jpg"
-                  />
+                  <div className="flex items-start gap-3">
+                    {form.profileImageUrl ? (
+                      <img
+                        src={form.profileImageUrl}
+                        alt="Profile preview"
+                        className="h-12 w-12 shrink-0 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-50">
+                        <Users2 className="h-5 w-5 text-indigo-400" />
+                      </div>
+                    )}
+                    <input
+                      value={form.profileImageUrl}
+                      onChange={(e) => setForm({ ...form, profileImageUrl: e.target.value })}
+                      className={`${inputClass} flex-1`}
+                      placeholder="https://example.com/photo.jpg"
+                    />
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-12 shrink-0"
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={uploadingImage}
+                    >
+                      {uploadingImage ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="mr-2 h-4 w-4" />
+                      )}
+                      {t('teachers.uploadImage')}
+                    </Button>
+                  </div>
                 </div>
                 <div className="md:col-span-2">
                   <label className="mb-1.5 block text-sm font-medium">{t('teachers.bio')}</label>

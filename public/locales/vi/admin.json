@@ -205,7 +205,11 @@
     "importFailed": "Nhập thất bại. Kiểm tra lại link và thử lại.",
     "deleteConfirm": "Xóa?",
     "deleted": "Đã xóa giáo viên",
-    "deleteFailed": "Xóa thất bại"
+    "deleteFailed": "Xóa thất bại",
+    "uploadImage": "Tải lên",
+    "imageUploaded": "Đã tải ảnh lên",
+    "imageUploadFailed": "Tải ảnh thất bại",
+    "invalidImage": "Vui lòng chọn tệp ảnh"
   },
   "migration": {
     "title": "Di chuyển dữ liệu",

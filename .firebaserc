@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "vietalky"
-  }
+  },
+  "targets": {
+    "vietalky": {
+      "storage": {
+        "default": [
+          "havitalk"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

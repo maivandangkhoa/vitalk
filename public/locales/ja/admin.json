@@ -205,7 +205,11 @@
     "importFailed": "取り込みに失敗しました。URLを確認して再試行してください。",
     "deleteConfirm": "削除？",
     "deleted": "講師を削除しました",
-    "deleteFailed": "削除に失敗しました"
+    "deleteFailed": "削除に失敗しました",
+    "uploadImage": "アップロード",
+    "imageUploaded": "画像をアップロードしました",
+    "imageUploadFailed": "画像のアップロードに失敗しました",
+    "invalidImage": "画像ファイルを選択してください"
   },
   "migration": {
     "title": "データ移行",

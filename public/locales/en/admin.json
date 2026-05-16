@@ -205,7 +205,11 @@
     "importFailed": "Failed to import. Check the URL and try again.",
     "deleteConfirm": "Delete?",
     "deleted": "Teacher deleted",
-    "deleteFailed": "Failed to delete"
+    "deleteFailed": "Failed to delete",
+    "uploadImage": "Upload",
+    "imageUploaded": "Image uploaded",
+    "imageUploadFailed": "Failed to upload image",
+    "invalidImage": "Please select an image file"
   },
   "migration": {
     "title": "Data Migration",
