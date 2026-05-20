@@ -279,7 +279,7 @@ export default function HomePage() {
                                 </p>
                               )}
 
-                              <div className="mt-5 flex flex-wrap gap-3">
+                              <div className="mt-5 flex flex-wrap justify-center gap-3">
                                 <Button
                                   variant="outline"
                                   render={<Link to={`/teachers/${teacher.slug}`} />}
