@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
+import { Link } from 'react-router-dom';
 import {
   Check,
   Clock,
@@ -22,7 +23,7 @@ import {
 import { format } from 'date-fns';
 import { useTeachers } from '@/hooks/useTeachers';
 import { useAllTeachersAvailableSlots } from '@/hooks/useAllTeachersAvailability';
-import type { AggregatedSlot, AggregatedTeacher } from '@/hooks/useAllTeachersAvailability';
+import type { AggregatedSlot, AggregatedSlots, AggregatedTeacher } from '@/hooks/useAllTeachersAvailability';
 import { useCreateBooking } from '@/hooks/useBookings';
 import { useLessonTypes } from '@/hooks/useLessonTypes';
 import { useAuthStore } from '@/stores/authStore';
@@ -41,6 +42,8 @@ const TossRedirectHandler = lazy(() => import('@/components/booking/TossRedirect
 
 const STEPS = ['lessonType', 'dateTime', 'details', 'payment'] as const;
 type Step = (typeof STEPS)[number];
+
+const BOOKING_DRAFT_KEY = 'booking-draft';
 
 const LEVEL_COLORS: Record<string, string> = {
   beginner: 'bg-emerald-50 text-emerald-600',
@@ -83,9 +86,27 @@ export default function BookingPage() {
   const [showPaymentUI, setShowPaymentUI] = useState(false);
 
   const yearMonth = format(viewMonth, 'yyyy-MM');
-  const { slots: aggregatedSlots, loading: slotsLoading } = useAllTeachersAvailableSlots(teachers, yearMonth);
+  const { slots: aggregatedSlotsRaw, loading: slotsLoading } = useAllTeachersAvailableSlots(teachers, yearMonth);
   const { createBooking, loading: bookingLoading } = useCreateBooking();
   const { locations: offlineLocations } = useLocations();
+
+  // Locked teacher mode: when ?teacherId= is present, restrict the flow to
+  // that one teacher (hide picker, filter availability to their slots only).
+  const lockedTeacherId = searchParams.get('teacherId') || '';
+  const isTeacherLocked = !!lockedTeacherId && teachers.some((t) => t.id === lockedTeacherId);
+
+  // Filter aggregated slots down to just the locked teacher when applicable.
+  const aggregatedSlots: AggregatedSlots = useMemo(() => {
+    if (!isTeacherLocked) return aggregatedSlotsRaw;
+    const result: AggregatedSlots = {};
+    for (const [date, daySlots] of Object.entries(aggregatedSlotsRaw)) {
+      const filtered = daySlots
+        .map((slot) => ({ ...slot, teachers: slot.teachers.filter((t) => t.id === lockedTeacherId) }))
+        .filter((slot) => slot.teachers.length > 0);
+      if (filtered.length > 0) result[date] = filtered;
+    }
+    return result;
+  }, [aggregatedSlotsRaw, isTeacherLocked, lockedTeacherId]);
 
   // Selected teacher object
   const selectedTeacher = useMemo(
@@ -137,6 +158,42 @@ export default function BookingPage() {
     }
   }, [availableTeachersForSlot, selectedTeacherId]);
 
+  // Pre-fill the locked teacher on mount so the "Booking with" banner shows
+  // immediately, before any time slot is picked.
+  useEffect(() => {
+    if (isTeacherLocked && selectedTeacherId !== lockedTeacherId) {
+      setSelectedTeacherId(lockedTeacherId);
+    }
+  }, [isTeacherLocked, lockedTeacherId, selectedTeacherId]);
+
+  // Restore a booking draft saved before the user was bounced to /login,
+  // then clear it so a fresh visit starts clean.
+  useEffect(() => {
+    const raw = sessionStorage.getItem(BOOKING_DRAFT_KEY);
+    if (!raw) return;
+    sessionStorage.removeItem(BOOKING_DRAFT_KEY);
+    try {
+      const draft = JSON.parse(raw);
+      if (draft.selectedLesson) setSelectedLesson(draft.selectedLesson);
+      if (draft.selectedDate) {
+        const d = new Date(draft.selectedDate);
+        setSelectedDate(d);
+        setViewMonth(d);
+      }
+      if (draft.selectedTime) setSelectedTime(draft.selectedTime);
+      if (draft.selectedTeacherId) setSelectedTeacherId(draft.selectedTeacherId);
+      if (draft.lessonFormat) setLessonFormat(draft.lessonFormat);
+      if (draft.platform) setPlatform(draft.platform);
+      if (draft.selectedLocationId) setSelectedLocationId(draft.selectedLocationId);
+      if (draft.customLocationAddress) setCustomLocationAddress(draft.customLocationAddress);
+      if (draft.notes) setNotes(draft.notes);
+      if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod);
+      if (typeof draft.currentStep === 'number') setCurrentStep(draft.currentStep);
+    } catch {
+      // ignore corrupted draft
+    }
+  }, []);
+
   // Handle Toss payment redirect
   const tossRedirect = searchParams.get('toss');
   if (tossRedirect) {
@@ -167,7 +224,23 @@ export default function BookingPage() {
 
   const handleConfirmBooking = async () => {
     if (!user) {
-      navigate('/login');
+      // Save draft so we can resume at the same step after login
+      const draft = {
+        selectedLesson,
+        selectedDate: selectedDate?.toISOString(),
+        selectedTime,
+        selectedTeacherId,
+        lessonFormat,
+        platform,
+        selectedLocationId,
+        customLocationAddress,
+        notes,
+        paymentMethod,
+        currentStep,
+      };
+      sessionStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(draft));
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      navigate(`/login?redirect=${encodeURIComponent(returnTo)}`);
       return;
     }
     if (!selectedLessonData || !selectedDate || !selectedTeacherSlotInfo || !selectedTeacher) return;
@@ -264,6 +337,34 @@ export default function BookingPage() {
           <h1 className="mb-2 text-center text-3xl font-bold">{t('title')}</h1>
         </AnimatedSection>
 
+        {/* Locked-teacher banner */}
+        {isTeacherLocked && selectedTeacher && (
+          <AnimatedSection>
+            <div className="mx-auto mt-6 flex max-w-md items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                {selectedTeacher.profileImageUrl ? (
+                  <img
+                    src={selectedTeacher.profileImageUrl}
+                    alt={selectedTeacher.name}
+                    className="h-10 w-10 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-200 text-sm font-bold text-indigo-700">
+                    {selectedTeacher.name.split(' ').map((n) => n[0]).join('').toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs text-indigo-600/80">{t('lockedTeacher.label')}</p>
+                  <p className="truncate text-sm font-semibold text-indigo-900">{selectedTeacher.name}</p>
+                </div>
+              </div>
+              <Link to="/teachers" className="shrink-0 text-xs font-medium text-indigo-600 hover:underline">
+                {t('lockedTeacher.change')}
+              </Link>
+            </div>
+          </AnimatedSection>
+        )}
+
         {/* Stepper */}
         <div className="mb-8 mt-8 flex items-center justify-center gap-2">
           {STEPS.map((s, i) => (
@@ -301,29 +402,37 @@ export default function BookingPage() {
               </div>
             ) : (
               <div className="grid gap-6 md:grid-cols-3">
-                {lessonTypes.map((opt) => (
-                  <Card
-                    key={opt.id}
-                    className={`cursor-pointer transition-all ${
-                      selectedLesson === opt.id ? 'ring-2 ring-indigo-500 shadow-md' : ''
-                    }`}
-                    onClick={() => setSelectedLesson(opt.id)}
-                  >
-                    <CardContent className="p-8">
-                      <Badge className={`mb-3 ${LEVEL_COLORS[opt.level] ?? 'bg-zinc-50 text-zinc-600'}`}>{opt.level}</Badge>
-                      <h3 className="font-semibold">{opt.title[lang] || opt.title.en}</h3>
-                      <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5" />
-                          {opt.duration}{tc('common.minutes')}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="font-mono">{formatLesson({ price: opt.price })}</span>
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {lessonTypes.map((opt) => {
+                  const description = opt.description?.[lang] || opt.description?.en || '';
+                  return (
+                    <Card
+                      key={opt.id}
+                      className={`cursor-pointer transition-all ${
+                        selectedLesson === opt.id ? 'ring-2 ring-indigo-500 shadow-md' : ''
+                      }`}
+                      onClick={() => setSelectedLesson(opt.id)}
+                    >
+                      <CardContent className="p-8">
+                        <Badge className={`mb-3 ${LEVEL_COLORS[opt.level] ?? 'bg-zinc-50 text-zinc-600'}`}>
+                          {opt.level.charAt(0).toUpperCase() + opt.level.slice(1)}
+                        </Badge>
+                        <h3 className="font-semibold">{opt.title[lang] || opt.title.en}</h3>
+                        {description && (
+                          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{description}</p>
+                        )}
+                        <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5" />
+                            {i18n.t('lessons:duration', { minutes: opt.duration })}
+                          </span>
+                          <span className="font-mono">
+                            {formatLesson({ price: opt.price })} {tc('common.perLesson')}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -341,7 +450,7 @@ export default function BookingPage() {
                   onSelect={(d) => {
                     setSelectedDate(d);
                     setSelectedTime('');
-                    setSelectedTeacherId('');
+                    if (!isTeacherLocked) setSelectedTeacherId('');
                   }}
                   month={viewMonth}
                   onMonthChange={setViewMonth}
@@ -370,10 +479,12 @@ export default function BookingPage() {
                           >
                             <div className="flex flex-col items-center gap-1">
                               <span className="font-mono text-xs">{slot.startTime} - {slot.endTime}</span>
-                              <span className={`flex items-center gap-1 text-[10px] ${selectedTime === slot.startTime ? 'text-white/70' : 'text-muted-foreground'}`}>
-                                <Users className="h-3 w-3" />
-                                {t('teachersAvailable', { count: slot.teachers.length })}
-                              </span>
+                              {!isTeacherLocked && (
+                                <span className={`flex items-center gap-1 text-[10px] ${selectedTime === slot.startTime ? 'text-white/70' : 'text-muted-foreground'}`}>
+                                  <Users className="h-3 w-3" />
+                                  {t('teachersAvailable', { count: slot.teachers.length })}
+                                </span>
+                              )}
                             </div>
                           </Button>
                         ))}
@@ -389,8 +500,9 @@ export default function BookingPage() {
                   </p>
                 </div>
 
-                {/* Available teachers for selected time */}
-                {selectedTime && availableTeachersForSlot.length > 0 && (
+                {/* Available teachers for selected time — hidden when a
+                    teacher is locked via ?teacherId= */}
+                {!isTeacherLocked && selectedTime && availableTeachersForSlot.length > 0 && (
                   <div>
                     <p className="mb-3 text-sm font-medium">{t('selectTeacher')}</p>
                     <div className="grid gap-2">
@@ -694,7 +806,7 @@ export default function BookingPage() {
             <Button
               className="h-12"
               onClick={handleConfirmBooking}
-              disabled={bookingLoading || !user}
+              disabled={bookingLoading}
             >
               {bookingLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {!user ? tc('nav.login') : tc('common.confirm')}

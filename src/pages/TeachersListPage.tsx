@@ -138,6 +138,13 @@ function TeacherFullCard({ teacher, lang }: { teacher: TeacherProfile; lang: Lan
                 )}
               </div>
             )}
+            <Button
+              size="lg"
+              className="mt-6 h-12 px-8 shadow-md hover:shadow-lg"
+              render={<Link to={`/book?teacherId=${teacher.id}`} />}
+            >
+              {t('bookLesson')}
+            </Button>
           </div>
         </div>
 
@@ -282,16 +289,6 @@ function TeacherFullCard({ teacher, lang }: { teacher: TeacherProfile; lang: Lan
           </div>
         )}
 
-        {/* Book a Lesson CTA */}
-        <div className="mt-10 text-center">
-          <Button
-            size="lg"
-            className="h-12 px-8 shadow-md hover:shadow-lg"
-            render={<Link to="/book" />}
-          >
-            {t('bookLesson')}
-          </Button>
-        </div>
       </div>
     </AnimatedSection>
   );

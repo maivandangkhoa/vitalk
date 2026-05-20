@@ -14,6 +14,10 @@
   "teacherTimezone": "Múi giờ giáo viên",
   "teachersAvailable": "{{count}} giáo viên",
   "selectTeacher": "Chọn giáo viên",
+  "lockedTeacher": {
+    "label": "Đặt lịch với",
+    "change": "Đổi"
+  },
   "format": {
     "title": "Hình thức học",
     "online": "Học online",

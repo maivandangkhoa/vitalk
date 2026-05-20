@@ -299,14 +299,20 @@ export default function HomePage() {
                                 </p>
                               )}
 
-                              <Button
-                                variant="outline"
-                                className="mt-5"
-                                render={<Link to={`/teachers/${teacher.slug}`} />}
-                              >
-                                {t('teachers.viewProfile')}
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                              </Button>
+                              <div className="mt-5 flex flex-wrap gap-3">
+                                <Button
+                                  variant="outline"
+                                  render={<Link to={`/teachers/${teacher.slug}`} />}
+                                >
+                                  {t('teachers.viewProfile')}
+                                  <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                                <Button
+                                  render={<Link to={`/book?teacherId=${teacher.id}`} />}
+                                >
+                                  {t('teachers.bookLesson')}
+                                </Button>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -11,6 +11,11 @@ import { AnimatedSection } from '@/components/shared/motion';
 export default function LoginPage() {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Where to send the user after a successful login. Only allow relative
+  // paths so this can't be turned into an open redirect.
+  const redirectParam = searchParams.get('redirect') || '/';
+  const redirectTo = redirectParam.startsWith('/') ? redirectParam : '/';
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,12 +25,12 @@ export default function LoginPage() {
     (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       if (event.data?.type === 'NAVER_LOGIN_SUCCESS') {
-        navigate('/');
+        navigate(redirectTo);
       } else if (event.data?.type === 'NAVER_LOGIN_ERROR') {
         toast.error(event.data.error || 'Naver login failed');
       }
     },
-    [navigate]
+    [navigate, redirectTo]
   );
 
   useEffect(() => {
@@ -37,7 +42,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       await signInWithGoogle();
-      navigate('/');
+      navigate(redirectTo);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error('Google login error:', err);
@@ -95,7 +100,7 @@ export default function LoginPage() {
       } else {
         await signUpWithEmail(email, password);
       }
-      navigate('/');
+      navigate(redirectTo);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error('Email auth error:', err);

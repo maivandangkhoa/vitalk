@@ -14,6 +14,10 @@
   "teacherTimezone": "Teacher's timezone",
   "teachersAvailable": "{{count}} teacher(s)",
   "selectTeacher": "Choose your teacher",
+  "lockedTeacher": {
+    "label": "Booking with",
+    "change": "Change"
+  },
   "format": {
     "title": "Lesson Format",
     "online": "Online Lesson",

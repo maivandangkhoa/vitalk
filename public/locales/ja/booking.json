@@ -14,6 +14,10 @@
   "teacherTimezone": "講師のタイムゾーン",
   "teachersAvailable": "{{count}}名の講師",
   "selectTeacher": "講師を選択",
+  "lockedTeacher": {
+    "label": "予約相手",
+    "change": "変更"
+  },
   "format": {
     "title": "レッスン形式",
     "online": "オンラインレッスン",

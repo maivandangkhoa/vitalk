@@ -216,7 +216,7 @@ export default function TeacherProfilePage() {
           <Button
             size="lg"
             className="h-12 px-8 shadow-md hover:shadow-lg"
-            render={<Link to="/book" />}
+            render={<Link to={`/book?teacherId=${teacher.id}`} />}
           >
             {t('bookLesson')}
           </Button>
