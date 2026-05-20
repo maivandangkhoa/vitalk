@@ -79,7 +79,7 @@
     "duration": "시간 (분)",
     "priceUsd": "가격 (USD)",
     "titleLabel": "제목",
-    "descriptionEn": "설명 (EN)"
+    "descriptionLabel": "설명"
   },
   "users": {
     "loadFailed": "사용자 로드에 실패했습니다",

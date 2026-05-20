@@ -79,7 +79,7 @@
     "duration": "Duration (min)",
     "priceUsd": "Price (USD)",
     "titleLabel": "Title",
-    "descriptionEn": "Description (EN)"
+    "descriptionLabel": "Description"
   },
   "users": {
     "loadFailed": "Failed to load users",

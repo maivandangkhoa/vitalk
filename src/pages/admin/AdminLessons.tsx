@@ -276,15 +276,22 @@ export default function AdminLessons() {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium">{t('lessons.descriptionEn')}</label>
-                <textarea
-                  value={lesson.description.en}
-                  onChange={(e) =>
-                    updateLesson(lesson.id, 'description', { ...lesson.description, en: e.target.value })
-                  }
-                  rows={2}
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                />
+                <label className="mb-1 block text-xs font-medium">{t('lessons.descriptionLabel')}</label>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {LANGS.map((lang) => (
+                    <div key={lang}>
+                      <span className="mb-1 block text-[10px] font-medium text-muted-foreground">{LANG_LABELS[lang]}</span>
+                      <textarea
+                        value={lesson.description[lang]}
+                        onChange={(e) =>
+                          updateLesson(lesson.id, 'description', { ...lesson.description, [lang]: e.target.value })
+                        }
+                        rows={5}
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm leading-relaxed outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -79,7 +79,7 @@
     "duration": "Thời lượng (phút)",
     "priceUsd": "Giá (USD)",
     "titleLabel": "Tiêu đề",
-    "descriptionEn": "Mô tả (EN)"
+    "descriptionLabel": "Mô tả"
   },
   "users": {
     "loadFailed": "Không thể tải người dùng",

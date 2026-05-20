@@ -79,7 +79,7 @@
     "duration": "時間（分）",
     "priceUsd": "価格（USD）",
     "titleLabel": "タイトル",
-    "descriptionEn": "説明（EN）"
+    "descriptionLabel": "説明"
   },
   "users": {
     "loadFailed": "ユーザーの読み込みに失敗しました",
