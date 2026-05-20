@@ -21,22 +21,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleNaverMessage = useCallback(
+  const handleOAuthMessage = useCallback(
     (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
-      if (event.data?.type === 'NAVER_LOGIN_SUCCESS') {
+      const type = event.data?.type;
+      if (type === 'NAVER_LOGIN_SUCCESS' || type === 'KAKAO_LOGIN_SUCCESS') {
         navigate(redirectTo);
-      } else if (event.data?.type === 'NAVER_LOGIN_ERROR') {
+      } else if (type === 'NAVER_LOGIN_ERROR') {
         toast.error(event.data.error || 'Naver login failed');
+      } else if (type === 'KAKAO_LOGIN_ERROR') {
+        toast.error(event.data.error || 'Kakao login failed');
       }
     },
     [navigate, redirectTo]
   );
 
   useEffect(() => {
-    window.addEventListener('message', handleNaverMessage);
-    return () => window.removeEventListener('message', handleNaverMessage);
-  }, [handleNaverMessage]);
+    window.addEventListener('message', handleOAuthMessage);
+    return () => window.removeEventListener('message', handleOAuthMessage);
+  }, [handleOAuthMessage]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -53,7 +56,38 @@ export default function LoginPage() {
   };
 
   const handleKakaoLogin = () => {
-    toast.info('Kakao login coming soon');
+    const clientId = import.meta.env.VITE_KAKAO_CLIENT_ID;
+    if (!clientId) {
+      toast.error('Kakao login is not configured');
+      return;
+    }
+
+    const state = crypto.randomUUID();
+    localStorage.setItem('kakao_oauth_state', state);
+
+    const redirectUri = `${window.location.origin}/auth/kakao/callback`;
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      state,
+    });
+
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
+
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    const popup = window.open(
+      kakaoAuthUrl,
+      'kakao-login',
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    if (!popup) {
+      toast.error('Popup blocked. Please allow popups for this site.');
+    }
   };
 
   const handleNaverLogin = () => {

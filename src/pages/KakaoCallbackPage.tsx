@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
-import { signInWithNaverToken } from '@/lib/auth';
+import { signInWithKakaoToken } from '@/lib/auth';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
-export default function NaverCallbackPage() {
+export default function KakaoCallbackPage() {
   const [searchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const ranRef = useRef(false);
@@ -16,32 +16,34 @@ export default function NaverCallbackPage() {
     const handleCallback = async () => {
       const code = searchParams.get('code');
       const state = searchParams.get('state');
-      const savedState = localStorage.getItem('naver_oauth_state');
+      const savedState = localStorage.getItem('kakao_oauth_state');
 
-      if (!code || !state) {
+      if (!code) {
         setError('Missing authorization code');
         return;
       }
 
-      if (state !== savedState) {
+      if (!state || state !== savedState) {
         setError('Invalid state parameter');
         return;
       }
 
-      localStorage.removeItem('naver_oauth_state');
+      localStorage.removeItem('kakao_oauth_state');
+
+      const redirectUri = `${window.location.origin}/auth/kakao/callback`;
 
       try {
-        const naverLoginFn = httpsCallable<
-          { code: string; state: string },
+        const kakaoLoginFn = httpsCallable<
+          { code: string; redirectUri: string },
           { customToken: string }
-        >(functions, 'naverLogin');
+        >(functions, 'kakaoLogin');
 
-        const result = await naverLoginFn({ code, state });
-        await signInWithNaverToken(result.data.customToken);
+        const result = await kakaoLoginFn({ code, redirectUri });
+        await signInWithKakaoToken(result.data.customToken);
 
         if (window.opener) {
           window.opener.postMessage(
-            { type: 'NAVER_LOGIN_SUCCESS' },
+            { type: 'KAKAO_LOGIN_SUCCESS' },
             window.location.origin
           );
           window.close();
@@ -49,11 +51,11 @@ export default function NaverCallbackPage() {
           window.location.href = '/';
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Naver login failed';
+        const msg = err instanceof Error ? err.message : 'Kakao login failed';
         setError(msg);
         if (window.opener) {
           window.opener.postMessage(
-            { type: 'NAVER_LOGIN_ERROR', error: msg },
+            { type: 'KAKAO_LOGIN_ERROR', error: msg },
             window.location.origin
           );
         }

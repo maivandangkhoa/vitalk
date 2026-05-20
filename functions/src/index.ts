@@ -17,6 +17,7 @@ export { confirmTossPayment } from "./toss";
 // Auth
 export { setUserRole } from "./auth";
 export { naverLogin } from "./naverAuth";
+export { kakaoLogin } from "./kakaoAuth";
 
 // Email triggers (Firestore)
 export { onBookingCreated, onBookingUpdated } from "./bookingTriggers";

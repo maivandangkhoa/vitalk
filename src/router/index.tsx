@@ -18,6 +18,7 @@ const MyBookingsPage = lazyWithRetry(() => import('@/pages/MyBookingsPage'));
 const NotFoundPage = lazyWithRetry(() => import('@/pages/NotFoundPage'));
 const AdminSetupPage = lazyWithRetry(() => import('@/pages/AdminSetupPage'));
 const NaverCallbackPage = lazyWithRetry(() => import('@/pages/NaverCallbackPage'));
+const KakaoCallbackPage = lazyWithRetry(() => import('@/pages/KakaoCallbackPage'));
 
 // Admin pages
 const AdminDashboard = lazyWithRetry(() => import('@/pages/admin/AdminDashboard'));
@@ -97,6 +98,10 @@ export const router = createBrowserRouter([
       {
         path: '/auth/naver/callback',
         element: <SuspenseWrapper><NaverCallbackPage /></SuspenseWrapper>,
+      },
+      {
+        path: '/auth/kakao/callback',
+        element: <SuspenseWrapper><KakaoCallbackPage /></SuspenseWrapper>,
       },
       {
         path: '/admin-setup',
