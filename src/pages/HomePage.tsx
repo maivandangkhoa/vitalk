@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { AnimatedSection, AnimatePresence, motion, StaggerContainer, StaggerItem } from '@/components/shared/motion';
+import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
 import { useTeachers } from '@/hooks/useTeachers';
 import type { Language } from '@/types';
 
@@ -105,11 +106,11 @@ export default function HomePage() {
             {t('hero.subtitle')}
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Button size="lg" render={<Link to="/teachers" />} className="h-12 shadow-md hover:shadow-lg">
+            <Button size="lg" render={<Link to="/book" />} className="h-12 shadow-md hover:shadow-lg">
               {t('hero.cta')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button variant="outline" size="lg" render={<Link to="/lessons" />} className="h-12">
+            <Button variant="outline" size="lg" render={<Link to="/book" />} className="h-12">
               {t('cta.button')}
             </Button>
           </div>
@@ -278,17 +279,9 @@ export default function HomePage() {
                               )}
 
                               {/* Languages */}
-                              {teacher.languages && Object.keys(teacher.languages).length > 0 && (
-                                <div className="mt-3 flex flex-wrap justify-center gap-2 md:justify-start">
-                                  {Object.entries(teacher.languages).map(([code, level]) => (
-                                    <span
-                                      key={code}
-                                      className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600"
-                                    >
-                                      <Globe className="h-3 w-3" />
-                                      {code.toUpperCase()} · {level}
-                                    </span>
-                                  ))}
+                              {teacher.languages && (
+                                <div className="mt-3">
+                                  <TeacherLanguages languages={teacher.languages} size="sm" />
                                 </div>
                               )}
 
@@ -402,7 +395,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="secondary"
-                render={<Link to="/teachers" />}
+                render={<Link to="/book" />}
                 className="mt-8 h-12"
               >
                 {t('cta.button')}

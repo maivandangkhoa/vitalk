@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { AnimatedSection } from '@/components/shared/motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Globe, GraduationCap, Calendar, Loader2 } from 'lucide-react';
+import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
+import { Star, MapPin, GraduationCap, Calendar, Loader2 } from 'lucide-react';
 import type { Language } from '@/types';
 
 function toEmbedUrl(url: string): string | null {
@@ -107,21 +108,20 @@ export default function TeacherProfilePage() {
                 )}
               </div>
             )}
+            <Button
+              size="lg"
+              className="mt-6 h-12 px-8 shadow-md hover:shadow-lg"
+              render={<Link to={`/book?teacherId=${teacher.id}`} />}
+            >
+              {t('bookLesson')}
+            </Button>
           </div>
         </AnimatedSection>
 
         {/* Languages */}
-        {teacher.languages && Object.keys(teacher.languages).length > 0 && (
-          <AnimatedSection className="mt-8 flex flex-wrap justify-center gap-2">
-            {Object.entries(teacher.languages).map(([code, level]) => (
-              <span
-                key={code}
-                className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-600"
-              >
-                <Globe className="h-3.5 w-3.5" />
-                {code.toUpperCase()} &middot; {level}
-              </span>
-            ))}
+        {teacher.languages && (
+          <AnimatedSection className="mx-auto mt-8 max-w-2xl">
+            <TeacherLanguages languages={teacher.languages} />
           </AnimatedSection>
         )}
 
@@ -210,17 +210,6 @@ export default function TeacherProfilePage() {
             <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
           </div>
         )}
-
-        {/* CTA */}
-        <AnimatedSection className="mt-12 text-center">
-          <Button
-            size="lg"
-            className="h-12 px-8 shadow-md hover:shadow-lg"
-            render={<Link to={`/book?teacherId=${teacher.id}`} />}
-          >
-            {t('bookLesson')}
-          </Button>
-        </AnimatedSection>
       </div>
     </div>
   );

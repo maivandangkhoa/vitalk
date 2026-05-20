@@ -166,6 +166,18 @@ export default function BookingPage() {
     }
   }, [isTeacherLocked, lockedTeacherId, selectedTeacherId]);
 
+  // Pre-select a lesson when arriving via /book?lessonId=… (e.g. from the
+  // /lessons page) and jump straight to the date/time step so the user
+  // doesn't have to re-confirm the choice they just clicked.
+  const lessonIdParam = searchParams.get('lessonId') || '';
+  useEffect(() => {
+    if (!lessonIdParam || selectedLesson) return;
+    if (lessonTypes.some((l) => l.id === lessonIdParam)) {
+      setSelectedLesson(lessonIdParam);
+      setCurrentStep(1);
+    }
+  }, [lessonIdParam, lessonTypes, selectedLesson]);
+
   // Restore a booking draft saved before the user was bounced to /login,
   // then clear it so a fresh visit starts clean.
   useEffect(() => {
@@ -332,7 +344,7 @@ export default function BookingPage() {
 
   return (
     <div className="px-4 py-16">
-      <div className="container mx-auto max-w-3xl">
+      <div className="container mx-auto max-w-5xl">
         <AnimatedSection>
           <h1 className="mb-2 text-center text-3xl font-bold">{t('title')}</h1>
         </AnimatedSection>
@@ -401,34 +413,51 @@ export default function BookingPage() {
                 <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
               </div>
             ) : (
-              <div className="grid gap-6 md:grid-cols-3">
+              <div className="grid gap-8 md:grid-cols-3">
                 {lessonTypes.map((opt) => {
                   const description = opt.description?.[lang] || opt.description?.en || '';
+                  const features = opt.features ?? [];
                   return (
                     <Card
                       key={opt.id}
-                      className={`cursor-pointer transition-all ${
+                      className={`flex h-full cursor-pointer flex-col transition-all ${
                         selectedLesson === opt.id ? 'ring-2 ring-indigo-500 shadow-md' : ''
                       }`}
                       onClick={() => setSelectedLesson(opt.id)}
                     >
-                      <CardContent className="p-8">
-                        <Badge className={`mb-3 ${LEVEL_COLORS[opt.level] ?? 'bg-zinc-50 text-zinc-600'}`}>
+                      <CardContent className="flex flex-1 flex-col p-8">
+                        <Badge className={`mb-3 w-fit ${LEVEL_COLORS[opt.level] ?? 'bg-zinc-50 text-zinc-600'}`}>
                           {opt.level.charAt(0).toUpperCase() + opt.level.slice(1)}
                         </Badge>
-                        <h3 className="font-semibold">{opt.title[lang] || opt.title.en}</h3>
+                        <h3 className="text-xl font-bold leading-snug">{opt.title[lang] || opt.title.en}</h3>
                         {description && (
                           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{description}</p>
                         )}
-                        <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="mt-5 flex items-center gap-5 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5" />
+                            <Clock className="h-4 w-4" />
                             {i18n.t('lessons:duration', { minutes: opt.duration })}
                           </span>
                           <span className="font-mono">
                             {formatLesson({ price: opt.price })} {tc('common.perLesson')}
                           </span>
                         </div>
+                        {features.length > 0 && (
+                          <ul className="mt-6 space-y-3.5">
+                            {features.map((feature, i) => {
+                              const text = feature[lang] || feature.en;
+                              if (!text) return null;
+                              return (
+                                <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed">
+                                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50">
+                                    <Check className="h-3 w-3 text-emerald-500" />
+                                  </span>
+                                  <span>{text}</span>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
                       </CardContent>
                     </Card>
                   );
