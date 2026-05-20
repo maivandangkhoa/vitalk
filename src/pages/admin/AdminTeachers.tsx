@@ -38,6 +38,12 @@ interface TeacherForm {
   bio: string;
   isActive: boolean;
   uid: string;
+  contactTeams: string;
+  contactGoogleMeet: string;
+  contactZalo: string;
+  contactKakaoTalk: string;
+  contactZaloQrUrl: string;
+  contactKakaoTalkQrUrl: string;
 }
 
 const EMPTY_FORM: TeacherForm = {
@@ -50,6 +56,12 @@ const EMPTY_FORM: TeacherForm = {
   bio: '',
   isActive: true,
   uid: '',
+  contactTeams: '',
+  contactGoogleMeet: '',
+  contactZalo: '',
+  contactKakaoTalk: '',
+  contactZaloQrUrl: '',
+  contactKakaoTalkQrUrl: '',
 };
 
 interface ItalkiProfileResult {
@@ -85,6 +97,12 @@ export default function AdminTeachers() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
+  // QR image uploads: track per-slot so a Zalo upload doesn't disable the
+  // Kakao button (and vice versa).
+  const [uploadingQr, setUploadingQr] = useState<'zalo' | 'kakao' | null>(null);
+  const zaloQrInputRef = useRef<HTMLInputElement>(null);
+  const kakaoQrInputRef = useRef<HTMLInputElement>(null);
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -109,6 +127,37 @@ export default function AdminTeachers() {
     }
   };
 
+  const handleQrUpload = async (
+    slot: 'zalo' | 'kakao',
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    const inputRef = slot === 'zalo' ? zaloQrInputRef : kakaoQrInputRef;
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('teachers.invalidImage'));
+      return;
+    }
+    setUploadingQr(slot);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filePath = `teacher-qr/${slot}-${Date.now()}.${ext}`;
+      const storageRef = ref(storage, filePath);
+      const snapshot = await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+      setForm((prev) => ({
+        ...prev,
+        ...(slot === 'zalo' ? { contactZaloQrUrl: url } : { contactKakaoTalkQrUrl: url }),
+      }));
+      toast.success(t('teachers.imageUploaded'));
+    } catch {
+      toast.error(t('teachers.imageUploadFailed'));
+    } finally {
+      setUploadingQr(null);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
   const startAdd = () => {
     setEditing('new');
     setForm(EMPTY_FORM);
@@ -128,6 +177,12 @@ export default function AdminTeachers() {
       bio: typeof teacher.bio === 'object' ? (teacher.bio.en || '') : '',
       isActive: teacher.isActive,
       uid: teacher.uid,
+      contactTeams: teacher.contactIds?.teams || '',
+      contactGoogleMeet: teacher.contactIds?.googleMeet || '',
+      contactZalo: teacher.contactIds?.zalo || '',
+      contactKakaoTalk: teacher.contactIds?.kakaoTalk || '',
+      contactZaloQrUrl: teacher.contactIds?.zaloQrUrl || '',
+      contactKakaoTalkQrUrl: teacher.contactIds?.kakaoTalkQrUrl || '',
     });
   };
 
@@ -164,6 +219,12 @@ export default function AdminTeachers() {
         bio: data.bio,
         isActive: true,
         uid: '',
+        contactTeams: '',
+        contactGoogleMeet: '',
+        contactZalo: '',
+        contactKakaoTalk: '',
+        contactZaloQrUrl: '',
+        contactKakaoTalkQrUrl: '',
       });
 
       // Save extra italki data for when we create the teacher
@@ -193,6 +254,14 @@ export default function AdminTeachers() {
     if (!form.name.trim() || !form.slug.trim()) return;
     setSaving(true);
     try {
+      const contactIds = {
+        teams: form.contactTeams.trim(),
+        googleMeet: form.contactGoogleMeet.trim(),
+        zalo: form.contactZalo.trim(),
+        kakaoTalk: form.contactKakaoTalk.trim(),
+        zaloQrUrl: form.contactZaloQrUrl,
+        kakaoTalkQrUrl: form.contactKakaoTalkQrUrl,
+      };
       const payload = {
         name: form.name,
         slug: form.slug,
@@ -203,6 +272,7 @@ export default function AdminTeachers() {
         bio: { en: form.bio, vi: '', ko: '', ja: '' },
         isActive: form.isActive,
         uid: form.uid,
+        contactIds,
       };
 
       if (editing === 'new') {
@@ -432,6 +502,68 @@ export default function AdminTeachers() {
                     placeholder="Teacher bio (English)"
                   />
                 </div>
+                <div className="md:col-span-2">
+                  <p className="mb-2 text-sm font-medium">{t('teachers.contactIds')}</p>
+                  <p className="mb-3 text-xs text-muted-foreground">{t('teachers.contactIdsHint')}</p>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">Microsoft Teams</label>
+                      <input
+                        value={form.contactTeams}
+                        onChange={(e) => setForm({ ...form, contactTeams: e.target.value })}
+                        className={inputClass}
+                        placeholder="teacher@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">Google Meet</label>
+                      <input
+                        value={form.contactGoogleMeet}
+                        onChange={(e) => setForm({ ...form, contactGoogleMeet: e.target.value })}
+                        className={inputClass}
+                        placeholder="teacher@gmail.com"
+                      />
+                    </div>
+                    <ContactWithQrField
+                      label="Zalo"
+                      idValue={form.contactZalo}
+                      qrUrl={form.contactZaloQrUrl}
+                      placeholder="0901234567"
+                      onIdChange={(v) => setForm({ ...form, contactZalo: v })}
+                      onQrClear={() => setForm({ ...form, contactZaloQrUrl: '' })}
+                      onUploadClick={() => zaloQrInputRef.current?.click()}
+                      uploading={uploadingQr === 'zalo'}
+                      inputClass={inputClass}
+                      uploadLabel={t('teachers.uploadQr')}
+                    />
+                    <ContactWithQrField
+                      label="Kakao Talk"
+                      idValue={form.contactKakaoTalk}
+                      qrUrl={form.contactKakaoTalkQrUrl}
+                      placeholder="kakao_id"
+                      onIdChange={(v) => setForm({ ...form, contactKakaoTalk: v })}
+                      onQrClear={() => setForm({ ...form, contactKakaoTalkQrUrl: '' })}
+                      onUploadClick={() => kakaoQrInputRef.current?.click()}
+                      uploading={uploadingQr === 'kakao'}
+                      inputClass={inputClass}
+                      uploadLabel={t('teachers.uploadQr')}
+                    />
+                    <input
+                      ref={zaloQrInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleQrUpload('zalo', e)}
+                    />
+                    <input
+                      ref={kakaoQrInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleQrUpload('kakao', e)}
+                    />
+                  </div>
+                </div>
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 text-sm font-medium">
@@ -549,6 +681,73 @@ export default function AdminTeachers() {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+interface ContactWithQrFieldProps {
+  label: string;
+  idValue: string;
+  qrUrl: string;
+  placeholder: string;
+  onIdChange: (value: string) => void;
+  onQrClear: () => void;
+  onUploadClick: () => void;
+  uploading: boolean;
+  inputClass: string;
+  uploadLabel: string;
+}
+
+function ContactWithQrField({
+  label,
+  idValue,
+  qrUrl,
+  placeholder,
+  onIdChange,
+  onQrClear,
+  onUploadClick,
+  uploading,
+  inputClass,
+  uploadLabel,
+}: ContactWithQrFieldProps) {
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-medium text-muted-foreground">{label}</label>
+      <input
+        value={idValue}
+        onChange={(e) => onIdChange(e.target.value)}
+        className={inputClass}
+        placeholder={placeholder}
+      />
+      <div className="mt-2 flex items-start gap-3">
+        {qrUrl ? (
+          <div className="relative">
+            <img src={qrUrl} alt={`${label} QR`} className="h-20 w-20 rounded-lg border border-zinc-200 object-cover" />
+            <button
+              type="button"
+              onClick={onQrClear}
+              className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-100 text-zinc-600 shadow-sm hover:bg-zinc-200"
+              aria-label="Remove QR"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-dashed border-zinc-200 text-[10px] text-muted-foreground">
+            QR
+          </div>
+        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onUploadClick}
+          disabled={uploading}
+        >
+          {uploading ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Upload className="mr-2 h-3 w-3" />}
+          {uploadLabel}
+        </Button>
+      </div>
     </div>
   );
 }

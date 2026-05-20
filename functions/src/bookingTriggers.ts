@@ -56,9 +56,59 @@ function toEmailData(bookingId: string, data: BookingData) {
 }
 
 /**
- * When a new booking is created:
- * - Send notification email to teacher
- * - Send confirmation email to student
+ * Online payment methods complete asynchronously: the booking is written
+ * with paymentStatus="pending" the instant the user clicks Confirm, before
+ * they've actually paid. For these, we defer the "new booking" emails and
+ * notifications to onBookingUpdated when paymentStatus flips to confirmed.
+ *
+ * Bank transfer has no automatic confirmation step, so we still fire on
+ * create — admins need the heads-up to expect the transfer.
+ */
+const ONLINE_PAYMENT_METHODS = new Set(["paypal", "toss"]);
+
+async function fireNewBookingNotifications(
+  bookingId: string,
+  data: BookingData
+): Promise<void> {
+  const emailData = toEmailData(bookingId, data);
+  const teacherEmailAddr = await getTeacherEmail(data.teacherId);
+
+  if (teacherEmailAddr) {
+    try {
+      const teacherEmail = newBookingTeacher(emailData);
+      await sendToTeacher({ to: teacherEmailAddr, ...teacherEmail });
+      logger.info(`Sent new booking email to teacher for ${bookingId}`);
+    } catch (err) {
+      logger.error("Failed to send teacher email", err);
+    }
+  } else {
+    logger.warn(`No email found for teacher ${data.teacherId}, skipping teacher notification`);
+  }
+
+  try {
+    const studentEmail = bookingConfirmationStudent(emailData);
+    await sendToStudent({ to: data.studentEmail, ...studentEmail });
+    logger.info(`Sent booking confirmation to ${data.studentEmail}`);
+  } catch (err) {
+    logger.error("Failed to send student email", err);
+  }
+
+  try {
+    await notifyBookingCreated(bookingId, {
+      teacherId: data.teacherId,
+      studentName: data.studentName,
+      lessonTypeName: data.lessonTypeName,
+      date: data.date,
+      startTime: data.startTime,
+    });
+  } catch (err) {
+    logger.error("Failed to write/send booking notifications", err);
+  }
+}
+
+/**
+ * When a new booking is created via an offline payment method (bank
+ * transfer), notify immediately. Online methods are handled on update.
  */
 export const onBookingCreated = onDocumentCreated(
   {
@@ -69,43 +119,14 @@ export const onBookingCreated = onDocumentCreated(
     const data = event.data?.data() as BookingData | undefined;
     if (!data) return;
 
-    const bookingId = event.params.bookingId;
-    const emailData = toEmailData(bookingId, data);
-    const teacherEmailAddr = await getTeacherEmail(data.teacherId);
-
-    if (teacherEmailAddr) {
-      try {
-        // Email to teacher
-        const teacherEmail = newBookingTeacher(emailData);
-        await sendToTeacher({ to: teacherEmailAddr, ...teacherEmail });
-        logger.info(`Sent new booking email to teacher for ${bookingId}`);
-      } catch (err) {
-        logger.error("Failed to send teacher email", err);
-      }
-    } else {
-      logger.warn(`No email found for teacher ${data.teacherId}, skipping teacher notification`);
+    if (ONLINE_PAYMENT_METHODS.has(data.paymentMethod)) {
+      logger.info(
+        `Skipping create notifications for ${event.params.bookingId} — will fire when ${data.paymentMethod} payment confirms`
+      );
+      return;
     }
 
-    try {
-      // Email to student
-      const studentEmail = bookingConfirmationStudent(emailData);
-      await sendToStudent({ to: data.studentEmail, ...studentEmail });
-      logger.info(`Sent booking confirmation to ${data.studentEmail}`);
-    } catch (err) {
-      logger.error("Failed to send student email", err);
-    }
-
-    try {
-      await notifyBookingCreated(bookingId, {
-        teacherId: data.teacherId,
-        studentName: data.studentName,
-        lessonTypeName: data.lessonTypeName,
-        date: data.date,
-        startTime: data.startTime,
-      });
-    } catch (err) {
-      logger.error("Failed to write/send booking notifications", err);
-    }
+    await fireNewBookingNotifications(event.params.bookingId, data);
   }
 );
 
@@ -132,12 +153,19 @@ export const onBookingUpdated = onDocumentUpdated(
       before.paymentStatus !== "confirmed" &&
       after.paymentStatus === "confirmed"
     ) {
-      try {
-        const email = paymentConfirmedStudent(emailData);
-        await sendToStudent({ to: after.studentEmail, ...email });
-        logger.info(`Sent payment confirmation to ${after.studentEmail}`);
-      } catch (err) {
-        logger.error("Failed to send payment confirmation email", err);
+      // Online methods skipped create notifications; fire them now that the
+      // booking is actually paid. Bank transfer already got create-time
+      // notifications, so just send the payment-confirmed email here.
+      if (ONLINE_PAYMENT_METHODS.has(after.paymentMethod)) {
+        await fireNewBookingNotifications(bookingId, after);
+      } else {
+        try {
+          const email = paymentConfirmedStudent(emailData);
+          await sendToStudent({ to: after.studentEmail, ...email });
+          logger.info(`Sent payment confirmation to ${after.studentEmail}`);
+        } catch (err) {
+          logger.error("Failed to send payment confirmation email", err);
+        }
       }
     }
 

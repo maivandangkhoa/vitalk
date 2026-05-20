@@ -52,10 +52,22 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 
 const PLATFORM_MAP: Record<string, OnlinePlatform> = {
-  zoom: 'zoom',
-  googleMeet: 'google_meet',
   teams: 'teams',
+  googleMeet: 'google_meet',
+  zalo: 'zalo',
+  kakaoTalk: 'kakao_talk',
 };
+
+// UI key → TeacherProfile.contactIds field. Lets us look up the right
+// handle once the user picks a platform.
+const PLATFORM_CONTACT_KEY = {
+  teams: 'teams',
+  googleMeet: 'googleMeet',
+  zalo: 'zalo',
+  kakaoTalk: 'kakaoTalk',
+} as const;
+
+const PLATFORM_OPTIONS = ['teams', 'googleMeet', 'zalo', 'kakaoTalk'] as const;
 
 export default function BookingPage() {
   const { t, i18n } = useTranslation('booking');
@@ -76,7 +88,7 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
   const [lessonFormat, setLessonFormat] = useState<'online' | 'offline'>('online');
-  const [platform, setPlatform] = useState('zoom');
+  const [platform, setPlatform] = useState<typeof PLATFORM_OPTIONS[number]>('teams');
   const [selectedLocationId, setSelectedLocationId] = useState('');
   const [customLocationAddress, setCustomLocationAddress] = useState('');
   const [notes, setNotes] = useState('');
@@ -585,23 +597,69 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {lessonFormat === 'online' && (
-              <div>
-                <p className="mb-3 text-sm font-medium">{t('format.selectPlatform')}</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {['zoom', 'googleMeet', 'teams'].map((p) => (
-                    <Button
-                      key={p}
-                      variant={platform === p ? 'default' : 'outline'}
-                      className="h-12 rounded-xl"
-                      onClick={() => setPlatform(p)}
-                    >
-                      {t(`format.${p}`)}
-                    </Button>
-                  ))}
+            {lessonFormat === 'online' && (() => {
+              const contactId = selectedTeacher?.contactIds?.[PLATFORM_CONTACT_KEY[platform]];
+              const qrUrl =
+                platform === 'zalo'
+                  ? selectedTeacher?.contactIds?.zaloQrUrl
+                  : platform === 'kakaoTalk'
+                    ? selectedTeacher?.contactIds?.kakaoTalkQrUrl
+                    : undefined;
+              return (
+                <div>
+                  <p className="mb-3 text-sm font-medium">{t('format.selectPlatform')}</p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {PLATFORM_OPTIONS.map((p) => (
+                      <Button
+                        key={p}
+                        variant={platform === p ? 'default' : 'outline'}
+                        className="h-12 rounded-xl"
+                        onClick={() => setPlatform(p)}
+                      >
+                        {t(`format.${p}`)}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3 text-sm sm:flex-row sm:items-center">
+                    {contactId || qrUrl ? (
+                      <>
+                        <div className="min-w-0 flex-1">
+                          {contactId && (
+                            <div className="flex flex-wrap items-baseline gap-2">
+                              <span className="font-medium text-indigo-900">
+                                {t(`format.${platform}`)} ID:
+                              </span>
+                              <span className="font-mono text-indigo-700 break-all">{contactId}</span>
+                            </div>
+                          )}
+                          {qrUrl && (
+                            <p className="mt-1 text-xs text-indigo-700/80">{t('format.scanQrHint')}</p>
+                          )}
+                        </div>
+                        {qrUrl && (
+                          <a
+                            href={qrUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0"
+                          >
+                            <img
+                              src={qrUrl}
+                              alt={`${t(`format.${platform}`)} QR`}
+                              className="h-28 w-28 rounded-lg border border-indigo-200 bg-white object-cover"
+                            />
+                          </a>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        {t('format.noPlatformId', { platform: t(`format.${platform}`) })}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {lessonFormat === 'offline' && (
               <div>

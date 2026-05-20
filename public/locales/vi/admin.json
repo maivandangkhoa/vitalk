@@ -209,7 +209,10 @@
     "uploadImage": "Tải lên",
     "imageUploaded": "Đã tải ảnh lên",
     "imageUploadFailed": "Tải ảnh thất bại",
-    "invalidImage": "Vui lòng chọn tệp ảnh"
+    "invalidImage": "Vui lòng chọn tệp ảnh",
+    "contactIds": "ID liên hệ cho lớp học online",
+    "contactIdsHint": "Dùng để hiển thị cho học viên biết liên hệ ai trên nền tảng họ chọn khi đặt lịch. Để trống nếu không dùng nền tảng đó.",
+    "uploadQr": "Tải lên QR"
   },
   "migration": {
     "title": "Di chuyển dữ liệu",

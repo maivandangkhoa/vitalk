@@ -209,7 +209,10 @@
     "uploadImage": "Upload",
     "imageUploaded": "Image uploaded",
     "imageUploadFailed": "Failed to upload image",
-    "invalidImage": "Please select an image file"
+    "invalidImage": "Please select an image file",
+    "contactIds": "Contact IDs for online lessons",
+    "contactIdsHint": "Used to show students who to add on each platform after they pick it during booking. Leave blank if you don't use a platform.",
+    "uploadQr": "Upload QR"
   },
   "migration": {
     "title": "Data Migration",

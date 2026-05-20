@@ -1,7 +1,7 @@
 import type { MultiLangText } from './common';
 
 export type BookingFormat = 'online' | 'offline';
-export type OnlinePlatform = 'zoom' | 'google_meet' | 'teams';
+export type OnlinePlatform = 'teams' | 'google_meet' | 'zalo' | 'kakao_talk' | 'zoom';
 export type PaymentMethod = 'paypal' | 'toss' | 'bank_transfer';
 export type PaymentStatus = 'pending' | 'confirmed' | 'failed' | 'refunded';
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';

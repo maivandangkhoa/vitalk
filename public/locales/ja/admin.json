@@ -209,7 +209,10 @@
     "uploadImage": "アップロード",
     "imageUploaded": "画像をアップロードしました",
     "imageUploadFailed": "画像のアップロードに失敗しました",
-    "invalidImage": "画像ファイルを選択してください"
+    "invalidImage": "画像ファイルを選択してください",
+    "contactIds": "オンラインレッスン用の連絡先ID",
+    "contactIdsHint": "予約時に学生が選んだプラットフォームで誰を追加すべきかを表示します。使わないプラットフォームは空のままにしてください。",
+    "uploadQr": "QRをアップロード"
   },
   "migration": {
     "title": "データ移行",

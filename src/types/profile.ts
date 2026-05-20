@@ -27,5 +27,17 @@ export interface TeacherProfile {
   profileImageUrl: string;
   videoIntroUrl: string;
   socialLinks: Record<string, string>;
+  /** Contact handles per online lesson platform — shown to students once
+   *  they pick a platform in the booking flow so they know who to add. */
+  contactIds?: {
+    teams?: string;
+    googleMeet?: string;
+    zalo?: string;
+    kakaoTalk?: string;
+    /** Optional QR-code image URLs for the apps where adding a contact by
+     *  scanning is the norm. */
+    zaloQrUrl?: string;
+    kakaoTalkQrUrl?: string;
+  };
   updatedAt: Date;
 }
