@@ -82,7 +82,7 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50/30 to-zinc-50 px-4 py-20 md:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50/30 to-zinc-50 px-4 py-10 md:py-16">
         <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-indigo-200/30 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-200/20 blur-3xl" />
         <AnimatedSection className="container relative mx-auto text-center">
@@ -95,17 +95,14 @@ export default function HomePage() {
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
             {t('hero.subtitle')}
           </p>
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <div className="mt-10 flex justify-center">
             <Button size="lg" render={<Link to="/book" />} className="h-12 shadow-md hover:shadow-lg">
-              {t('hero.cta')}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="lg" render={<Link to="/book" />} className="h-12">
               {t('cta.button')}
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
           {/* Stats */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-8 text-sm">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100">
                 <Users className="h-4 w-4 text-indigo-600" />
@@ -129,7 +126,7 @@ export default function HomePage() {
       </section>
 
       {/* Why Learn With Us */}
-      <section className="px-4 py-16 md:py-24">
+      <section className="px-4 py-8 md:py-12">
         <div className="container mx-auto">
           <AnimatedSection className="text-center">
             <h2 className="text-3xl font-bold md:text-4xl">
@@ -140,7 +137,7 @@ export default function HomePage() {
             </p>
           </AnimatedSection>
 
-          <StaggerContainer className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2">
+          <StaggerContainer className="mx-auto mt-8 grid max-w-5xl gap-6 md:grid-cols-2">
             {HIGHLIGHT_ICONS.map(({ key, icon: Icon, color }) => (
               <StaggerItem key={key}>
                 <Card className="h-full border-0 bg-white transition-shadow hover:shadow-md">
@@ -165,7 +162,7 @@ export default function HomePage() {
       </section>
 
       {/* Meet Our Teachers — Carousel */}
-      <section className="bg-zinc-50/50 px-4 py-16 md:py-24">
+      <section className="bg-zinc-50/50 px-4 py-8 md:py-12">
         <div className="container mx-auto">
           <AnimatedSection className="text-center">
             <h2 className="text-3xl font-bold md:text-4xl">
@@ -182,7 +179,7 @@ export default function HomePage() {
             </div>
           ) : teacherCount > 0 ? (
             <div
-              className="relative mx-auto mt-12 max-w-5xl"
+              className="relative mx-auto mt-8 max-w-5xl"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
             >
@@ -335,14 +332,14 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="px-4 py-16 md:py-24">
+      <section className="px-4 py-8 md:py-12">
         <div className="container mx-auto">
           <AnimatedSection>
             <h2 className="text-center text-3xl font-bold md:text-4xl">
               {t('testimonials.title')}
             </h2>
           </AnimatedSection>
-          <StaggerContainer className="mt-12 grid gap-8 md:grid-cols-2">
+          <StaggerContainer className="mt-8 grid gap-8 md:grid-cols-2">
             {reviewsPreview.map((review) => (
               <StaggerItem key={review.name}>
                 <Card className="h-full border-0 bg-white">
@@ -374,9 +371,9 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="px-4 py-16 md:py-24">
+      <section className="px-4 py-8 md:py-12">
         <AnimatedSection className="container mx-auto">
-          <div className="rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-16 text-white shadow-lg md:py-24">
+          <div className="rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-10 text-white shadow-lg md:py-14">
             <div className="text-center">
               <h2 className="text-3xl font-bold md:text-4xl">{t('cta.title')}</h2>
               <p className="mx-auto mt-5 max-w-xl leading-relaxed text-white/80">
