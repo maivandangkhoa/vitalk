@@ -94,38 +94,48 @@ export function Header() {
                     {user.displayName || user.email?.split('@')[0]}
                   </span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 p-2">
-                  <div className="flex items-center gap-2.5 px-1.5 py-1.5">
+                <DropdownMenuContent align="end" className="w-64 p-1.5">
+                  <div className="flex items-center gap-3 px-2 py-2.5">
                     {user.photoURL ? (
-                      <img src={user.photoURL} alt="" className="h-10 w-10 rounded-full object-cover" />
+                      <img src={user.photoURL} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-zinc-100" />
                     ) : (
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600 ring-2 ring-zinc-100">
                         {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
                       </span>
                     )}
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold leading-tight">
                         {user.displayName || user.email?.split('@')[0]}
                       </p>
                       {user.email && (
-                        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{user.email}</p>
                       )}
                     </div>
                   </div>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="my-1" />
                   {(role === 'admin' || role === 'teacher') && (
-                    <DropdownMenuItem render={<Link to="/admin" />}>
-                      <Settings className="mr-1.5 h-4 w-4" />
+                    <DropdownMenuItem
+                      render={<Link to="/admin" />}
+                      className="cursor-pointer gap-2.5 px-2 py-2 hover:bg-accent"
+                    >
+                      <Settings className="h-4 w-4 text-muted-foreground" />
                       {t('nav.admin')}
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem render={<Link to="/my-bookings" />}>
-                    <CalendarDays className="mr-1.5 h-4 w-4" />
+                  <DropdownMenuItem
+                    render={<Link to="/my-bookings" />}
+                    className="cursor-pointer gap-2.5 px-2 py-2 hover:bg-accent"
+                  >
+                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
                     {t('nav.myBookings')}
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-1.5 h-4 w-4" />
+                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    variant="destructive"
+                    className="cursor-pointer gap-2.5 px-2 py-2"
+                  >
+                    <LogOut className="h-4 w-4" />
                     {t('nav.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
