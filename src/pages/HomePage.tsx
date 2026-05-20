@@ -20,29 +20,14 @@ import {
 import { AnimatedSection, AnimatePresence, motion, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
 import { useTeachers } from '@/hooks/useTeachers';
+import { usePublicReviews } from '@/hooks/useReviews';
 import type { Language } from '@/types';
 
-const REVIEWS_PREVIEW = [
-  {
-    name: 'Yuri',
-    text: 'Always fun and time flies! Highly recommended!',
-    rating: 5,
-  },
-  {
-    name: 'Culter S.',
-    text: 'One of the most delightful people...calm, friendly, focused, intelligent.',
-    rating: 5,
-  },
-  {
-    name: 'Stephen',
-    text: 'Very polite, friendly, patient teacher. I improved a lot since starting lessons.',
-    rating: 5,
-  },
-  {
-    name: 'Sangkyu L.',
-    text: 'Worked hard on pronunciation correction. Now able to create simple sentences!',
-    rating: 5,
-  },
+const FALLBACK_REVIEWS_PREVIEW = [
+  { name: 'Yuri', text: 'Always fun and time flies! Highly recommended!', rating: 5 },
+  { name: 'Culter S.', text: 'One of the most delightful people...calm, friendly, focused, intelligent.', rating: 5 },
+  { name: 'Stephen', text: 'Very polite, friendly, patient teacher. I improved a lot since starting lessons.', rating: 5 },
+  { name: 'Sangkyu L.', text: 'Worked hard on pronunciation correction. Now able to create simple sentences!', rating: 5 },
 ];
 
 const HIGHLIGHT_ICONS = [
@@ -56,7 +41,12 @@ export default function HomePage() {
   const { t } = useTranslation('home');
   const { i18n } = useTranslation();
   const { teachers, loading: teachersLoading } = useTeachers();
+  const { reviews } = usePublicReviews();
   const lang = i18n.language as Language;
+
+  const reviewsPreview = reviews.length > 0
+    ? reviews.slice(0, 4).map((r) => ({ name: r.studentName, text: r.content, rating: r.rating }))
+    : FALLBACK_REVIEWS_PREVIEW;
 
   // Carousel state
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -353,7 +343,7 @@ export default function HomePage() {
             </h2>
           </AnimatedSection>
           <StaggerContainer className="mt-12 grid gap-8 md:grid-cols-2">
-            {REVIEWS_PREVIEW.map((review) => (
+            {reviewsPreview.map((review) => (
               <StaggerItem key={review.name}>
                 <Card className="h-full border-0 bg-white">
                   <CardContent className="p-8">
