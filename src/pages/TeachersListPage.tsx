@@ -57,7 +57,7 @@ function ProficiencyBars({ filled }: { filled: number }) {
       {Array.from({ length: MAX_BARS }).map((_, i) => (
         <div
           key={i}
-          className={`h-4 w-[5px] rounded-sm ${
+          className={`h-3 w-[5px] rounded-sm ${
             i < filled ? 'bg-emerald-400' : 'bg-zinc-200'
           }`}
         />
@@ -159,7 +159,7 @@ function TeacherFullCard({ teacher, lang }: { teacher: TeacherProfile; lang: Lan
           );
 
           return (
-            <div className="mx-auto mt-8 max-w-md space-y-4">
+            <div className="mx-auto mt-8 max-w-2xl space-y-4">
               {teaches.length > 0 && (
                 <div className="flex items-center gap-4">
                   <span className="w-20 shrink-0 text-sm font-medium text-muted-foreground">
