@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut, Settings, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { NotificationBell } from '@/components/layout/NotificationBell';
@@ -8,6 +8,13 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { signOut } from '@/lib/auth';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const NAV_ITEMS = [
   { key: 'home', path: '/' },
@@ -67,29 +74,62 @@ export function Header() {
           {user ? (
             <div className="hidden items-center gap-2 md:flex">
               <NotificationBell />
-              {(role === 'admin' || role === 'teacher') && (
-                <Button variant="outline" size="lg" render={<Link to="/admin" />}>
-                  {t('nav.admin')}
-                </Button>
-              )}
-              <Button variant="outline" size="lg" render={<Link to="/my-bookings" />}>
-                {t('nav.myBookings')}
-              </Button>
-              <Button variant="ghost" size="lg" onClick={handleSignOut}>
-                {t('nav.logout')}
-              </Button>
-              <Link to="/my-bookings" className="flex h-9 items-center gap-2 rounded-full border border-zinc-200 pr-3 pl-1 transition-colors hover:bg-zinc-50">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full object-cover" />
-                ) : (
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-600">
-                    {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      className="flex h-9 items-center gap-2 rounded-full border border-zinc-200 pr-3 pl-1 transition-colors hover:bg-zinc-50 focus:outline-none"
+                    />
+                  }
+                >
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-600">
+                      {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="max-w-[100px] truncate text-sm font-medium">
+                    {user.displayName || user.email?.split('@')[0]}
                   </span>
-                )}
-                <span className="max-w-[100px] truncate text-sm font-medium">
-                  {user.displayName || user.email?.split('@')[0]}
-                </span>
-              </Link>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 p-2">
+                  <div className="flex items-center gap-2.5 px-1.5 py-1.5">
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt="" className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600">
+                        {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {user.displayName || user.email?.split('@')[0]}
+                      </p>
+                      {user.email && (
+                        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  {(role === 'admin' || role === 'teacher') && (
+                    <DropdownMenuItem render={<Link to="/admin" />}>
+                      <Settings className="mr-1.5 h-4 w-4" />
+                      {t('nav.admin')}
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem render={<Link to="/my-bookings" />}>
+                    <CalendarDays className="mr-1.5 h-4 w-4" />
+                    {t('nav.myBookings')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-1.5 h-4 w-4" />
+                    {t('nav.logout')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : (
             <Button size="lg" render={<Link to="/login" />} className="hidden md:inline-flex">
