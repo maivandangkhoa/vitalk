@@ -1,10 +1,15 @@
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
 
-const params = new URLSearchParams(self.location.search);
-const firebaseConfig = JSON.parse(params.get('firebaseConfig') || '{}');
+firebase.initializeApp({
+  apiKey: 'AIzaSyCR4qJOxMDmsegA-D5plNJfgbkNb6lTTx8',
+  authDomain: 'havitalk.com',
+  projectId: 'vietalky',
+  storageBucket: 'havitalk',
+  messagingSenderId: '370599225362',
+  appId: '1:370599225362:web:dcf094b7f2d5a1b0bf10cb',
+});
 
-firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
