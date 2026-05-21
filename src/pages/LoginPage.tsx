@@ -65,9 +65,15 @@ export default function LoginPage() {
       await signInWithGoogle();
       navigate(redirectTo);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error('Google login error:', err);
-      toast.error(msg);
+      const code = (err as { code?: string })?.code;
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        return;
+      }
+      const key = authErrorKey(err);
+      toast.error(t(key));
+      if (key === 'auth.errors.default') {
+        console.error('Unexpected Google login error:', err);
+      }
     } finally {
       setLoading(false);
     }
@@ -154,9 +160,13 @@ export default function LoginPage() {
       }
       navigate(redirectTo);
     } catch (err) {
-      console.error('Email auth error:', err);
-      toast.error(t(authErrorKey(err)));
-      if (!isLogin && (err as { code?: string })?.code === 'auth/email-already-in-use') {
+      const code = (err as { code?: string })?.code;
+      const key = authErrorKey(err);
+      toast.error(t(key));
+      if (key === 'auth.errors.default') {
+        console.error('Unexpected email auth error:', err);
+      }
+      if (!isLogin && code === 'auth/email-already-in-use') {
         setIsLogin(true);
       }
     } finally {
