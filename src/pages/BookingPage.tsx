@@ -20,7 +20,10 @@ import {
   Star,
   Users,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, type Locale } from 'date-fns';
+import { enUS, ko, ja, vi } from 'date-fns/locale';
+
+const DATE_LOCALES: Record<string, Locale> = { en: enUS, ko, ja, vi };
 import { useTeachers } from '@/hooks/useTeachers';
 import { useAllTeachersAvailableSlots } from '@/hooks/useAllTeachersAvailability';
 import type { AggregatedSlot, AggregatedSlots, AggregatedTeacher } from '@/hooks/useAllTeachersAvailability';
@@ -772,7 +775,7 @@ export default function BookingPage() {
                 </div>
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.date')}</span>
-                  <span>{selectedDate && format(selectedDate, 'EEE, MMM d, yyyy')}</span>
+                  <span>{selectedDate && format(selectedDate, 'PPP', { locale: DATE_LOCALES[lang] ?? enUS })}</span>
                 </div>
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.time')}</span>
