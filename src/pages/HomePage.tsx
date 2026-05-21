@@ -45,8 +45,8 @@ export default function HomePage() {
   const lang = i18n.language as Language;
 
   const reviewsPreview = reviews.length > 0
-    ? reviews.slice(0, 4).map((r) => ({ name: r.studentName, text: r.content, rating: r.rating }))
-    : FALLBACK_REVIEWS_PREVIEW;
+    ? reviews.slice(0, 4).map((r) => ({ id: r.id, name: r.studentName, text: r.content, rating: r.rating }))
+    : FALLBACK_REVIEWS_PREVIEW.map((r) => ({ ...r, id: r.name }));
 
   // Carousel state
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -341,7 +341,7 @@ export default function HomePage() {
           </AnimatedSection>
           <StaggerContainer className="mt-8 grid gap-8 md:grid-cols-2">
             {reviewsPreview.map((review) => (
-              <StaggerItem key={review.name}>
+              <StaggerItem key={review.id}>
                 <Card className="h-full border-0 bg-white">
                   <CardContent className="p-8">
                     <Quote className="mb-4 h-5 w-5 text-indigo-200" />
