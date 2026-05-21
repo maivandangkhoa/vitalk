@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 export default function KakaoCallbackPage() {
   const [searchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState('Verifying...');
   const ranRef = useRef(false);
 
   useEffect(() => {
@@ -33,24 +34,32 @@ export default function KakaoCallbackPage() {
       const redirectUri = `${window.location.origin}/auth/kakao/callback`;
 
       try {
+        setStep('Exchanging token with server...');
         const kakaoLoginFn = httpsCallable<
           { code: string; redirectUri: string },
           { customToken: string }
         >(functions, 'kakaoLogin');
 
         const result = await kakaoLoginFn({ code, redirectUri });
+        setStep('Signing in...');
         await signInWithKakaoToken(result.data.customToken);
 
+        setStep('Finishing...');
         if (window.opener) {
           window.opener.postMessage(
             { type: 'KAKAO_LOGIN_SUCCESS' },
             window.location.origin
           );
           window.close();
+          // Fallback if window.close() blocked
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 500);
         } else {
           window.location.href = '/';
         }
       } catch (err) {
+        console.error('[Kakao] callback failed:', err);
         const msg = err instanceof Error ? err.message : 'Kakao login failed';
         setError(msg);
         if (window.opener) {
@@ -73,5 +82,10 @@ export default function KakaoCallbackPage() {
     );
   }
 
-  return <LoadingSpinner />;
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+      <LoadingSpinner />
+      <p className="text-sm text-muted-foreground">{step}</p>
+    </div>
+  );
 }
