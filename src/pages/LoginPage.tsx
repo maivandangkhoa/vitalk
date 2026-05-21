@@ -4,9 +4,26 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Eye, EyeOff } from 'lucide-react';
 import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '@/lib/auth';
 import { toast } from 'sonner';
 import { AnimatedSection } from '@/components/shared/motion';
+
+function authErrorKey(err: unknown): string {
+  const code = (err as { code?: string })?.code;
+  switch (code) {
+    case 'auth/email-already-in-use': return 'auth.errors.emailInUse';
+    case 'auth/invalid-email': return 'auth.errors.invalidEmail';
+    case 'auth/weak-password': return 'auth.errors.weakPassword';
+    case 'auth/wrong-password': return 'auth.errors.wrongPassword';
+    case 'auth/user-not-found': return 'auth.errors.userNotFound';
+    case 'auth/invalid-credential':
+    case 'auth/invalid-login-credentials': return 'auth.errors.invalidCredential';
+    case 'auth/too-many-requests': return 'auth.errors.tooManyRequests';
+    case 'auth/network-request-failed': return 'auth.errors.network';
+    default: return 'auth.errors.default';
+  }
+}
 
 export default function LoginPage() {
   const { t } = useTranslation('common');
@@ -19,6 +36,7 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleOAuthMessage = useCallback(
@@ -136,9 +154,11 @@ export default function LoginPage() {
       }
       navigate(redirectTo);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
       console.error('Email auth error:', err);
-      toast.error(msg);
+      toast.error(t(authErrorKey(err)));
+      if (!isLogin && (err as { code?: string })?.code === 'auth/email-already-in-use') {
+        setIsLogin(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -158,6 +178,7 @@ export default function LoginPage() {
             </h1>
           </CardHeader>
           <CardContent className="space-y-5 px-8 pb-8">
+            {isLogin && (<>
             {/* Social logins */}
             <Button
               variant="outline"
@@ -221,6 +242,7 @@ export default function LoginPage() {
               <span className="text-xs text-zinc-400">{t('auth.or')}</span>
               <Separator className="flex-1" />
             </div>
+            </>)}
 
             {/* Email form */}
             <form onSubmit={handleEmailSubmit} className="space-y-4">
@@ -236,14 +258,25 @@ export default function LoginPage() {
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium">{t('auth.password')}</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="h-12 w-full rounded-xl border border-input bg-background px-4 pr-12 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-zinc-100 hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               <Button type="submit" className="mt-1 h-12 w-full" disabled={loading}>
                 {isLogin ? t('auth.loginWithEmail') : t('auth.signupWithEmail')}

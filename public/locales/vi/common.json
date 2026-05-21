@@ -33,7 +33,20 @@
     "noAccount": "Chưa có tài khoản?",
     "hasAccount": "Đã có tài khoản?",
     "forgotPassword": "Quên mật khẩu?",
-    "or": "hoặc"
+    "or": "hoặc",
+    "errors": {
+      "emailInUse": "Email này đã được đăng ký. Vui lòng đăng nhập thay vì tạo mới.",
+      "invalidEmail": "Vui lòng nhập địa chỉ email hợp lệ.",
+      "weakPassword": "Mật khẩu quá yếu. Sử dụng ít nhất 6 ký tự.",
+      "wrongPassword": "Mật khẩu không đúng. Vui lòng thử lại.",
+      "userNotFound": "Không tìm thấy tài khoản với email này.",
+      "invalidCredential": "Email hoặc mật khẩu không đúng.",
+      "tooManyRequests": "Quá nhiều lần thử. Vui lòng thử lại sau.",
+      "network": "Lỗi mạng. Vui lòng kiểm tra kết nối.",
+      "default": "Đã xảy ra lỗi. Vui lòng thử lại."
+    },
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu"
   },
   "common": {
     "loading": "Đang tải...",

@@ -33,7 +33,20 @@
     "noAccount": "계정이 없으신가요?",
     "hasAccount": "이미 계정이 있으신가요?",
     "forgotPassword": "비밀번호를 잊으셨나요?",
-    "or": "또는"
+    "or": "또는",
+    "errors": {
+      "emailInUse": "이미 가입된 이메일입니다. 로그인을 시도해 주세요.",
+      "invalidEmail": "올바른 이메일 주소를 입력해 주세요.",
+      "weakPassword": "비밀번호가 너무 약합니다. 최소 6자 이상 사용해 주세요.",
+      "wrongPassword": "비밀번호가 올바르지 않습니다. 다시 시도해 주세요.",
+      "userNotFound": "해당 이메일의 계정을 찾을 수 없습니다.",
+      "invalidCredential": "이메일 또는 비밀번호가 올바르지 않습니다.",
+      "tooManyRequests": "시도 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+      "network": "네트워크 오류입니다. 연결을 확인해 주세요.",
+      "default": "문제가 발생했습니다. 다시 시도해 주세요."
+    },
+    "showPassword": "비밀번호 표시",
+    "hidePassword": "비밀번호 숨기기"
   },
   "common": {
     "loading": "로딩 중...",

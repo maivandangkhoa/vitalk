@@ -33,7 +33,20 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "forgotPassword": "Forgot password?",
-    "or": "or"
+    "or": "or",
+    "errors": {
+      "emailInUse": "This email is already registered. Try signing in instead.",
+      "invalidEmail": "Please enter a valid email address.",
+      "weakPassword": "Password is too weak. Use at least 6 characters.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "userNotFound": "No account found with this email.",
+      "invalidCredential": "Invalid email or password.",
+      "tooManyRequests": "Too many attempts. Please try again later.",
+      "network": "Network error. Please check your connection.",
+      "default": "Something went wrong. Please try again."
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "common": {
     "loading": "Loading...",
