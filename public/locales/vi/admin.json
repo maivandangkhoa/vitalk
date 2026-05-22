@@ -149,11 +149,15 @@
     "booked": "Đã đặt",
     "noSlotsForDate": "Không có khung giờ cho ngày này.",
     "selectDateToManage": "Chọn một ngày để quản lý khung giờ.",
-    "gridHint": "Click hoặc kéo để chọn các khung 30 phút khả dụng. Sau đó bấm \"Generate Slots\" để áp template lên tháng đang xem.",
+    "gridHint": "Click hoặc kéo để chọn các khung 30-phút bạn rảnh. Đây là template lặp lại hàng tuần.",
     "resetToTemplate": "Khôi phục theo template",
     "customMark": "Đã tuỳ chỉnh — sửa template sẽ không ảnh hưởng ngày này.",
     "tzNotice": "Các giờ bên dưới đang theo múi giờ của bạn: {{tz}} ({{label}}). Học viên sẽ thấy giờ đã chuyển sang múi giờ của họ.",
-    "tzMismatch": "Trước đây lưu bằng {{savedTz}}. Save bây giờ sẽ lưu là {{userTz}} — đảm bảo đúng nơi bạn đang dạy."
+    "tzMismatch": "Trước đây lưu bằng {{savedTz}}. Save bây giờ sẽ lưu là {{userTz}} — đảm bảo đúng nơi bạn đang dạy.",
+    "applyForMonth": "Áp dụng cho tháng",
+    "applyHint": "Ghi template lên tất cả ngày của tháng đã chọn. Booked slot được giữ; tuỳ chỉnh per-date của tháng đó sẽ bị reset.",
+    "appliedForMonth": "Đã áp template cho {{yearMonth}}.",
+    "applyFailed": "Không thể áp template cho tháng đã chọn."
   },
   "bookings": {
     "title": "Quản lý đặt lịch",

@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Loader2, Wand2 } from 'lucide-react';
+import { Save, Loader2, Wand2, Globe, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, addMonths } from 'date-fns';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/useAvailability';
 import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { AnimatedSection } from '@/components/shared/motion';
@@ -14,8 +16,7 @@ import AvailabilityGrid, { type AvailabilityColumn } from '@/components/availabi
 import { SLOT_GRANULARITY_MINUTES } from '@/lib/constants';
 import { addMinutes } from '@/lib/availability';
 import { getUserTimezone, getTimezoneLabel } from '@/lib/timezone';
-import { Globe, RotateCcw } from 'lucide-react';
-import type { TimeSlot, WeeklyTemplate } from '@/types';
+import type { MonthlyAvailability, TimeSlot, WeeklyTemplate } from '@/types';
 
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -77,6 +78,8 @@ export default function AdminAvailability() {
   const [overrideInitialized, setOverrideInitialized] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [applyMonth, setApplyMonth] = useState<Date>(now);
+  const [applying, setApplying] = useState(false);
 
   // Weekly template state — Record<dayName, Set<cellStartTime>>
   const [templateCells, setTemplateCells] = useState<Record<string, Set<string>>>({});
@@ -139,39 +142,27 @@ export default function AdminAvailability() {
 
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
 
-  const handleGenerateFromTemplate = () => {
-    const tpl = setsToTemplate(templateCells);
-    const generated = generateMonthSlots(viewMonth.getFullYear(), viewMonth.getMonth(), tpl);
-    const next: Record<string, Set<string>> = { ...overrideCells };
-    for (const [date, daySlots] of Object.entries(generated)) {
-      const cells = new Set(daySlots.map((s) => s.startTime));
-      // preserve any existing booked cells (they live in bookedByDate, not selection)
-      next[date] = cells;
-    }
-    setOverrideCells(next);
-    toast.success(t('availability.generatedSlots', { yearMonth }));
-  };
-
+  /**
+   * Save persists the current UI state: template doc + the viewMonth's
+   * per-date doc with whatever customDates the user has edited. Non-custom
+   * dates are left as whatever's already in Firestore (set there by an
+   * earlier "Apply for month" run). Booked cells are always preserved.
+   */
   const handleSave = async () => {
     setSaving(true);
     try {
       const tpl = setsToTemplate(templateCells);
-
-      // For each date: if user has customized it via Calendar Override, keep
-      // their cells as-is; otherwise regenerate from the template. Booked
-      // cells are always preserved.
-      const generated = generateMonthSlots(viewMonth.getFullYear(), viewMonth.getMonth(), tpl);
       const slotsToSave: Record<string, TimeSlot[]> = {};
       const existing = availability?.slots ?? {};
-      const dates = new Set<string>([
-        ...Object.keys(generated),
-        ...Object.keys(existing),
-        ...customDates,
-      ]);
+      const dates = new Set<string>([...Object.keys(existing), ...customDates]);
       for (const date of dates) {
         const cells = customDates.has(date)
           ? (overrideCells[date] ?? new Set<string>())
-          : new Set((generated[date] ?? []).map((s) => s.startTime));
+          : new Set(
+              (existing[date] ?? [])
+                .filter((s) => !s.isBooked)
+                .map((s) => s.startTime),
+            );
         const booked = bookedByDate[date] ?? new Set<string>();
         const prev = existing[date] ?? [];
         const merged = cellSetToSlots(cells, booked, prev);
@@ -183,18 +174,77 @@ export default function AdminAvailability() {
         saveAvailability(slotsToSave, tz, Array.from(customDates)),
         saveTemplate(tpl),
       ]);
-      // Sync the override UI state with what was just saved (so a subsequent
-      // Save doesn't see stale data).
-      const nextOverride: Record<string, Set<string>> = {};
-      for (const [date, slots] of Object.entries(slotsToSave)) {
-        nextOverride[date] = new Set(slots.filter((s) => !s.isBooked).map((s) => s.startTime));
-      }
-      setOverrideCells(nextOverride);
       toast.success(t('availability.saved'));
     } catch {
       toast.error(t('availability.saveFailed'));
     } finally {
       setSaving(false);
+    }
+  };
+
+  /**
+   * Apply the current template to every day of `applyMonth` and write the
+   * per-date doc to Firestore right away. Resets that month's customDates
+   * (this action is "blanket overwrite"); booked cells are still preserved.
+   * The template doc is also saved so the UI and Firestore stay in sync.
+   */
+  const handleApplyForMonth = async () => {
+    if (!teacherId) return;
+    setApplying(true);
+    try {
+      const tpl = setsToTemplate(templateCells);
+      const targetYM = format(applyMonth, 'yyyy-MM');
+      const targetRef = doc(db, 'teachers', teacherId, 'availability', targetYM);
+
+      // Read target month's existing data to preserve booked cells.
+      const targetSnap = await getDoc(targetRef);
+      const targetData = targetSnap.exists()
+        ? (targetSnap.data() as MonthlyAvailability)
+        : { slots: {} as Record<string, TimeSlot[]>, customDates: [], timezone: '' };
+      const targetExisting = targetData.slots ?? {};
+      const targetBooked: Record<string, Set<string>> = {};
+      for (const [date, daySlots] of Object.entries(targetExisting)) {
+        const bk = new Set(daySlots.filter((s) => s.isBooked).map((s) => s.startTime));
+        if (bk.size > 0) targetBooked[date] = bk;
+      }
+
+      const generated = generateMonthSlots(applyMonth.getFullYear(), applyMonth.getMonth(), tpl);
+      const slotsToSave: Record<string, TimeSlot[]> = {};
+      const dates = new Set<string>([
+        ...Object.keys(generated),
+        ...Object.keys(targetBooked),
+      ]);
+      for (const date of dates) {
+        const cells = new Set((generated[date] ?? []).map((s) => s.startTime));
+        const booked = targetBooked[date] ?? new Set<string>();
+        const prev = targetExisting[date] ?? [];
+        const merged = cellSetToSlots(cells, booked, prev);
+        if (merged.length > 0) slotsToSave[date] = merged;
+      }
+
+      const tz = getUserTimezone();
+      await setDoc(targetRef, {
+        slots: slotsToSave,
+        customDates: [],
+        timezone: tz,
+        updatedAt: serverTimestamp(),
+      });
+      await saveTemplate(tpl);
+
+      // If we just rewrote the viewMonth, sync local state so the UI matches.
+      if (targetYM === yearMonth) {
+        const nextOverride: Record<string, Set<string>> = {};
+        for (const [date, slots] of Object.entries(slotsToSave)) {
+          nextOverride[date] = new Set(slots.filter((s) => !s.isBooked).map((s) => s.startTime));
+        }
+        setOverrideCells(nextOverride);
+        setCustomDates(new Set());
+      }
+      toast.success(t('availability.appliedForMonth', { yearMonth: targetYM }));
+    } catch {
+      toast.error(t('availability.applyFailed'));
+    } finally {
+      setApplying(false);
     }
   };
 
@@ -303,16 +353,47 @@ export default function AdminAvailability() {
         </TabsList>
 
         <TabsContent value="weekly" className="mt-4">
-          <div className="mb-4">
-            <Button onClick={handleGenerateFromTemplate} variant="outline">
-              <Wand2 className="mr-2 h-4 w-4" />
-              {t('availability.generateSlots')} ({yearMonth})
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Button onClick={handleApplyForMonth} disabled={applying} variant="outline">
+              {applying ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-2 h-4 w-4" />
+              )}
+              {t('availability.applyForMonth', { defaultValue: 'Apply for month' })}
             </Button>
+            <select
+              value={format(applyMonth, 'yyyy-MM')}
+              onChange={(e) => {
+                const [y, m] = e.target.value.split('-').map(Number);
+                setApplyMonth(new Date(y, m - 1, 1));
+              }}
+              className="h-10 rounded-lg border border-input bg-background px-3 text-sm font-medium outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+            >
+              {Array.from({ length: 12 }, (_, i) => {
+                const d = addMonths(now, i);
+                const ym = format(d, 'yyyy-MM');
+                const label = format(d, 'MMM yyyy');
+                return (
+                  <option key={ym} value={ym}>
+                    {label}
+                  </option>
+                );
+              })}
+            </select>
+            <p className="ml-2 text-xs text-muted-foreground">
+              {t('availability.applyHint', {
+                defaultValue: 'Writes the template to every day of the selected month. Booked slots are preserved; per-date customizations for that month are reset.',
+              })}
+            </p>
           </div>
           <Card>
             <CardContent className="pt-6">
               <p className="mb-3 text-sm text-muted-foreground">
-                {t('availability.gridHint', 'Click hoặc kéo để chọn các khung 30 phút khả dụng. Sau đó bấm "Generate Slots" để áp template lên tháng đang xem.')}
+                {t('availability.gridHint', {
+                  defaultValue:
+                    'Click or drag to select 30-min cells you are available. This is the recurring template.',
+                })}
               </p>
               <AvailabilityGrid
                 columns={weeklyColumns}
