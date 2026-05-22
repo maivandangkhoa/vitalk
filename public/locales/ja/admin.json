@@ -125,7 +125,7 @@
   "availability": {
     "title": "空き時間管理",
     "weeklyTemplate": "週間テンプレート",
-    "calendarOverride": "カレンダー個別設定",
+    "calendarOverride": "カレンダー",
     "addSlot": "時間帯を追加",
     "removeSlot": "削除",
     "markUnavailable": "不可に設定",

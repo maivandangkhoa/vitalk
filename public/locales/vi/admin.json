@@ -125,7 +125,7 @@
   "availability": {
     "title": "Quản lý lịch rảnh",
     "weeklyTemplate": "Mẫu hàng tuần",
-    "calendarOverride": "Tùy chỉnh lịch",
+    "calendarOverride": "Lịch",
     "addSlot": "Thêm khung giờ",
     "removeSlot": "Xóa",
     "markUnavailable": "Đánh dấu không có lịch",

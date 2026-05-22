@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Loader2, Wand2, Globe, RotateCcw, ChevronLeft, ChevronRight, CalendarCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, addMonths, addDays } from 'date-fns';
+import { format, addMonths, addDays, startOfWeek } from 'date-fns';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/useAvailability';
@@ -67,8 +67,8 @@ export default function AdminAvailability() {
   const { t } = useTranslation('admin');
   const { teacherId, teachers, isAdmin, setTeacherId } = useTeacherSelector();
   const now = new Date();
-  // The Calendar Override tab is a rolling 7-day window starting from this date.
-  const [weekStart, setWeekStart] = useState<Date>(now);
+  // The Calendar tab is a rolling 7-day window starting on Monday.
+  const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(now, { weekStartsOn: 1 }));
   const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
   const weekDates = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
@@ -516,7 +516,11 @@ export default function AdminAvailability() {
             <CardContent className="pt-6">
               {/* Week navigation */}
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setWeekStart(now)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setWeekStart(startOfWeek(now, { weekStartsOn: 1 }))}
+                >
                   <CalendarCheck className="mr-1 h-3.5 w-3.5" />
                   {t('availability.today', { defaultValue: 'Today' })}
                 </Button>

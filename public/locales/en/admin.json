@@ -125,7 +125,7 @@
   "availability": {
     "title": "Manage Availability",
     "weeklyTemplate": "Weekly Template",
-    "calendarOverride": "Calendar Override",
+    "calendarOverride": "Calendar",
     "addSlot": "Add Time Slot",
     "removeSlot": "Remove",
     "markUnavailable": "Mark as Unavailable",

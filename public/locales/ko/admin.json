@@ -125,7 +125,7 @@
   "availability": {
     "title": "가능 시간 관리",
     "weeklyTemplate": "주간 템플릿",
-    "calendarOverride": "캘린더 개별 설정",
+    "calendarOverride": "캘린더",
     "addSlot": "시간대 추가",
     "removeSlot": "삭제",
     "markUnavailable": "불가능으로 표시",
