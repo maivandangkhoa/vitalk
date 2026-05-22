@@ -14,6 +14,7 @@ import {
 import { db } from '@/lib/firebase';
 import { useAuthStore } from '@/stores/authStore';
 import { getUserTimezone } from '@/lib/timezone';
+import { slotKeysForBooking } from '@/lib/availability';
 import type { Booking, BookingStatus, TimeSlot } from '@/types';
 
 export function useMyBookings() {
@@ -95,6 +96,7 @@ interface CreateBookingData {
   date: string;
   startTime: string;
   endTime: string;
+  durationMinutes: number;
   format: Booking['format'];
   platform: Booking['platform'];
   offlineLocation: Booking['offlineLocation'];
@@ -126,19 +128,24 @@ export function useCreateBooking() {
 
           const availData = availSnap.data();
           const daySlots: TimeSlot[] = availData.slots[data.date] || [];
-          const slotIndex = daySlots.findIndex(
-            (s) => s.startTime === data.startTime && !s.isBooked
-          );
 
-          if (slotIndex === -1) {
-            throw new Error('This time slot is no longer available');
+          const cellKeys = slotKeysForBooking(data.startTime, data.durationMinutes);
+          const indicesToBook: number[] = [];
+          for (const key of cellKeys) {
+            const idx = daySlots.findIndex((s) => s.startTime === key);
+            if (idx === -1 || daySlots[idx].isBooked) {
+              throw new Error('This time slot is no longer available');
+            }
+            indicesToBook.push(idx);
           }
 
-          daySlots[slotIndex] = {
-            ...daySlots[slotIndex],
-            isBooked: true,
-            bookingId: bookingRef.id,
-          };
+          for (const idx of indicesToBook) {
+            daySlots[idx] = {
+              ...daySlots[idx],
+              isBooked: true,
+              bookingId: bookingRef.id,
+            };
+          }
 
           transaction.update(availRef, {
             [`slots.${data.date}`]: daySlots,
@@ -159,6 +166,7 @@ export function useCreateBooking() {
             date: data.date,
             startTime: data.startTime,
             endTime: data.endTime,
+            durationMinutes: data.durationMinutes,
             timezone: getUserTimezone(),
             format: data.format,
             platform: data.platform,
@@ -228,16 +236,14 @@ export async function cancelBooking(bookingId: string) {
     if (availSnap.exists()) {
       const availData = availSnap.data();
       const daySlots: TimeSlot[] = availData.slots[booking.date] || [];
-      const slotIndex = daySlots.findIndex(
-        (s) => s.bookingId === bookingId
-      );
-
-      if (slotIndex !== -1) {
-        daySlots[slotIndex] = {
-          ...daySlots[slotIndex],
-          isBooked: false,
-          bookingId: null,
-        };
+      let changed = false;
+      for (let i = 0; i < daySlots.length; i++) {
+        if (daySlots[i].bookingId === bookingId) {
+          daySlots[i] = { ...daySlots[i], isBooked: false, bookingId: null };
+          changed = true;
+        }
+      }
+      if (changed) {
         transaction.update(availRef, {
           [`slots.${booking.date}`]: daySlots,
           updatedAt: serverTimestamp(),

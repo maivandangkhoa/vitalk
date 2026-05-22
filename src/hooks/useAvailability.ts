@@ -1,60 +1,49 @@
 import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { MonthlyAvailability, TimeSlot } from '@/types';
-import { LESSON_DURATION_MINUTES, BREAK_DURATION_MINUTES, DEFAULT_TIMEZONE } from '@/lib/constants';
+import type { MonthlyAvailability, TimeSlot, WeeklyTemplate } from '@/types';
+import { DEFAULT_TIMEZONE, SLOT_GRANULARITY_MINUTES } from '@/lib/constants';
+import { addMinutes } from '@/lib/availability';
 import { format } from 'date-fns';
 
-export type WeeklyTemplate = Record<string, { from: string; to: string }[]>;
+const DAY_NAMES = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+] as const;
 
-function generateSlotsFromRange(from: string, to: string): TimeSlot[] {
-  const slots: TimeSlot[] = [];
-  const [fromH, fromM] = from.split(':').map(Number);
-  const [toH, toM] = to.split(':').map(Number);
-  let currentMinutes = fromH * 60 + fromM;
-  const endMinutes = toH * 60 + toM;
-
-  while (currentMinutes + LESSON_DURATION_MINUTES <= endMinutes) {
-    const startH = Math.floor(currentMinutes / 60);
-    const startM = currentMinutes % 60;
-    const endTotal = currentMinutes + LESSON_DURATION_MINUTES;
-    const endH = Math.floor(endTotal / 60);
-    const endM = endTotal % 60;
-
-    slots.push({
-      startTime: `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}`,
-      endTime: `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`,
-      isBooked: false,
-      bookingId: null,
-    });
-
-    currentMinutes = endTotal + BREAK_DURATION_MINUTES;
-  }
-
-  return slots;
-}
-
+/**
+ * Generate monthly TimeSlots from a weekly template of cell start times.
+ * Each entry in `template[dayName]` is the start of a 30-min cell.
+ */
 export function generateMonthSlots(
   year: number,
   month: number,
-  weeklyTemplate: Record<string, { from: string; to: string }[]>
+  weeklyTemplate: WeeklyTemplate,
 ): Record<string, TimeSlot[]> {
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const slots: Record<string, TimeSlot[]> = {};
-
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day);
-    const dayName = dayNames[date.getDay()];
+    const dayName = DAY_NAMES[date.getDay()];
     const dateStr = format(date, 'yyyy-MM-dd');
 
-    const dayRanges = weeklyTemplate[dayName];
-    if (dayRanges && dayRanges.length > 0) {
-      const daySlots: TimeSlot[] = [];
-      for (const range of dayRanges) {
-        daySlots.push(...generateSlotsFromRange(range.from, range.to));
-      }
+    const cellStarts = weeklyTemplate[dayName];
+    if (cellStarts && cellStarts.length > 0) {
+      const daySlots: TimeSlot[] = cellStarts
+        .slice()
+        .sort()
+        .map((startTime) => ({
+          startTime,
+          endTime: addMinutes(startTime, SLOT_GRANULARITY_MINUTES),
+          isBooked: false,
+          bookingId: null,
+        }));
       if (daySlots.length > 0) {
         slots[dateStr] = daySlots;
       }
@@ -64,7 +53,6 @@ export function generateMonthSlots(
   return slots;
 }
 
-/** Helper to get the availability doc path for a teacher */
 function availabilityDocPath(teacherId: string, docId: string) {
   return doc(db, 'teachers', teacherId, 'availability', docId);
 }
@@ -91,13 +79,16 @@ export function useWeeklyTemplate(teacherId: string) {
     fetchTemplate();
   }, [teacherId]);
 
-  const saveTemplate = useCallback(async (newTemplate: WeeklyTemplate) => {
-    await setDoc(availabilityDocPath(teacherId, 'weeklyTemplate'), {
-      template: newTemplate,
-      updatedAt: serverTimestamp(),
-    });
-    setTemplate(newTemplate);
-  }, [teacherId]);
+  const saveTemplate = useCallback(
+    async (newTemplate: WeeklyTemplate) => {
+      await setDoc(availabilityDocPath(teacherId, 'weeklyTemplate'), {
+        template: newTemplate,
+        updatedAt: serverTimestamp(),
+      });
+      setTemplate(newTemplate);
+    },
+    [teacherId],
+  );
 
   return { template, loading, saveTemplate };
 }
@@ -136,7 +127,7 @@ export function useAvailability(teacherId: string, yearMonth: string) {
       await setDoc(availabilityDocPath(teacherId, yearMonth), data);
       setAvailability({ ...data, updatedAt: new Date() } as MonthlyAvailability);
     },
-    [teacherId, yearMonth]
+    [teacherId, yearMonth],
   );
 
   return { availability, loading, saveAvailability };

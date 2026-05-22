@@ -3,8 +3,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { MonthlyAvailability } from '@/types';
 import type { TeacherProfile } from '@/types';
-import { convertTime } from '@/lib/timezone';
-import { getUserTimezone } from '@/lib/timezone';
+import { convertTime, getUserTimezone } from '@/lib/timezone';
+import { addMinutes, findValidStartTimes } from '@/lib/availability';
 
 export interface AggregatedTeacher {
   id: string;
@@ -15,27 +15,35 @@ export interface AggregatedTeacher {
   /** Original slot times in teacher's timezone */
   originalDate: string;
   originalStartTime: string;
+  /** End time = originalStartTime + duration, in teacher's timezone */
   originalEndTime: string;
 }
 
 export interface AggregatedSlot {
-  /** Time displayed in user timezone */
+  /** Start time in the user's timezone */
   startTime: string;
+  /** End time in the user's timezone (startTime + duration) */
   endTime: string;
   teachers: AggregatedTeacher[];
 }
 
 export type AggregatedSlots = Record<string, AggregatedSlot[]>;
 
+/**
+ * Aggregates available booking start times across all teachers for the given
+ * lesson duration. A start time is valid only if the teacher has enough
+ * consecutive 30-min cells free to fit `durationMinutes`.
+ */
 export function useAllTeachersAvailableSlots(
   teachers: TeacherProfile[],
   yearMonth: string,
+  durationMinutes: number,
 ) {
   const [slots, setSlots] = useState<AggregatedSlots>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!teachers.length || !yearMonth) {
+    if (!teachers.length || !yearMonth || !durationMinutes) {
       setSlots({});
       setLoading(false);
       return;
@@ -46,7 +54,6 @@ export function useAllTeachersAvailableSlots(
       try {
         const userTz = getUserTimezone();
 
-        // Fetch availability for all teachers in parallel
         const results = await Promise.all(
           teachers.map(async (teacher) => {
             const snap = await getDoc(
@@ -58,7 +65,6 @@ export function useAllTeachersAvailableSlots(
           }),
         );
 
-        // Aggregate: group by (userTZ date + userTZ startTime)
         const aggregated: Record<string, Map<string, AggregatedSlot>> = {};
 
         for (const result of results) {
@@ -67,22 +73,18 @@ export function useAllTeachersAvailableSlots(
           const teacherTz = teacher.timezone;
 
           for (const [date, daySlots] of Object.entries(data.slots)) {
-            for (const slot of daySlots) {
-              if (slot.isBooked) continue;
+            const validStarts = findValidStartTimes(daySlots, durationMinutes);
 
-              // Convert to user timezone
-              const converted = convertTime(slot.startTime, date, teacherTz, userTz);
-              const convertedEnd = convertTime(slot.endTime, date, teacherTz, userTz);
+            for (const teacherStartTime of validStarts) {
+              const teacherEndTime = addMinutes(teacherStartTime, durationMinutes);
+              const converted = convertTime(teacherStartTime, date, teacherTz, userTz);
               const userDate = converted.date;
               const userStartTime = converted.time;
-              const userEndTime = convertedEnd.time;
+              const userEndTime = addMinutes(userStartTime, durationMinutes);
 
               if (!aggregated[userDate]) {
                 aggregated[userDate] = new Map();
               }
-
-              const key = userStartTime;
-              const existing = aggregated[userDate].get(key);
 
               const teacherInfo: AggregatedTeacher = {
                 id: teacher.id,
@@ -91,14 +93,15 @@ export function useAllTeachersAvailableSlots(
                 rating: teacher.rating,
                 timezone: teacherTz,
                 originalDate: date,
-                originalStartTime: slot.startTime,
-                originalEndTime: slot.endTime,
+                originalStartTime: teacherStartTime,
+                originalEndTime: teacherEndTime,
               };
 
+              const existing = aggregated[userDate].get(userStartTime);
               if (existing) {
                 existing.teachers.push(teacherInfo);
               } else {
-                aggregated[userDate].set(key, {
+                aggregated[userDate].set(userStartTime, {
                   startTime: userStartTime,
                   endTime: userEndTime,
                   teachers: [teacherInfo],
@@ -108,7 +111,6 @@ export function useAllTeachersAvailableSlots(
           }
         }
 
-        // Convert Maps to sorted arrays, filter past dates
         const today = new Date(new Date().toDateString());
         const result: AggregatedSlots = {};
 
@@ -134,7 +136,7 @@ export function useAllTeachersAvailableSlots(
     };
 
     fetchAll();
-  }, [teachers, yearMonth]);
+  }, [teachers, yearMonth, durationMinutes]);
 
   return { slots, loading };
 }
