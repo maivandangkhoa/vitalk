@@ -286,7 +286,7 @@ export default function AdminTeachers() {
           education: '',
           previousLocations: [],
           interests: [],
-          lessonPrice: italkiExtra?.lessonPrice || 0,
+          hourlyRate: italkiExtra?.lessonPrice || 14,
           currency: italkiExtra?.currency || 'USD',
           rating: italkiExtra?.rating || 0,
           totalReviews: italkiExtra?.totalReviews || 0,

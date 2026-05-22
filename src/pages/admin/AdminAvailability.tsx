@@ -3,22 +3,62 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, Save, Loader2, Wand2 } from 'lucide-react';
+import { Save, Loader2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/useAvailability';
 import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { AnimatedSection } from '@/components/shared/motion';
-import type { TimeSlot } from '@/types';
+import AvailabilityGrid, { type AvailabilityColumn } from '@/components/availability/AvailabilityGrid';
+import { SLOT_GRANULARITY_MINUTES } from '@/lib/constants';
+import { addMinutes } from '@/lib/availability';
+import type { TimeSlot, WeeklyTemplate } from '@/types';
 
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-interface TimeRange {
-  from: string;
-  to: string;
+function setsToTemplate(sets: Record<string, Set<string>>): WeeklyTemplate {
+  const out: WeeklyTemplate = {};
+  for (const [day, set] of Object.entries(sets)) {
+    if (set.size > 0) out[day] = Array.from(set).sort();
+  }
+  return out;
+}
+
+function templateToSets(template: WeeklyTemplate | null): Record<string, Set<string>> {
+  const out: Record<string, Set<string>> = {};
+  if (!template) return out;
+  for (const [day, arr] of Object.entries(template)) {
+    out[day] = new Set(arr);
+  }
+  return out;
+}
+
+function slotsToCellSet(slots: TimeSlot[] | undefined, bookedOnly: boolean): Set<string> {
+  const out = new Set<string>();
+  if (!slots) return out;
+  for (const s of slots) {
+    if (bookedOnly ? s.isBooked : !s.isBooked) out.add(s.startTime);
+  }
+  return out;
+}
+
+function cellSetToSlots(cells: Set<string>, bookedCells: Set<string>, prevSlots: TimeSlot[]): TimeSlot[] {
+  const prevByStart = new Map(prevSlots.map((s) => [s.startTime, s]));
+  const all = new Set<string>([...cells, ...bookedCells]);
+  return Array.from(all)
+    .sort()
+    .map((startTime) => {
+      const prev = prevByStart.get(startTime);
+      if (prev?.isBooked) return prev;
+      return {
+        startTime,
+        endTime: addMinutes(startTime, SLOT_GRANULARITY_MINUTES),
+        isBooked: false,
+        bookingId: null,
+      };
+    });
 }
 
 export default function AdminAvailability() {
@@ -32,114 +72,106 @@ export default function AdminAvailability() {
   const { template: savedTemplate, loading: templateLoading, saveTemplate } = useWeeklyTemplate(teacherId!);
   const [saving, setSaving] = useState(false);
   const [templateInitialized, setTemplateInitialized] = useState(false);
+  const [overrideInitialized, setOverrideInitialized] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [weeklySlots, setWeeklySlots] = useState<Record<string, TimeRange[]>>({});
 
-  // Initialize weeklySlots from Firestore template once loaded
+  // Weekly template state — Record<dayName, Set<cellStartTime>>
+  const [templateCells, setTemplateCells] = useState<Record<string, Set<string>>>({});
+
+  // Override state per date — Record<dateStr, Set<cellStartTime>> (free cells only)
+  const [overrideCells, setOverrideCells] = useState<Record<string, Set<string>>>({});
+
   useEffect(() => {
     if (!templateLoading && !templateInitialized) {
-      if (savedTemplate && Object.keys(savedTemplate).length > 0) {
-        setWeeklySlots(savedTemplate);
-      }
+      setTemplateCells(templateToSets(savedTemplate));
       setTemplateInitialized(true);
     }
   }, [templateLoading, savedTemplate, templateInitialized]);
 
-  // Editable override slots for the currently loaded month
-  const [overrideSlots, setOverrideSlots] = useState<Record<string, TimeSlot[]>>({});
+  useEffect(() => {
+    if (!loading && !overrideInitialized) {
+      const next: Record<string, Set<string>> = {};
+      const slots = availability?.slots ?? {};
+      for (const [date, daySlots] of Object.entries(slots)) {
+        next[date] = slotsToCellSet(daySlots, false);
+      }
+      setOverrideCells(next);
+      setOverrideInitialized(true);
+    }
+  }, [loading, availability, overrideInitialized]);
 
-  // Merge Firestore data into override when availability loads
-  const currentSlots = useMemo(() => {
-    if (Object.keys(overrideSlots).length > 0) return overrideSlots;
-    return availability?.slots || {};
-  }, [availability, overrideSlots]);
+  // Reset override init when month or teacher changes
+  useEffect(() => {
+    setOverrideInitialized(false);
+    setOverrideCells({});
+  }, [yearMonth, teacherId]);
 
-  // Dates that have slots
+  // Reset template init when teacher changes (template is teacher-level, not month-level)
+  useEffect(() => {
+    setTemplateInitialized(false);
+    setTemplateCells({});
+  }, [teacherId]);
+
+  const bookedByDate = useMemo(() => {
+    const next: Record<string, Set<string>> = {};
+    const slots = availability?.slots ?? {};
+    for (const [date, daySlots] of Object.entries(slots)) {
+      const bk = slotsToCellSet(daySlots, true);
+      if (bk.size > 0) next[date] = bk;
+    }
+    return next;
+  }, [availability]);
+
   const datesWithSlots = useMemo(() => {
-    return Object.keys(currentSlots).map((d) => new Date(d + 'T00:00:00'));
-  }, [currentSlots]);
+    return Object.keys(overrideCells)
+      .filter((d) => overrideCells[d].size > 0 || bookedByDate[d]?.size)
+      .map((d) => new Date(d + 'T00:00:00'));
+  }, [overrideCells, bookedByDate]);
 
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const selectedDaySlots = selectedDateStr ? (currentSlots[selectedDateStr] || []) : [];
 
-  const addSlot = (day: string) => {
-    setWeeklySlots((prev) => {
-      const existing = prev[day] || [];
-      // Find the next available time that doesn't overlap
-      let fromMinutes = 9 * 60; // default 09:00
-      if (existing.length > 0) {
-        const lastSlot = existing[existing.length - 1];
-        const [h, m] = lastSlot.to.split(':').map(Number);
-        fromMinutes = h * 60 + m;
-      }
-      if (fromMinutes >= 23 * 60) fromMinutes = 9 * 60; // wrap if too late
-      const toMinutes = fromMinutes + 60;
-      const from = `${String(Math.floor(fromMinutes / 60)).padStart(2, '0')}:${String(fromMinutes % 60).padStart(2, '0')}`;
-      const to = `${String(Math.floor(toMinutes / 60)).padStart(2, '0')}:${String(toMinutes % 60).padStart(2, '0')}`;
-      return { ...prev, [day]: [...existing, { from, to }] };
-    });
-  };
-
-  const removeSlot = (day: string, index: number) => {
-    setWeeklySlots((prev) => ({
-      ...prev,
-      [day]: (prev[day] || []).filter((_, i) => i !== index),
-    }));
-  };
-
-  const updateSlot = (day: string, index: number, field: 'from' | 'to', value: string) => {
-    setWeeklySlots((prev) => ({
-      ...prev,
-      [day]: (prev[day] || []).map((slot, i) =>
-        i === index ? { ...slot, [field]: value } : slot
-      ),
-    }));
-  };
-
-  const handleGenerateSlots = () => {
-    const year = viewMonth.getFullYear();
-    const month = viewMonth.getMonth();
-    const generated = generateMonthSlots(year, month, weeklySlots);
-
-    // Preserve already-booked slots from Firestore
-    const existingSlots = availability?.slots || {};
-    for (const [date, daySlots] of Object.entries(existingSlots)) {
-      const bookedSlots = daySlots.filter((s) => s.isBooked);
-      if (bookedSlots.length > 0 && generated[date]) {
-        // Remove slots that conflict with booked ones, then add booked back
-        generated[date] = generated[date].filter(
-          (g) => !bookedSlots.some((b) => b.startTime === g.startTime)
-        );
-        generated[date].push(...bookedSlots);
-        generated[date].sort((a, b) => a.startTime.localeCompare(b.startTime));
-      }
+  const handleGenerateFromTemplate = () => {
+    const tpl = setsToTemplate(templateCells);
+    const generated = generateMonthSlots(viewMonth.getFullYear(), viewMonth.getMonth(), tpl);
+    const next: Record<string, Set<string>> = { ...overrideCells };
+    for (const [date, daySlots] of Object.entries(generated)) {
+      const cells = new Set(daySlots.map((s) => s.startTime));
+      // preserve any existing booked cells (they live in bookedByDate, not selection)
+      next[date] = cells;
     }
-
-    setOverrideSlots(generated);
+    setOverrideCells(next);
     toast.success(t('availability.generatedSlots', { yearMonth }));
   };
 
   const handleSave = async () => {
-    // Auto-generate slots if template has data but no override slots yet
-    let slotsToSave = Object.keys(overrideSlots).length > 0 ? overrideSlots : currentSlots;
-    const hasTemplate = Object.values(weeklySlots).some((ranges) => ranges.length > 0);
-    if (Object.keys(slotsToSave).length === 0 && hasTemplate) {
-      const year = viewMonth.getFullYear();
-      const month = viewMonth.getMonth();
-      slotsToSave = generateMonthSlots(year, month, weeklySlots);
-    }
-    if (Object.keys(slotsToSave).length === 0) {
-      toast.error(t('availability.noSlotsToSave'));
-      return;
-    }
     setSaving(true);
     try {
-      await Promise.all([
-        saveAvailability(slotsToSave),
-        saveTemplate(weeklySlots),
-      ]);
-      setOverrideSlots({});
+      const tpl = setsToTemplate(templateCells);
+
+      // Template is the source of truth: always regenerate the current month's
+      // per-date docs from the template. Booked cells are preserved. The
+      // Calendar Override tab is read-only for now.
+      const generated = generateMonthSlots(viewMonth.getFullYear(), viewMonth.getMonth(), tpl);
+
+      const slotsToSave: Record<string, TimeSlot[]> = {};
+      const existing = availability?.slots ?? {};
+      const dates = new Set<string>([...Object.keys(generated), ...Object.keys(existing)]);
+      for (const date of dates) {
+        const generatedCells = new Set((generated[date] ?? []).map((s) => s.startTime));
+        const booked = bookedByDate[date] ?? new Set<string>();
+        const prev = existing[date] ?? [];
+        const merged = cellSetToSlots(generatedCells, booked, prev);
+        if (merged.length > 0) slotsToSave[date] = merged;
+      }
+
+      await Promise.all([saveAvailability(slotsToSave), saveTemplate(tpl)]);
+      // Sync the override UI state with what was just saved.
+      const nextOverride: Record<string, Set<string>> = {};
+      for (const [date, slots] of Object.entries(slotsToSave)) {
+        nextOverride[date] = new Set(slots.filter((s) => !s.isBooked).map((s) => s.startTime));
+      }
+      setOverrideCells(nextOverride);
       toast.success(t('availability.saved'));
     } catch {
       toast.error(t('availability.saveFailed'));
@@ -148,44 +180,25 @@ export default function AdminAvailability() {
     }
   };
 
-  const removeOverrideSlot = (dateStr: string, index: number) => {
-    setOverrideSlots((prev) => {
-      const updated = { ...prev };
-      const daySlots = [...(updated[dateStr] || currentSlots[dateStr] || [])];
-      daySlots.splice(index, 1);
-      if (daySlots.length === 0) {
-        delete updated[dateStr];
-      } else {
-        updated[dateStr] = daySlots;
-      }
-      return updated;
-    });
-  };
+  const weeklyColumns: AvailabilityColumn[] = useMemo(
+    () => DAYS.map((day, idx) => ({ key: day, label: t(`availability.${DAY_KEYS[idx]}`) })),
+    [t],
+  );
 
-  const updateOverrideSlot = (dateStr: string, index: number, field: 'startTime' | 'endTime', value: string) => {
-    setOverrideSlots((prev) => {
-      const updated = { ...prev };
-      const daySlots = [...(updated[dateStr] || currentSlots[dateStr] || [])];
-      daySlots[index] = { ...daySlots[index], [field]: value };
-      updated[dateStr] = daySlots;
-      return updated;
-    });
-  };
+  const dateColumns: AvailabilityColumn[] = useMemo(() => {
+    if (!selectedDateStr || !selectedDate) return [];
+    return [
+      {
+        key: selectedDateStr,
+        label: format(selectedDate, 'EEE'),
+        sublabel: format(selectedDate, 'MMM d'),
+      },
+    ];
+  }, [selectedDate, selectedDateStr]);
 
-  const addOverrideSlot = (dateStr: string) => {
-    setOverrideSlots((prev) => {
-      const updated = { ...prev };
-      const daySlots = [...(updated[dateStr] || currentSlots[dateStr] || [])];
-      daySlots.push({
-        startTime: '09:00',
-        endTime: '09:50',
-        isBooked: false,
-        bookingId: null,
-      });
-      updated[dateStr] = daySlots;
-      return updated;
-    });
-  };
+  const dateBooked = selectedDateStr && bookedByDate[selectedDateStr]
+    ? { [selectedDateStr]: bookedByDate[selectedDateStr] }
+    : undefined;
 
   if (!teacherId) {
     return (
@@ -223,51 +236,23 @@ export default function AdminAvailability() {
 
         <TabsContent value="weekly" className="mt-4">
           <div className="mb-4">
-            <Button onClick={handleGenerateSlots} variant="outline">
+            <Button onClick={handleGenerateFromTemplate} variant="outline">
               <Wand2 className="mr-2 h-4 w-4" />
               {t('availability.generateSlots')} ({yearMonth})
             </Button>
           </div>
-
-          <div className="space-y-4">
-            {DAYS.map((day, idx) => (
-              <Card key={day}>
-                <CardHeader className="py-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium">{t(`availability.${DAY_KEYS[idx]}`)}</h3>
-                    <Button variant="outline" size="sm" onClick={() => addSlot(day)}>
-                      <Plus className="mr-1 h-3.5 w-3.5" />
-                      {t('availability.addSlot')}
-                    </Button>
-                  </div>
-                </CardHeader>
-                {(weeklySlots[day] || []).length > 0 && (
-                  <CardContent className="space-y-2 pt-0">
-                    {(weeklySlots[day] || []).map((slot, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <input
-                          type="time"
-                          value={slot.from}
-                          onChange={(e) => updateSlot(day, i, 'from', e.target.value)}
-                          className="rounded-xl border border-input bg-background px-2 py-1 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                        />
-                        <span className="text-sm text-muted-foreground">-</span>
-                        <input
-                          type="time"
-                          value={slot.to}
-                          onChange={(e) => updateSlot(day, i, 'to', e.target.value)}
-                          className="rounded-xl border border-input bg-background px-2 py-1 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                        />
-                        <Button variant="ghost" size="icon-sm" onClick={() => removeSlot(day, i)}>
-                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                  </CardContent>
-                )}
-              </Card>
-            ))}
-          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <p className="mb-3 text-sm text-muted-foreground">
+                {t('availability.gridHint', 'Click hoặc kéo để chọn các khung 30 phút khả dụng. Sau đó bấm "Generate Slots" để áp template lên tháng đang xem.')}
+              </p>
+              <AvailabilityGrid
+                columns={weeklyColumns}
+                selected={templateCells}
+                onChange={setTemplateCells}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-4">
@@ -290,67 +275,22 @@ export default function AdminAvailability() {
 
             <Card className="flex-1">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium">
-                    {selectedDate
-                      ? format(selectedDate, 'EEEE, MMM d, yyyy')
-                      : t('availability.selectDate')}
-                  </h3>
-                  {selectedDateStr && (
-                    <Button variant="outline" size="sm" onClick={() => addOverrideSlot(selectedDateStr)}>
-                      <Plus className="mr-1 h-3.5 w-3.5" />
-                      {t('availability.addSlot')}
-                    </Button>
-                  )}
-                </div>
+                <h3 className="font-medium">
+                  {selectedDate
+                    ? format(selectedDate, 'EEEE, MMM d, yyyy')
+                    : t('availability.selectDate')}
+                </h3>
               </CardHeader>
               <CardContent>
-                {selectedDaySlots.length > 0 ? (
-                  <div className="space-y-2">
-                    {selectedDaySlots.map((slot, i) => (
-                      <div key={i} className="flex items-center justify-between rounded-xl border border-zinc-100 px-3 py-2 transition-all duration-200 hover:bg-zinc-50">
-                        <div className="flex items-center gap-2">
-                          {slot.isBooked ? (
-                            <span className="text-sm font-medium">
-                              {slot.startTime} - {slot.endTime}
-                            </span>
-                          ) : (
-                            <>
-                              <input
-                                type="time"
-                                value={slot.startTime}
-                                onChange={(e) => updateOverrideSlot(selectedDateStr, i, 'startTime', e.target.value)}
-                                className="rounded-xl border border-input bg-background px-2 py-1 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                              />
-                              <span className="text-sm text-muted-foreground">-</span>
-                              <input
-                                type="time"
-                                value={slot.endTime}
-                                onChange={(e) => updateOverrideSlot(selectedDateStr, i, 'endTime', e.target.value)}
-                                className="rounded-xl border border-input bg-background px-2 py-1 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                              />
-                            </>
-                          )}
-                          {slot.isBooked && (
-                            <Badge variant="secondary" className="text-xs">{t('availability.booked')}</Badge>
-                          )}
-                        </div>
-                        {!slot.isBooked && (
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => removeOverrideSlot(selectedDateStr, i)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                {selectedDate ? (
+                  <AvailabilityGrid
+                    columns={dateColumns}
+                    selected={overrideCells}
+                    booked={dateBooked}
+                    onChange={setOverrideCells}
+                  />
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {selectedDate ? t('availability.noSlotsForDate') : t('availability.selectDateToManage')}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('availability.selectDateToManage')}</p>
                 )}
               </CardContent>
             </Card>
