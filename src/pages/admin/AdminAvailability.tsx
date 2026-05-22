@@ -454,7 +454,7 @@ export default function AdminAvailability() {
         </div>
       </div>
 
-      <Tabs defaultValue="weekly">
+      <Tabs defaultValue="calendar">
         <TabsList>
           <TabsTrigger value="weekly">{t('availability.weeklyTemplate')}</TabsTrigger>
           <TabsTrigger value="calendar">{t('availability.calendarOverride')}</TabsTrigger>
