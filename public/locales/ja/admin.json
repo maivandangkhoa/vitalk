@@ -161,7 +161,7 @@
     "today": "今日",
     "prevWeek": "前の週",
     "nextWeek": "次の週",
-    "weekHasCustom": "今週の一部の日がカスタマイズされています — Saveを押して保存してください。",
+    "weekHasCustom": "{{count}}日カスタマイズ済み — テンプレート変更の影響を受けません。",
     "calendarHint": "セルをクリックまたはドラッグして、日付をカスタム日（病欠、休日など）としてマークします。予約済みのセルは読み取り専用です。",
     "legendAvailable": "利用可能",
     "legendBooked": "予約済み",

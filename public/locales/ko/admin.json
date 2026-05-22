@@ -161,7 +161,7 @@
     "today": "오늘",
     "prevWeek": "이전 주",
     "nextWeek": "다음 주",
-    "weekHasCustom": "이번 주의 일부 날짜가 사용자 지정되었습니다 — Save를 눌러 저장하세요.",
+    "weekHasCustom": "{{count}}일 사용자 지정됨 — 템플릿 변경의 영향을 받지 않습니다.",
     "calendarHint": "셀을 클릭하거나 드래그하여 날짜를 사용자 지정으로 표시하세요 (병가, 휴일 등). 예약된 셀은 읽기 전용입니다.",
     "legendAvailable": "가능",
     "legendBooked": "예약됨",

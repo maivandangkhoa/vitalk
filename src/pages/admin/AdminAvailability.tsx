@@ -361,8 +361,8 @@ export default function AdminAvailability() {
     [weekDates],
   );
 
-  const weekHasAnyCustom = useMemo(
-    () => weekColumns.some((c) => customDates.has(c.key)),
+  const weekCustomCount = useMemo(
+    () => weekColumns.filter((c) => customDates.has(c.key)).length,
     [weekColumns, customDates],
   );
 
@@ -543,10 +543,11 @@ export default function AdminAvailability() {
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                {weekHasAnyCustom && (
+                {weekCustomCount > 0 && (
                   <span className="ml-2 text-xs text-amber-600">
                     {t('availability.weekHasCustom', {
-                      defaultValue: 'Some days in this week are customized — Save to persist.',
+                      defaultValue: '{{count}} customized day(s) — they ignore template changes.',
+                      count: weekCustomCount,
                     })}
                   </span>
                 )}

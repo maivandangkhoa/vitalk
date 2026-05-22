@@ -161,7 +161,7 @@
     "today": "Hôm nay",
     "prevWeek": "Tuần trước",
     "nextWeek": "Tuần sau",
-    "weekHasCustom": "Một số ngày trong tuần đã được tuỳ chỉnh — bấm Save để lưu.",
+    "weekHasCustom": "{{count}} ngày tuỳ chỉnh — không bị ảnh hưởng khi đổi template.",
     "calendarHint": "Click hoặc kéo các ô để đánh dấu ngày tuỳ chỉnh (ốm, nghỉ lễ, …). Ô đã booked không sửa được.",
     "legendAvailable": "Khả dụng",
     "legendBooked": "Đã booked",

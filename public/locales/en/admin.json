@@ -161,7 +161,7 @@
     "today": "Today",
     "prevWeek": "Previous week",
     "nextWeek": "Next week",
-    "weekHasCustom": "Some days in this week are customized — Save to persist.",
+    "weekHasCustom": "{{count}} customized day(s) — they ignore template changes.",
     "calendarHint": "Click or drag cells to mark a date as a custom day (sick, holiday, …). Booked cells are read-only.",
     "legendAvailable": "Available",
     "legendBooked": "Booked",
