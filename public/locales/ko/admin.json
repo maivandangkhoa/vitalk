@@ -157,7 +157,15 @@
     "applyForMonth": "월에 적용",
     "applyHint": "선택한 월의 모든 날짜에 템플릿을 씁니다. 예약된 슬롯은 유지되며, 해당 월의 날짜별 사용자 지정은 초기화됩니다.",
     "appliedForMonth": "{{yearMonth}}에 템플릿이 적용되었습니다.",
-    "applyFailed": "선택한 월에 템플릿을 적용하지 못했습니다."
+    "applyFailed": "선택한 월에 템플릿을 적용하지 못했습니다.",
+    "today": "오늘",
+    "prevWeek": "이전 주",
+    "nextWeek": "다음 주",
+    "weekHasCustom": "이번 주의 일부 날짜가 사용자 지정되었습니다 — Save를 눌러 저장하세요.",
+    "calendarHint": "셀을 클릭하거나 드래그하여 날짜를 사용자 지정으로 표시하세요 (병가, 휴일 등). 예약된 셀은 읽기 전용입니다.",
+    "legendAvailable": "가능",
+    "legendBooked": "예약됨",
+    "legendNotAvailable": "불가능"
   },
   "bookings": {
     "title": "예약 관리",

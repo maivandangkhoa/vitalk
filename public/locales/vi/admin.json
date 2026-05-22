@@ -157,7 +157,15 @@
     "applyForMonth": "Áp dụng cho tháng",
     "applyHint": "Ghi template lên tất cả ngày của tháng đã chọn. Booked slot được giữ; tuỳ chỉnh per-date của tháng đó sẽ bị reset.",
     "appliedForMonth": "Đã áp template cho {{yearMonth}}.",
-    "applyFailed": "Không thể áp template cho tháng đã chọn."
+    "applyFailed": "Không thể áp template cho tháng đã chọn.",
+    "today": "Hôm nay",
+    "prevWeek": "Tuần trước",
+    "nextWeek": "Tuần sau",
+    "weekHasCustom": "Một số ngày trong tuần đã được tuỳ chỉnh — bấm Save để lưu.",
+    "calendarHint": "Click hoặc kéo các ô để đánh dấu ngày tuỳ chỉnh (ốm, nghỉ lễ, …). Ô đã booked không sửa được.",
+    "legendAvailable": "Khả dụng",
+    "legendBooked": "Đã booked",
+    "legendNotAvailable": "Không khả dụng"
   },
   "bookings": {
     "title": "Quản lý đặt lịch",

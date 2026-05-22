@@ -1,12 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Loader2, Wand2, Globe, RotateCcw } from 'lucide-react';
+import { Save, Loader2, Wand2, Globe, RotateCcw, ChevronLeft, ChevronRight, CalendarCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, addMonths } from 'date-fns';
+import { format, addMonths, addDays } from 'date-fns';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/useAvailability';
@@ -68,16 +67,36 @@ export default function AdminAvailability() {
   const { t } = useTranslation('admin');
   const { teacherId, teachers, isAdmin, setTeacherId } = useTeacherSelector();
   const now = new Date();
-  const [viewMonth, setViewMonth] = useState(now);
-  const yearMonth = format(viewMonth, 'yyyy-MM');
+  // The Calendar Override tab is a rolling 7-day window starting from this date.
+  const [weekStart, setWeekStart] = useState<Date>(now);
+  const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
+  const weekDates = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
+    [weekStart],
+  );
 
-  const { availability, loading, saveAvailability } = useAvailability(teacherId!, yearMonth);
+  const primaryYM = format(weekStart, 'yyyy-MM');
+  const endYM = format(weekEnd, 'yyyy-MM');
+  const secondaryYM = endYM === primaryYM ? '' : endYM;
+
+  const {
+    availability: primaryAvail,
+    loading: primaryLoading,
+    saveAvailability: savePrimary,
+  } = useAvailability(teacherId!, primaryYM);
+  const {
+    availability: secondaryAvail,
+    loading: secondaryLoading,
+    saveAvailability: saveSecondary,
+  } = useAvailability(teacherId!, secondaryYM);
   const { template: savedTemplate, loading: templateLoading, saveTemplate } = useWeeklyTemplate(teacherId!);
+
+  const loading = primaryLoading || (!!secondaryYM && secondaryLoading);
+
   const [saving, setSaving] = useState(false);
   const [templateInitialized, setTemplateInitialized] = useState(false);
   const [overrideInitialized, setOverrideInitialized] = useState(false);
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [applyMonth, setApplyMonth] = useState<Date>(now);
   const [applying, setApplying] = useState(false);
 
@@ -91,6 +110,14 @@ export default function AdminAvailability() {
   // being regenerated from the template.
   const [customDates, setCustomDates] = useState<Set<string>>(new Set());
 
+  // Merged slots from primary + secondary month docs.
+  const combinedSlots = useMemo(() => {
+    return {
+      ...(primaryAvail?.slots ?? {}),
+      ...(secondaryAvail?.slots ?? {}),
+    };
+  }, [primaryAvail, secondaryAvail]);
+
   useEffect(() => {
     if (!templateLoading && !templateInitialized) {
       setTemplateCells(templateToSets(savedTemplate));
@@ -101,24 +128,28 @@ export default function AdminAvailability() {
   useEffect(() => {
     if (!loading && !overrideInitialized) {
       const next: Record<string, Set<string>> = {};
-      const slots = availability?.slots ?? {};
-      for (const [date, daySlots] of Object.entries(slots)) {
+      for (const [date, daySlots] of Object.entries(combinedSlots)) {
         next[date] = slotsToCellSet(daySlots, false);
       }
       setOverrideCells(next);
-      setCustomDates(new Set(availability?.customDates ?? []));
+      setCustomDates(
+        new Set([
+          ...(primaryAvail?.customDates ?? []),
+          ...(secondaryAvail?.customDates ?? []),
+        ]),
+      );
       setOverrideInitialized(true);
     }
-  }, [loading, availability, overrideInitialized]);
+  }, [loading, combinedSlots, primaryAvail, secondaryAvail, overrideInitialized]);
 
-  // Reset override init when month or teacher changes
+  // Reset overrides when the loaded months or teacher change.
   useEffect(() => {
     setOverrideInitialized(false);
     setOverrideCells({});
     setCustomDates(new Set());
-  }, [yearMonth, teacherId]);
+  }, [primaryYM, secondaryYM, teacherId]);
 
-  // Reset template init when teacher changes (template is teacher-level, not month-level)
+  // Reset template init when teacher changes (template is teacher-level).
   useEffect(() => {
     setTemplateInitialized(false);
     setTemplateCells({});
@@ -126,54 +157,95 @@ export default function AdminAvailability() {
 
   const bookedByDate = useMemo(() => {
     const next: Record<string, Set<string>> = {};
-    const slots = availability?.slots ?? {};
-    for (const [date, daySlots] of Object.entries(slots)) {
+    for (const [date, daySlots] of Object.entries(combinedSlots)) {
       const bk = slotsToCellSet(daySlots, true);
       if (bk.size > 0) next[date] = bk;
     }
     return next;
-  }, [availability]);
-
-  const datesWithSlots = useMemo(() => {
-    return Object.keys(overrideCells)
-      .filter((d) => overrideCells[d].size > 0 || bookedByDate[d]?.size)
-      .map((d) => new Date(d + 'T00:00:00'));
-  }, [overrideCells, bookedByDate]);
-
-  const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  }, [combinedSlots]);
 
   /**
-   * Save persists the current UI state: template doc + the viewMonth's
-   * per-date doc with whatever customDates the user has edited. Non-custom
-   * dates are left as whatever's already in Firestore (set there by an
-   * earlier "Apply for month" run). Booked cells are always preserved.
+   * Save persists the current UI state across however many months the visible
+   * week (or any pre-existing data) spans. For each affected month: customDates
+   * keep their UI cells; non-custom dates keep whatever was already in Firestore
+   * (set by an earlier "Apply for month"). Booked cells are always preserved.
    */
   const handleSave = async () => {
     setSaving(true);
     try {
       const tpl = setsToTemplate(templateCells);
-      const slotsToSave: Record<string, TimeSlot[]> = {};
-      const existing = availability?.slots ?? {};
-      const dates = new Set<string>([...Object.keys(existing), ...customDates]);
-      for (const date of dates) {
-        const cells = customDates.has(date)
-          ? (overrideCells[date] ?? new Set<string>())
-          : new Set(
-              (existing[date] ?? [])
-                .filter((s) => !s.isBooked)
-                .map((s) => s.startTime),
-            );
-        const booked = bookedByDate[date] ?? new Set<string>();
-        const prev = existing[date] ?? [];
-        const merged = cellSetToSlots(cells, booked, prev);
-        if (merged.length > 0) slotsToSave[date] = merged;
+      const tz = getUserTimezone();
+
+      // Group every relevant date by its YYYY-MM.
+      const datesByMonth = new Map<string, Set<string>>();
+      const collect = (date: string) => {
+        const ym = date.slice(0, 7);
+        if (!datesByMonth.has(ym)) datesByMonth.set(ym, new Set());
+        datesByMonth.get(ym)!.add(date);
+      };
+      for (const d of customDates) collect(d);
+      for (const d of Object.keys(overrideCells)) collect(d);
+      for (const d of Object.keys(combinedSlots)) collect(d);
+
+      const savesByMonth: Record<
+        string,
+        { slots: Record<string, TimeSlot[]>; custom: string[] }
+      > = {};
+      for (const [ym, dates] of datesByMonth) {
+        const existingDoc = ym === primaryYM ? primaryAvail : ym === secondaryYM ? secondaryAvail : null;
+        const existingSlots = existingDoc?.slots ?? {};
+        const slotsToSave: Record<string, TimeSlot[]> = {};
+        const customForMonth: string[] = [];
+
+        for (const date of dates) {
+          const isCustom = customDates.has(date);
+          const cells = isCustom
+            ? (overrideCells[date] ?? new Set<string>())
+            : new Set(
+                (existingSlots[date] ?? [])
+                  .filter((s) => !s.isBooked)
+                  .map((s) => s.startTime),
+              );
+          const booked = bookedByDate[date] ?? new Set<string>();
+          const prev = existingSlots[date] ?? [];
+          const merged = cellSetToSlots(cells, booked, prev);
+          if (merged.length > 0) slotsToSave[date] = merged;
+          if (isCustom) customForMonth.push(date);
+        }
+
+        savesByMonth[ym] = { slots: slotsToSave, custom: customForMonth };
       }
 
-      const tz = getUserTimezone();
-      await Promise.all([
-        saveAvailability(slotsToSave, tz, Array.from(customDates)),
-        saveTemplate(tpl),
-      ]);
+      const writes: Promise<void>[] = [];
+      if (savesByMonth[primaryYM]) {
+        writes.push(
+          savePrimary(savesByMonth[primaryYM].slots, tz, savesByMonth[primaryYM].custom),
+        );
+      }
+      if (secondaryYM && savesByMonth[secondaryYM]) {
+        writes.push(
+          saveSecondary(savesByMonth[secondaryYM].slots, tz, savesByMonth[secondaryYM].custom),
+        );
+      }
+      // Any other months (rare — only if user has loaded ones somehow): fall
+      // back to a direct setDoc.
+      if (teacherId) {
+        for (const [ym, payload] of Object.entries(savesByMonth)) {
+          if (ym === primaryYM || ym === secondaryYM) continue;
+          const ref = doc(db, 'teachers', teacherId, 'availability', ym);
+          writes.push(
+            setDoc(ref, {
+              slots: payload.slots,
+              customDates: payload.custom,
+              timezone: tz,
+              updatedAt: serverTimestamp(),
+            }),
+          );
+        }
+      }
+      writes.push(saveTemplate(tpl));
+
+      await Promise.all(writes);
       toast.success(t('availability.saved'));
     } catch {
       toast.error(t('availability.saveFailed'));
@@ -231,14 +303,21 @@ export default function AdminAvailability() {
       });
       await saveTemplate(tpl);
 
-      // If we just rewrote the viewMonth, sync local state so the UI matches.
-      if (targetYM === yearMonth) {
-        const nextOverride: Record<string, Set<string>> = {};
+      // If the target month is one of the loaded months, sync local state.
+      if (targetYM === primaryYM || targetYM === secondaryYM) {
+        const nextOverride: Record<string, Set<string>> = { ...overrideCells };
+        const nextCustom = new Set(customDates);
+        // Drop entries for the target month and replace with template-derived.
+        for (const date of Object.keys(nextOverride)) {
+          if (date.startsWith(targetYM)) delete nextOverride[date];
+          if (date.startsWith(targetYM)) nextCustom.delete(date);
+        }
         for (const [date, slots] of Object.entries(slotsToSave)) {
+          if (!date.startsWith(targetYM)) continue;
           nextOverride[date] = new Set(slots.filter((s) => !s.isBooked).map((s) => s.startTime));
         }
         setOverrideCells(nextOverride);
-        setCustomDates(new Set());
+        setCustomDates(nextCustom);
       }
       toast.success(t('availability.appliedForMonth', { yearMonth: targetYM }));
     } catch {
@@ -254,10 +333,9 @@ export default function AdminAvailability() {
       next.delete(dateStr);
       return next;
     });
-    // Replace this date's cells with the template-derived set so the user can
-    // see what will be saved.
     const tpl = setsToTemplate(templateCells);
-    const generated = generateMonthSlots(viewMonth.getFullYear(), viewMonth.getMonth(), tpl);
+    const [y, m] = dateStr.split('-').slice(0, 2).map(Number);
+    const generated = generateMonthSlots(y, m - 1, tpl);
     setOverrideCells((prev) => {
       const next = { ...prev };
       next[dateStr] = new Set((generated[dateStr] ?? []).map((s) => s.startTime));
@@ -270,20 +348,49 @@ export default function AdminAvailability() {
     [t],
   );
 
-  const dateColumns: AvailabilityColumn[] = useMemo(() => {
-    if (!selectedDateStr || !selectedDate) return [];
-    return [
-      {
-        key: selectedDateStr,
-        label: format(selectedDate, 'EEE'),
-        sublabel: format(selectedDate, 'MMM d'),
-      },
-    ];
-  }, [selectedDate, selectedDateStr]);
+  const weekColumns: AvailabilityColumn[] = useMemo(
+    () =>
+      weekDates.map((d) => {
+        const key = format(d, 'yyyy-MM-dd');
+        return {
+          key,
+          label: format(d, 'EEE').toUpperCase(),
+          sublabel: format(d, 'd'),
+        };
+      }),
+    [weekDates],
+  );
 
-  const dateBooked = selectedDateStr && bookedByDate[selectedDateStr]
-    ? { [selectedDateStr]: bookedByDate[selectedDateStr] }
-    : undefined;
+  const weekHasAnyCustom = useMemo(
+    () => weekColumns.some((c) => customDates.has(c.key)),
+    [weekColumns, customDates],
+  );
+
+  /**
+   * Handle changes coming from the week-view grid: detect which dates changed
+   * (so we can mark them as custom) and update overrideCells + customDates.
+   */
+  const handleWeekChange = (next: Record<string, Set<string>>) => {
+    const changed: string[] = [];
+    const allKeys = new Set([...Object.keys(next), ...Object.keys(overrideCells)]);
+    for (const key of allKeys) {
+      const before = overrideCells[key] ?? new Set();
+      const after = next[key] ?? new Set();
+      if (before.size !== after.size || [...after].some((t) => !before.has(t))) {
+        // Only mark dates that are part of the visible week (which is what the
+        // grid edits in the first place).
+        if (weekColumns.some((c) => c.key === key)) changed.push(key);
+      }
+    }
+    setOverrideCells(next);
+    if (changed.length > 0) {
+      setCustomDates((s) => {
+        const updated = new Set(s);
+        for (const d of changed) updated.add(d);
+        return updated;
+      });
+    }
+  };
 
   if (!teacherId) {
     return (
@@ -295,7 +402,7 @@ export default function AdminAvailability() {
 
   const userTz = getUserTimezone();
   const userTzLabel = getTimezoneLabel(userTz);
-  const savedTz = availability?.timezone;
+  const savedTz = primaryAvail?.timezone ?? secondaryAvail?.timezone;
   const tzMismatch = !!savedTz && savedTz !== userTz;
 
   return (
@@ -305,7 +412,8 @@ export default function AdminAvailability() {
           <div>
             <h1 className="text-2xl font-bold">{t('availability.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              {yearMonth} {loading && '(loading...)'}
+              {format(weekStart, 'MMM d, yyyy')} – {format(weekEnd, 'MMM d, yyyy')}{' '}
+              {loading && '(loading...)'}
             </p>
           </div>
           {isAdmin && (
@@ -391,8 +499,7 @@ export default function AdminAvailability() {
             <CardContent className="pt-6">
               <p className="mb-3 text-sm text-muted-foreground">
                 {t('availability.gridHint', {
-                  defaultValue:
-                    'Click or drag to select 30-min cells you are available. This is the recurring template.',
+                  defaultValue: 'Click or drag to select 30-min cells you are available. This is the recurring template.',
                 })}
               </p>
               <AvailabilityGrid
@@ -405,73 +512,90 @@ export default function AdminAvailability() {
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-4">
-          <div className="flex flex-col gap-6 md:flex-row">
-            <div>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                month={viewMonth}
-                onMonthChange={setViewMonth}
-                modifiers={{ hasSlots: datesWithSlots }}
-                modifiersClassNames={{ hasSlots: 'bg-indigo-50 text-indigo-600 font-semibold' }}
-                className="rounded-xl border"
-              />
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t('availability.highlightedDates')}
-              </p>
-            </div>
+          <Card>
+            <CardContent className="pt-6">
+              {/* Week navigation */}
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setWeekStart(now)}>
+                  <CalendarCheck className="mr-1 h-3.5 w-3.5" />
+                  {t('availability.today', { defaultValue: 'Today' })}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => setWeekStart((d) => addDays(d, -7))}
+                  aria-label={t('availability.prevWeek', { defaultValue: 'Previous week' })}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="font-mono text-sm text-zinc-700">
+                  {format(weekStart, 'MMM d')} – {format(weekEnd, 'MMM d, yyyy')}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => setWeekStart((d) => addDays(d, 7))}
+                  aria-label={t('availability.nextWeek', { defaultValue: 'Next week' })}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                {weekHasAnyCustom && (
+                  <span className="ml-2 text-xs text-amber-600">
+                    {t('availability.weekHasCustom', {
+                      defaultValue: 'Some days in this week are customized — Save to persist.',
+                    })}
+                  </span>
+                )}
+              </div>
 
-            <Card className="flex-1">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="font-medium">
-                    {selectedDate
-                      ? format(selectedDate, 'EEEE, MMM d, yyyy')
-                      : t('availability.selectDate')}
-                  </h3>
-                  {selectedDateStr && customDates.has(selectedDateStr) && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleResetDate(selectedDateStr)}
-                    >
-                      <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                      {t('availability.resetToTemplate', 'Reset to template')}
-                    </Button>
-                  )}
-                </div>
-                {selectedDateStr && customDates.has(selectedDateStr) && (
-                  <p className="mt-1 text-xs text-amber-600">
-                    {t('availability.customMark', 'Customized — edits to the template will not affect this date.')}
-                  </p>
+              {/* Quick reset row */}
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {t('availability.calendarHint', {
+                    defaultValue: 'Click or drag cells to mark a date as a custom day (sick, holiday, …). Booked cells are read-only.',
+                  })}
+                </p>
+                {weekColumns.map(
+                  (c) =>
+                    customDates.has(c.key) && (
+                      <Button
+                        key={c.key}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleResetDate(c.key)}
+                      >
+                        <RotateCcw className="mr-1 h-3 w-3" />
+                        {format(new Date(c.key + 'T00:00:00'), 'EEE d')}
+                      </Button>
+                    ),
                 )}
-              </CardHeader>
-              <CardContent>
-                {selectedDate ? (
-                  <AvailabilityGrid
-                    columns={dateColumns}
-                    selected={overrideCells}
-                    booked={dateBooked}
-                    onChange={(next) => {
-                      setOverrideCells(next);
-                      if (selectedDateStr) {
-                        setCustomDates((s) => {
-                          if (s.has(selectedDateStr)) return s;
-                          const updated = new Set(s);
-                          updated.add(selectedDateStr);
-                          return updated;
-                        });
-                      }
-                    }}
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground">{t('availability.selectDateToManage')}</p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+
+              <AvailabilityGrid
+                columns={weekColumns}
+                selected={overrideCells}
+                booked={bookedByDate}
+                onChange={handleWeekChange}
+              />
+
+              {/* Legend */}
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <span className="inline-block h-3 w-3 rounded bg-emerald-400" />
+                  {t('availability.legendAvailable', { defaultValue: 'Available' })}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="inline-block h-3 w-3 rounded bg-zinc-200 bg-[repeating-linear-gradient(45deg,_transparent,_transparent_2px,_rgba(0,0,0,0.18)_2px,_rgba(0,0,0,0.18)_4px)]" />
+                  {t('availability.legendBooked', { defaultValue: 'Booked' })}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="inline-block h-3 w-3 rounded border border-zinc-300 bg-white" />
+                  {t('availability.legendNotAvailable', { defaultValue: 'Not available' })}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
