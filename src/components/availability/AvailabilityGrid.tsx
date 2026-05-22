@@ -23,6 +23,9 @@ interface Props {
   endTime?: string;
 }
 
+const DEFAULT_START = '00:00';
+const DEFAULT_END = '24:00';
+
 function generateRowTimes(startTime: string, endTime: string): string[] {
   const out: string[] = [];
   const start = timeToMinutes(startTime);
@@ -38,8 +41,8 @@ export default function AvailabilityGrid({
   selected,
   booked,
   onChange,
-  startTime = '06:00',
-  endTime = '24:00',
+  startTime = DEFAULT_START,
+  endTime = DEFAULT_END,
 }: Props) {
   const rows = useMemo(() => generateRowTimes(startTime, endTime), [startTime, endTime]);
   const dragModeRef = useRef<'add' | 'remove' | null>(null);
