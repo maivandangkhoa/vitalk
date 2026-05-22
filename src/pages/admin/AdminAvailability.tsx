@@ -159,10 +159,12 @@ export default function AdminAvailability() {
   }, [combinedSlots]);
 
   /**
-   * Save persists the current UI state across however many months the visible
-   * week (or any pre-existing data) spans. For each affected month: customDates
-   * keep their UI cells; non-custom dates keep whatever was already in Firestore
-   * (set by an earlier "Apply for month"). Booked cells are always preserved.
+   * Save persists the current state of the visible months. For primary +
+   * secondary (loaded) months: the full month is written with template-derived
+   * cells for every non-custom date and the user's overrideCells for custom
+   * dates. Booked cells are always preserved. This way each Save = a complete
+   * snapshot, so later template edits don't silently change saved months until
+   * the teacher explicitly Applies again.
    */
   const handleSave = async () => {
     setSaving(true);
@@ -170,36 +172,31 @@ export default function AdminAvailability() {
       const tpl = setsToTemplate(templateCells);
       const tz = getUserTimezone();
 
-      // Group every relevant date by its YYYY-MM.
-      const datesByMonth = new Map<string, Set<string>>();
-      const collect = (date: string) => {
-        const ym = date.slice(0, 7);
-        if (!datesByMonth.has(ym)) datesByMonth.set(ym, new Set());
-        datesByMonth.get(ym)!.add(date);
-      };
-      for (const d of customDates) collect(d);
-      for (const d of Object.keys(overrideCells)) collect(d);
-      for (const d of Object.keys(combinedSlots)) collect(d);
-
+      const ymsToSave = [primaryYM, ...(secondaryYM ? [secondaryYM] : [])];
       const savesByMonth: Record<
         string,
         { slots: Record<string, TimeSlot[]>; custom: string[] }
       > = {};
-      for (const [ym, dates] of datesByMonth) {
-        const existingDoc = ym === primaryYM ? primaryAvail : ym === secondaryYM ? secondaryAvail : null;
+
+      for (const ym of ymsToSave) {
+        const existingDoc = ym === primaryYM ? primaryAvail : secondaryAvail;
         const existingSlots = existingDoc?.slots ?? {};
+        const [y, m] = ym.split('-').map(Number);
+        const generated = generateMonthSlots(y, m - 1, tpl);
+
+        const dates = new Set<string>([
+          ...Object.keys(generated),
+          ...Object.keys(existingSlots),
+          ...Array.from(customDates).filter((d) => d.startsWith(ym)),
+        ]);
+
         const slotsToSave: Record<string, TimeSlot[]> = {};
         const customForMonth: string[] = [];
-
         for (const date of dates) {
           const isCustom = customDates.has(date);
           const cells = isCustom
             ? (overrideCells[date] ?? new Set<string>())
-            : new Set(
-                (existingSlots[date] ?? [])
-                  .filter((s) => !s.bookingId)
-                  .map((s) => s.startTime),
-              );
+            : new Set((generated[date] ?? []).map((s) => s.startTime));
           const booked = bookedByDate[date] ?? new Set<string>();
           const prev = existingSlots[date] ?? [];
           const merged = cellSetToSlots(cells, booked, prev);
@@ -220,22 +217,6 @@ export default function AdminAvailability() {
         writes.push(
           saveSecondary(savesByMonth[secondaryYM].slots, tz, savesByMonth[secondaryYM].custom),
         );
-      }
-      // Any other months (rare — only if user has loaded ones somehow): fall
-      // back to a direct setDoc.
-      if (teacherId) {
-        for (const [ym, payload] of Object.entries(savesByMonth)) {
-          if (ym === primaryYM || ym === secondaryYM) continue;
-          const ref = doc(db, 'teachers', teacherId, 'availability', ym);
-          writes.push(
-            setDoc(ref, {
-              slots: payload.slots,
-              customDates: payload.custom,
-              timezone: tz,
-              updatedAt: serverTimestamp(),
-            }),
-          );
-        }
       }
       writes.push(saveTemplate(tpl));
 
