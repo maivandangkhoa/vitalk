@@ -1,0 +1,18 @@
+{
+  "name": "HaviTalk",
+  "short_name": "HaviTalk",
+  "description": "Học tiếng Việt 1-1 với giáo viên bản ngữ",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

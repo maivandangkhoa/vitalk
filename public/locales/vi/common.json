@@ -132,5 +132,19 @@
       "title": "Đặt lịch mới từ {{student}}",
       "body": "{{lesson}} ngày {{date}} lúc {{time}}"
     }
+  },
+  "install": {
+    "title": "Cài HaviTalk",
+    "subtitle": "Thêm vào màn hình chính để nhận thông báo lịch học.",
+    "cta": "Cài đặt",
+    "howTo": "Cách",
+    "dismiss": "Đóng",
+    "gotIt": "Đã hiểu",
+    "iosTitle": "Thêm HaviTalk vào màn hình chính",
+    "iosStep1": "Bấm icon",
+    "iosStep1Tail": "ở thanh dưới Safari.",
+    "iosStep2": "Kéo xuống và bấm",
+    "iosStep2Action": "Thêm vào màn hình chính",
+    "iosStep3": "Bấm Thêm. Mở HaviTalk từ icon mới trên màn hình chính để bật thông báo."
   }
 }

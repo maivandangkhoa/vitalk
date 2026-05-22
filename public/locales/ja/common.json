@@ -132,5 +132,19 @@
       "title": "{{student}}さんからの新しい予約",
       "body": "{{date}} {{time}} {{lesson}}"
     }
+  },
+  "install": {
+    "title": "HaviTalkをインストール",
+    "subtitle": "ホーム画面に追加してレッスン通知を受け取りましょう。",
+    "cta": "インストール",
+    "howTo": "方法",
+    "dismiss": "閉じる",
+    "gotIt": "了解",
+    "iosTitle": "HaviTalkをホーム画面に追加",
+    "iosStep1": "Safariの下のバーで",
+    "iosStep1Tail": "をタップします。",
+    "iosStep2": "スクロールして",
+    "iosStep2Action": "ホーム画面に追加",
+    "iosStep3": "「追加」をタップし、ホーム画面の新しいアイコンからHaviTalkを開いて通知を有効にしてください。"
   }
 }

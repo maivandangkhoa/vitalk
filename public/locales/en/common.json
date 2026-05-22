@@ -132,5 +132,19 @@
       "title": "New booking from {{student}}",
       "body": "{{lesson}} on {{date}} at {{time}}"
     }
+  },
+  "install": {
+    "title": "Install HaviTalk",
+    "subtitle": "Add to your home screen to receive lesson reminders.",
+    "cta": "Install",
+    "howTo": "How",
+    "dismiss": "Dismiss",
+    "gotIt": "Got it",
+    "iosTitle": "Add HaviTalk to your home screen",
+    "iosStep1": "Tap",
+    "iosStep1Tail": "in Safari's bottom bar.",
+    "iosStep2": "Scroll and tap",
+    "iosStep2Action": "Add to Home Screen",
+    "iosStep3": "Tap Add. Open HaviTalk from the new home-screen icon to enable notifications."
   }
 }
