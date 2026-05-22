@@ -39,7 +39,13 @@
     "bio": "Tiểu sử (đa ngôn ngữ)",
     "teachingStyle": "Phong cách giảng dạy (đa ngôn ngữ)",
     "saved": "Đã lưu hồ sơ!",
-    "saveFailed": "Lưu thất bại"
+    "saveFailed": "Lưu thất bại",
+    "pricing": "Giá",
+    "hourlyRate": "Giá theo giờ (USD)",
+    "hourlyRateHint": "Giá USD cơ bản cho 60 phút. Các thời lượng khác sẽ scale theo hệ số bên dưới.",
+    "priceTable": "Giá tự tính (USD)",
+    "derived": "Mặc định",
+    "overridePlaceholder": "Override (tuỳ chọn)"
   },
   "settings": {
     "save": "Lưu",
@@ -79,7 +85,9 @@
     "duration": "Thời lượng (phút)",
     "priceUsd": "Giá (USD)",
     "titleLabel": "Tiêu đề",
-    "descriptionLabel": "Mô tả"
+    "descriptionLabel": "Mô tả",
+    "allowedDurations": "Thời lượng cho phép (phút)",
+    "needDuration": "Mỗi loại lesson phải có ít nhất một thời lượng."
   },
   "users": {
     "loadFailed": "Không thể tải người dùng",
@@ -140,7 +148,8 @@
     "selectDate": "Chọn một ngày",
     "booked": "Đã đặt",
     "noSlotsForDate": "Không có khung giờ cho ngày này.",
-    "selectDateToManage": "Chọn một ngày để quản lý khung giờ."
+    "selectDateToManage": "Chọn một ngày để quản lý khung giờ.",
+    "gridHint": "Click hoặc kéo để chọn các khung 30 phút khả dụng. Sau đó bấm \"Generate Slots\" để áp template lên tháng đang xem."
   },
   "bookings": {
     "title": "Quản lý đặt lịch",

@@ -39,7 +39,13 @@
     "bio": "자기소개 (다국어)",
     "teachingStyle": "교육 스타일 (다국어)",
     "saved": "프로필이 저장되었습니다!",
-    "saveFailed": "저장에 실패했습니다"
+    "saveFailed": "저장에 실패했습니다",
+    "pricing": "가격",
+    "hourlyRate": "시간당 요금 (USD)",
+    "hourlyRateHint": "60분 기준 USD 기본 요율입니다. 다른 시간은 아래 배수로 계산됩니다.",
+    "priceTable": "자동 계산 가격 (USD)",
+    "derived": "기본값",
+    "overridePlaceholder": "재정의 (선택)"
   },
   "settings": {
     "save": "저장",
@@ -79,7 +85,9 @@
     "duration": "시간 (분)",
     "priceUsd": "가격 (USD)",
     "titleLabel": "제목",
-    "descriptionLabel": "설명"
+    "descriptionLabel": "설명",
+    "allowedDurations": "허용 시간 (분)",
+    "needDuration": "각 수업 유형은 최소 하나의 시간을 허용해야 합니다."
   },
   "users": {
     "loadFailed": "사용자 로드에 실패했습니다",
@@ -140,7 +148,8 @@
     "selectDate": "날짜를 선택하세요",
     "booked": "예약됨",
     "noSlotsForDate": "이 날짜에 시간대가 없습니다.",
-    "selectDateToManage": "시간대를 관리할 날짜를 선택하세요."
+    "selectDateToManage": "시간대를 관리할 날짜를 선택하세요.",
+    "gridHint": "가능한 30분 단위 셀을 클릭하거나 드래그하여 선택한 후 \"Generate Slots\"를 눌러 이번 달에 적용합니다."
   },
   "bookings": {
     "title": "예약 관리",

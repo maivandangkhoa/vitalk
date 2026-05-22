@@ -61,7 +61,8 @@
     "date": "Date",
     "time": "Time",
     "format": "Format",
-    "teacher": "Teacher"
+    "teacher": "Teacher",
+    "duration": "Duration"
   },
   "bookingFailed": "Booking failed. Please try again.",
   "confirmation": {
@@ -71,5 +72,12 @@
     "pendingPayment": "Your booking is pending payment confirmation.",
     "viewBookings": "View My Bookings",
     "bookAnother": "Book Another Lesson"
+  },
+  "duration": {
+    "title": "Choose duration",
+    "priceHint": "Prices shown use the base rate; the chosen teacher's actual rate is applied at checkout."
+  },
+  "lessonCard": {
+    "startingFrom": "From"
   }
 }

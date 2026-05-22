@@ -61,7 +61,8 @@
     "date": "日付",
     "time": "時間",
     "format": "形式",
-    "teacher": "講師"
+    "teacher": "講師",
+    "duration": "時間"
   },
   "bookingFailed": "予約に失敗しました。もう一度お試しください。",
   "confirmation": {
@@ -71,5 +72,12 @@
     "pendingPayment": "お支払い確認待ちです。",
     "viewBookings": "予約履歴を見る",
     "bookAnother": "別のレッスンを予約"
+  },
+  "duration": {
+    "title": "時間を選択",
+    "priceHint": "表示価格は基本料金です。選択した先生の実際の料金は決済時に適用されます。"
+  },
+  "lessonCard": {
+    "startingFrom": "〜"
   }
 }

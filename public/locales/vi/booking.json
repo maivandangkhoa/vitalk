@@ -61,7 +61,8 @@
     "date": "Ngày",
     "time": "Giờ",
     "format": "Hình thức",
-    "teacher": "Giáo viên"
+    "teacher": "Giáo viên",
+    "duration": "Thời lượng"
   },
   "bookingFailed": "Đặt lịch thất bại. Vui lòng thử lại.",
   "confirmation": {
@@ -71,5 +72,12 @@
     "pendingPayment": "Đang chờ xác nhận thanh toán.",
     "viewBookings": "Xem lịch học của tôi",
     "bookAnother": "Đặt buổi học khác"
+  },
+  "duration": {
+    "title": "Chọn thời lượng",
+    "priceHint": "Giá hiển thị dùng mức cơ bản; mức của giáo viên được áp dụng khi thanh toán."
+  },
+  "lessonCard": {
+    "startingFrom": "Từ"
   }
 }

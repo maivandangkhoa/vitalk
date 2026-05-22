@@ -61,7 +61,8 @@
     "date": "날짜",
     "time": "시간",
     "format": "형식",
-    "teacher": "선생님"
+    "teacher": "선생님",
+    "duration": "수업 시간"
   },
   "bookingFailed": "예약에 실패했습니다. 다시 시도해 주세요.",
   "confirmation": {
@@ -71,5 +72,12 @@
     "pendingPayment": "결제 확인 대기 중입니다.",
     "viewBookings": "내 예약 보기",
     "bookAnother": "다른 수업 예약하기"
+  },
+  "duration": {
+    "title": "수업 시간 선택",
+    "priceHint": "표시된 가격은 기본 요율입니다. 선택한 선생님의 실제 요율은 결제 시 적용됩니다."
+  },
+  "lessonCard": {
+    "startingFrom": "시작"
   }
 }

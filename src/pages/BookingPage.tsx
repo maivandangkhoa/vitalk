@@ -32,7 +32,8 @@ import { useLessonTypes } from '@/hooks/useLessonTypes';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
 import { useCurrencySettings } from '@/hooks/useCurrency';
-import { getLessonPrice } from '@/lib/currency';
+import { getDurationPrice, formatDurationPrice, isAllowedDuration } from '@/lib/pricing';
+import { ALLOWED_DURATIONS, DURATION_MULTIPLIERS, DEFAULT_HOURLY_RATE_USD, type AllowedDuration } from '@/lib/constants';
 import { AnimatedSection } from '@/components/shared/motion';
 import { useLocations } from '@/hooks/useLocations';
 import type { OnlinePlatform, PaymentMethod, Language } from '@/types';
@@ -76,7 +77,7 @@ export default function BookingPage() {
   const { t, i18n } = useTranslation('booking');
   const { t: tc } = useTranslation('common');
   const lang = i18n.language as Language;
-  const { formatLesson, currency, config } = useCurrencySettings();
+  const { currency, config } = useCurrencySettings();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [searchParams] = useSearchParams();
@@ -86,6 +87,7 @@ export default function BookingPage() {
 
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [selectedLesson, setSelectedLesson] = useState<string>('');
+  const [selectedDuration, setSelectedDuration] = useState<AllowedDuration>(60);
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -101,7 +103,7 @@ export default function BookingPage() {
   const [showPaymentUI, setShowPaymentUI] = useState(false);
 
   const yearMonth = format(viewMonth, 'yyyy-MM');
-  const { slots: aggregatedSlotsRaw, loading: slotsLoading } = useAllTeachersAvailableSlots(teachers, yearMonth);
+  const { slots: aggregatedSlotsRaw, loading: slotsLoading } = useAllTeachersAvailableSlots(teachers, yearMonth, selectedDuration);
   const { createBooking, loading: bookingLoading } = useCreateBooking();
   const { locations: offlineLocations } = useLocations();
 
@@ -164,6 +166,18 @@ export default function BookingPage() {
   }, [aggregatedSlots]);
 
   const selectedLessonData = lessonTypes.find((o) => o.id === selectedLesson);
+  const allowedDurations: AllowedDuration[] = useMemo(() => {
+    const allowed = selectedLessonData?.allowedDurations;
+    if (allowed && allowed.length > 0) return allowed;
+    return [...ALLOWED_DURATIONS];
+  }, [selectedLessonData]);
+
+  // Keep selectedDuration consistent with the chosen lesson's allowedDurations.
+  useEffect(() => {
+    if (!allowedDurations.includes(selectedDuration)) {
+      setSelectedDuration(allowedDurations.includes(60) ? 60 : allowedDurations[0]);
+    }
+  }, [allowedDurations, selectedDuration]);
 
   // Auto-select a random teacher when time slot changes
   useEffect(() => {
@@ -202,6 +216,7 @@ export default function BookingPage() {
     try {
       const draft = JSON.parse(raw);
       if (draft.selectedLesson) setSelectedLesson(draft.selectedLesson);
+      if (isAllowedDuration(draft.selectedDuration)) setSelectedDuration(draft.selectedDuration);
       if (draft.selectedDate) {
         const d = new Date(draft.selectedDate);
         setSelectedDate(d);
@@ -254,6 +269,7 @@ export default function BookingPage() {
       // Save draft so we can resume at the same step after login
       const draft = {
         selectedLesson,
+        selectedDuration,
         selectedDate: selectedDate?.toISOString(),
         selectedTime,
         selectedTeacherId,
@@ -281,6 +297,7 @@ export default function BookingPage() {
             ? { name: selectedLocation.name, address: selectedLocation.address }
             : null
         : null;
+      const amountUSD = getDurationPrice(selectedTeacher, selectedDuration, 'USD', config);
       const bookingId = await createBooking({
         teacherId: selectedTeacher.id,
         teacherName: selectedTeacher.name,
@@ -289,12 +306,13 @@ export default function BookingPage() {
         date: selectedTeacherSlotInfo.originalDate,
         startTime: selectedTeacherSlotInfo.originalStartTime,
         endTime: selectedTeacherSlotInfo.originalEndTime,
+        durationMinutes: selectedDuration,
         format: lessonFormat,
         platform: lessonFormat === 'online' ? PLATFORM_MAP[platform] : null,
         offlineLocation,
         paymentMethod,
         notes,
-        amount: selectedLessonData.price,
+        amount: amountUSD,
         currency: 'USD',
       });
 
@@ -432,6 +450,16 @@ export default function BookingPage() {
                 {lessonTypes.map((opt) => {
                   const description = opt.description?.[lang] || opt.description?.en || '';
                   const features = opt.features ?? [];
+                  const lessonDurations: AllowedDuration[] =
+                    Array.isArray(opt.allowedDurations) && opt.allowedDurations.length > 0
+                      ? opt.allowedDurations.filter(isAllowedDuration)
+                      : [...ALLOWED_DURATIONS];
+                  const cheapest = Math.min(...lessonDurations.map((d) => DURATION_MULTIPLIERS[d]));
+                  const startingFromUSD = Math.round(
+                    (isTeacherLocked && selectedTeacher
+                      ? (selectedTeacher.hourlyRate ?? DEFAULT_HOURLY_RATE_USD)
+                      : DEFAULT_HOURLY_RATE_USD) * cheapest * 100,
+                  ) / 100;
                   return (
                     <Card
                       key={opt.id}
@@ -448,13 +476,13 @@ export default function BookingPage() {
                         {description && (
                           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{description}</p>
                         )}
-                        <div className="mt-5 flex items-center gap-5 text-sm text-muted-foreground">
+                        <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1.5">
                             <Clock className="h-4 w-4" />
-                            {i18n.t('lessons:duration', { minutes: opt.duration })}
+                            {lessonDurations.map((d) => `${d}m`).join(' / ')}
                           </span>
                           <span className="font-mono">
-                            {formatLesson({ price: opt.price })} {tc('common.perLesson')}
+                            {t('lessonCard.startingFrom', { defaultValue: 'From' })} ${startingFromUSD.toFixed(2)}
                           </span>
                         </div>
                         {features.length > 0 && (
@@ -478,6 +506,46 @@ export default function BookingPage() {
                   );
                 })}
               </div>
+            )}
+
+            {selectedLessonData && (
+              <Card className="mx-auto max-w-2xl">
+                <CardContent className="space-y-3 p-6">
+                  <p className="text-sm font-medium">
+                    {t('duration.title', { defaultValue: 'Choose duration' })}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {allowedDurations.map((d) => {
+                      const teacherForPrice =
+                        isTeacherLocked && selectedTeacher
+                          ? selectedTeacher
+                          : { hourlyRate: DEFAULT_HOURLY_RATE_USD };
+                      const priceLabel = formatDurationPrice(teacherForPrice, d, currency, config);
+                      const active = selectedDuration === d;
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setSelectedDuration(d)}
+                          className={`flex flex-col items-center gap-1 rounded-xl border px-3 py-3 text-sm transition-all ${
+                            active
+                              ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
+                              : 'border-zinc-200 bg-white hover:border-indigo-300'
+                          }`}
+                        >
+                          <span className="font-semibold">{d} {tc('common.minutes', { defaultValue: 'min' })}</span>
+                          <span className="font-mono text-xs text-muted-foreground">{priceLabel}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {!isTeacherLocked && (
+                    <p className="text-xs text-muted-foreground">
+                      {t('duration.priceHint', { defaultValue: 'Prices shown use the base rate; the chosen teacher\'s actual rate is applied at checkout.' })}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </div>
         )}
@@ -784,6 +852,10 @@ export default function BookingPage() {
                   </span>
                 </div>
                 <div className="flex justify-between py-0.5">
+                  <span className="text-muted-foreground">{t('summary.duration', { defaultValue: 'Duration' })}</span>
+                  <span>{selectedDuration} {tc('common.minutes', { defaultValue: 'min' })}</span>
+                </div>
+                <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">{t('summary.format')}</span>
                   <span>
                     {lessonFormat === 'online'
@@ -795,7 +867,9 @@ export default function BookingPage() {
                 </div>
                 <div className="mt-4 flex justify-between border-t pt-4 font-semibold">
                   <span>{t('payment.total')}</span>
-                  <span className="font-mono">{formatLesson({ price: selectedLessonData?.price ?? 14 })}</span>
+                  <span className="font-mono">
+                    {formatDurationPrice(selectedTeacher, selectedDuration, currency, config)}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -826,7 +900,7 @@ export default function BookingPage() {
                 {paymentMethod === 'paypal' && (
                   <PaypalCheckout
                     bookingId={createdBookingId}
-                    amount={selectedLessonData?.price || 14}
+                    amount={getDurationPrice(selectedTeacher, selectedDuration, 'USD', config)}
                     currency="USD"
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
@@ -836,7 +910,7 @@ export default function BookingPage() {
                 {paymentMethod === 'toss' && user && (
                   <TossCheckout
                     bookingId={createdBookingId}
-                    amount={selectedLessonData?.price || 14}
+                    amount={getDurationPrice(selectedTeacher, selectedDuration, 'USD', config)}
                     customerName={user.displayName || ''}
                     customerEmail={user.email || ''}
                     orderName={`HaviTalk - ${selectedLessonData?.title?.en ?? 'Lesson'}`}
@@ -849,7 +923,7 @@ export default function BookingPage() {
                   <div>
                     <BankTransferInfo
                       bookingId={createdBookingId}
-                      amount={selectedLessonData ? getLessonPrice(selectedLessonData, currency, config) : 14}
+                      amount={getDurationPrice(selectedTeacher, selectedDuration, currency, config)}
                       currency={currency}
                     />
                     <Button

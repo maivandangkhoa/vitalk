@@ -39,7 +39,13 @@
     "bio": "Bio (multilingual)",
     "teachingStyle": "Teaching Style (multilingual)",
     "saved": "Profile saved!",
-    "saveFailed": "Failed to save"
+    "saveFailed": "Failed to save",
+    "pricing": "Pricing",
+    "hourlyRate": "Hourly rate (USD)",
+    "hourlyRateHint": "Base USD rate per 60 min. Other durations scale by the multiplier shown below.",
+    "priceTable": "Auto-derived prices (USD)",
+    "derived": "Default",
+    "overridePlaceholder": "Override (optional)"
   },
   "settings": {
     "save": "Save",
@@ -79,7 +85,9 @@
     "duration": "Duration (min)",
     "priceUsd": "Price (USD)",
     "titleLabel": "Title",
-    "descriptionLabel": "Description"
+    "descriptionLabel": "Description",
+    "allowedDurations": "Allowed durations (min)",
+    "needDuration": "Each lesson type must allow at least one duration."
   },
   "users": {
     "loadFailed": "Failed to load users",
@@ -140,7 +148,8 @@
     "selectDate": "Select a date",
     "booked": "Booked",
     "noSlotsForDate": "No slots for this date.",
-    "selectDateToManage": "Select a date to manage slots."
+    "selectDateToManage": "Select a date to manage slots.",
+    "gridHint": "Click or drag to select 30-min cells you are available. Then press \"Generate Slots\" to apply the template to the current month."
   },
   "bookings": {
     "title": "Manage Bookings",

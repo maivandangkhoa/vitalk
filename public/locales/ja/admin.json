@@ -39,7 +39,13 @@
     "bio": "自己紹介（多言語）",
     "teachingStyle": "指導スタイル（多言語）",
     "saved": "プロフィールを保存しました！",
-    "saveFailed": "保存に失敗しました"
+    "saveFailed": "保存に失敗しました",
+    "pricing": "料金",
+    "hourlyRate": "時給 (USD)",
+    "hourlyRateHint": "60分あたりの基本USD料金。他の時間は下の倍率で計算されます。",
+    "priceTable": "自動計算価格 (USD)",
+    "derived": "デフォルト",
+    "overridePlaceholder": "上書き (任意)"
   },
   "settings": {
     "save": "保存",
@@ -79,7 +85,9 @@
     "duration": "時間（分）",
     "priceUsd": "価格（USD）",
     "titleLabel": "タイトル",
-    "descriptionLabel": "説明"
+    "descriptionLabel": "説明",
+    "allowedDurations": "許可される時間 (分)",
+    "needDuration": "各レッスンタイプには少なくとも1つの時間が必要です。"
   },
   "users": {
     "loadFailed": "ユーザーの読み込みに失敗しました",
@@ -140,7 +148,8 @@
     "selectDate": "日付を選択",
     "booked": "予約済み",
     "noSlotsForDate": "この日付にスロットはありません。",
-    "selectDateToManage": "スロットを管理する日付を選択してください。"
+    "selectDateToManage": "スロットを管理する日付を選択してください。",
+    "gridHint": "利用可能な30分セルをクリックまたはドラッグで選択し、「Generate Slots」を押して今月に適用してください。"
   },
   "bookings": {
     "title": "予約管理",
