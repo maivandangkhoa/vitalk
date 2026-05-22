@@ -44,11 +44,11 @@ export function findValidStartTimes(
 ): string[] {
   const freeByStart = new Map<string, TimeSlot>();
   for (const s of daySlots) {
-    if (!s.isBooked) freeByStart.set(s.startTime, s);
+    if (!s.bookingId) freeByStart.set(s.startTime, s);
   }
   const result: string[] = [];
   for (const slot of daySlots) {
-    if (slot.isBooked) continue;
+    if (slot.bookingId) continue;
     const keys = slotKeysForBooking(slot.startTime, durationMinutes);
     if (keys.every((k) => freeByStart.has(k))) {
       result.push(slot.startTime);

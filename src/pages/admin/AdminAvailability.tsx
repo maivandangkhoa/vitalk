@@ -12,8 +12,6 @@ import { useAvailability, useWeeklyTemplate, generateMonthSlots } from '@/hooks/
 import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { AnimatedSection } from '@/components/shared/motion';
 import AvailabilityGrid, { type AvailabilityColumn } from '@/components/availability/AvailabilityGrid';
-import { SLOT_GRANULARITY_MINUTES } from '@/lib/constants';
-import { addMinutes } from '@/lib/availability';
 import { getUserTimezone, getTimezoneLabel } from '@/lib/timezone';
 import type { MonthlyAvailability, TimeSlot, WeeklyTemplate } from '@/types';
 
@@ -41,7 +39,8 @@ function slotsToCellSet(slots: TimeSlot[] | undefined, bookedOnly: boolean): Set
   const out = new Set<string>();
   if (!slots) return out;
   for (const s of slots) {
-    if (bookedOnly ? s.isBooked : !s.isBooked) out.add(s.startTime);
+    const booked = !!s.bookingId;
+    if (bookedOnly ? booked : !booked) out.add(s.startTime);
   }
   return out;
 }
@@ -53,13 +52,8 @@ function cellSetToSlots(cells: Set<string>, bookedCells: Set<string>, prevSlots:
     .sort()
     .map((startTime) => {
       const prev = prevByStart.get(startTime);
-      if (prev?.isBooked) return prev;
-      return {
-        startTime,
-        endTime: addMinutes(startTime, SLOT_GRANULARITY_MINUTES),
-        isBooked: false,
-        bookingId: null,
-      };
+      if (prev?.bookingId) return { startTime, bookingId: prev.bookingId };
+      return { startTime, bookingId: null };
     });
 }
 
@@ -203,7 +197,7 @@ export default function AdminAvailability() {
             ? (overrideCells[date] ?? new Set<string>())
             : new Set(
                 (existingSlots[date] ?? [])
-                  .filter((s) => !s.isBooked)
+                  .filter((s) => !s.bookingId)
                   .map((s) => s.startTime),
               );
           const booked = bookedByDate[date] ?? new Set<string>();
@@ -276,7 +270,7 @@ export default function AdminAvailability() {
       const targetExisting = targetData.slots ?? {};
       const targetBooked: Record<string, Set<string>> = {};
       for (const [date, daySlots] of Object.entries(targetExisting)) {
-        const bk = new Set(daySlots.filter((s) => s.isBooked).map((s) => s.startTime));
+        const bk = new Set(daySlots.filter((s) => !!s.bookingId).map((s) => s.startTime));
         if (bk.size > 0) targetBooked[date] = bk;
       }
 
@@ -314,7 +308,7 @@ export default function AdminAvailability() {
         }
         for (const [date, slots] of Object.entries(slotsToSave)) {
           if (!date.startsWith(targetYM)) continue;
-          nextOverride[date] = new Set(slots.filter((s) => !s.isBooked).map((s) => s.startTime));
+          nextOverride[date] = new Set(slots.filter((s) => !s.bookingId).map((s) => s.startTime));
         }
         setOverrideCells(nextOverride);
         setCustomDates(nextCustom);

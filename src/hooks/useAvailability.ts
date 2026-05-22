@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { MonthlyAvailability, TimeSlot, WeeklyTemplate } from '@/types';
-import { DEFAULT_TIMEZONE, SLOT_GRANULARITY_MINUTES } from '@/lib/constants';
-import { addMinutes } from '@/lib/availability';
+import { DEFAULT_TIMEZONE } from '@/lib/constants';
 import { format } from 'date-fns';
 
 const DAY_NAMES = [
@@ -38,12 +37,7 @@ export function generateMonthSlots(
       const daySlots: TimeSlot[] = cellStarts
         .slice()
         .sort()
-        .map((startTime) => ({
-          startTime,
-          endTime: addMinutes(startTime, SLOT_GRANULARITY_MINUTES),
-          isBooked: false,
-          bookingId: null,
-        }));
+        .map((startTime) => ({ startTime, bookingId: null }));
       if (daySlots.length > 0) {
         slots[dateStr] = daySlots;
       }
@@ -153,7 +147,7 @@ export function useAvailableSlots(teacherId: string, yearMonth: string) {
           const data = snap.data() as MonthlyAvailability;
           const available: Record<string, TimeSlot[]> = {};
           for (const [date, daySlots] of Object.entries(data.slots)) {
-            const free = daySlots.filter((s) => !s.isBooked);
+            const free = daySlots.filter((s) => !s.bookingId);
             if (free.length > 0) {
               available[date] = free;
             }

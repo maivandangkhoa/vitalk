@@ -8,8 +8,7 @@ export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
 export interface TimeSlot {
   startTime: string;
-  endTime: string;
-  isBooked: boolean;
+  /** Booking that owns this 30-min cell. `null` = free. */
   bookingId: string | null;
 }
 

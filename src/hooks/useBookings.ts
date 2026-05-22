@@ -133,18 +133,14 @@ export function useCreateBooking() {
           const indicesToBook: number[] = [];
           for (const key of cellKeys) {
             const idx = daySlots.findIndex((s) => s.startTime === key);
-            if (idx === -1 || daySlots[idx].isBooked) {
+            if (idx === -1 || daySlots[idx].bookingId) {
               throw new Error('This time slot is no longer available');
             }
             indicesToBook.push(idx);
           }
 
           for (const idx of indicesToBook) {
-            daySlots[idx] = {
-              ...daySlots[idx],
-              isBooked: true,
-              bookingId: bookingRef.id,
-            };
+            daySlots[idx] = { startTime: daySlots[idx].startTime, bookingId: bookingRef.id };
           }
 
           transaction.update(availRef, {
@@ -239,7 +235,7 @@ export async function cancelBooking(bookingId: string) {
       let changed = false;
       for (let i = 0; i < daySlots.length; i++) {
         if (daySlots[i].bookingId === bookingId) {
-          daySlots[i] = { ...daySlots[i], isBooked: false, bookingId: null };
+          daySlots[i] = { startTime: daySlots[i].startTime, bookingId: null };
           changed = true;
         }
       }
