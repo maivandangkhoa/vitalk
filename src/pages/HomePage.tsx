@@ -376,7 +376,7 @@ export default function HomePage() {
           <div className="rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-10 text-white shadow-lg md:py-14">
             <div className="text-center">
               <h2 className="text-3xl font-bold md:text-4xl">{t('cta.title')}</h2>
-              <p className="mx-auto mt-5 max-w-xl leading-relaxed text-white/80">
+              <p className="mx-auto mt-5 max-w-2xl whitespace-pre-line leading-relaxed text-white/80">
                 {t('cta.subtitle')}
               </p>
               <Button
