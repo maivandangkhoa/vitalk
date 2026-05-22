@@ -19,6 +19,12 @@ export interface MonthlyAvailability {
   updatedAt: Date;
 }
 
+/**
+ * Weekly availability template: per weekday name (Monday..Sunday),
+ * a list of 30-min cell start times ("09:00", "09:30", ...).
+ */
+export type WeeklyTemplate = Record<string, string[]>;
+
 /** Stored on booking documents — minimal location info */
 export interface OfflineLocation {
   name: string;
@@ -50,6 +56,7 @@ export interface Booking {
   date: string;
   startTime: string;
   endTime: string;
+  durationMinutes: number;
   timezone: string;
   format: BookingFormat;
   platform: OnlinePlatform | null;

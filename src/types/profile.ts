@@ -1,4 +1,6 @@
 import type { MultiLangText } from './common';
+import type { AllowedDuration } from '@/lib/constants';
+import type { SupportedCurrency } from '@/lib/currency';
 
 export interface TeacherProfile {
   id: string;
@@ -18,8 +20,18 @@ export interface TeacherProfile {
   education: string;
   previousLocations: { city: string; years: string }[];
   interests: string[];
-  lessonPrice: number;
+  /**
+   * USD per 60 minutes. Used as the base for all duration prices unless
+   * overridden in `lessonPriceOverrides`.
+   */
+  hourlyRate: number;
+  /** Optional per-currency override of `hourlyRate`. */
+  hourlyRates?: Partial<Record<SupportedCurrency, number>>;
+  /** Optional explicit USD price for a given duration (skips multiplier math). */
+  lessonPriceOverrides?: Partial<Record<AllowedDuration, number>>;
   currency: string;
+  /** @deprecated kept for backward-compat with old docs; read `hourlyRate` instead. */
+  lessonPrice?: number;
   rating: number;
   totalReviews: number;
   bio: MultiLangText;
