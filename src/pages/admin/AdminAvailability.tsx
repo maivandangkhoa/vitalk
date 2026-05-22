@@ -250,9 +250,13 @@ export default function AdminAvailability() {
 
   /**
    * Apply the current template to every day of `applyMonth` and write the
-   * per-date doc to Firestore right away. Resets that month's customDates
-   * (this action is "blanket overwrite"); booked cells are still preserved.
-   * The template doc is also saved so the UI and Firestore stay in sync.
+   * per-date doc to Firestore right away. Customized dates are preserved
+   * (their existing cells stay; only non-custom dates get template-derived
+   * cells). Booked cells are always preserved. The template doc is also
+   * saved so UI and Firestore stay in sync.
+   *
+   * If applyMonth is currently loaded, in-UI customDates take precedence
+   * over what's in Firestore (so unsaved customs aren't clobbered).
    */
   const handleApplyForMonth = async () => {
     if (!teacherId) return;
@@ -262,7 +266,7 @@ export default function AdminAvailability() {
       const targetYM = format(applyMonth, 'yyyy-MM');
       const targetRef = doc(db, 'teachers', teacherId, 'availability', targetYM);
 
-      // Read target month's existing data to preserve booked cells.
+      // Read target month's existing data so we can preserve customs + booked.
       const targetSnap = await getDoc(targetRef);
       const targetData = targetSnap.exists()
         ? (targetSnap.data() as MonthlyAvailability)
@@ -274,14 +278,31 @@ export default function AdminAvailability() {
         if (bk.size > 0) targetBooked[date] = bk;
       }
 
+      // Customs come from UI state if the target month is loaded, otherwise
+      // from Firestore. Same for the "current free cells" per custom date.
+      const isLoaded = targetYM === primaryYM || targetYM === secondaryYM;
+      const customForMonth = new Set<string>(
+        isLoaded
+          ? Array.from(customDates).filter((d) => d.startsWith(targetYM))
+          : (targetData.customDates ?? []),
+      );
+      const customCellsByDate = (date: string): Set<string> => {
+        if (isLoaded && overrideCells[date]) return overrideCells[date];
+        const prev = targetExisting[date] ?? [];
+        return new Set(prev.filter((s) => !s.bookingId).map((s) => s.startTime));
+      };
+
       const generated = generateMonthSlots(applyMonth.getFullYear(), applyMonth.getMonth(), tpl);
       const slotsToSave: Record<string, TimeSlot[]> = {};
       const dates = new Set<string>([
         ...Object.keys(generated),
         ...Object.keys(targetBooked),
+        ...customForMonth,
       ]);
       for (const date of dates) {
-        const cells = new Set((generated[date] ?? []).map((s) => s.startTime));
+        const cells = customForMonth.has(date)
+          ? customCellsByDate(date)
+          : new Set((generated[date] ?? []).map((s) => s.startTime));
         const booked = targetBooked[date] ?? new Set<string>();
         const prev = targetExisting[date] ?? [];
         const merged = cellSetToSlots(cells, booked, prev);
@@ -291,26 +312,29 @@ export default function AdminAvailability() {
       const tz = getUserTimezone();
       await setDoc(targetRef, {
         slots: slotsToSave,
-        customDates: [],
+        customDates: Array.from(customForMonth),
         timezone: tz,
         updatedAt: serverTimestamp(),
       });
       await saveTemplate(tpl);
 
-      // If the target month is one of the loaded months, sync local state.
-      if (targetYM === primaryYM || targetYM === secondaryYM) {
+      // If the target month is loaded, sync local state with what was saved.
+      if (isLoaded) {
         const nextOverride: Record<string, Set<string>> = { ...overrideCells };
-        const nextCustom = new Set(customDates);
-        // Drop entries for the target month and replace with template-derived.
         for (const date of Object.keys(nextOverride)) {
           if (date.startsWith(targetYM)) delete nextOverride[date];
-          if (date.startsWith(targetYM)) nextCustom.delete(date);
         }
         for (const [date, slots] of Object.entries(slotsToSave)) {
           if (!date.startsWith(targetYM)) continue;
           nextOverride[date] = new Set(slots.filter((s) => !s.bookingId).map((s) => s.startTime));
         }
         setOverrideCells(nextOverride);
+        // customForMonth already reflects what got saved; keep customDates
+        // for the unaffected month + customForMonth for the target.
+        const nextCustom = new Set(
+          Array.from(customDates).filter((d) => !d.startsWith(targetYM)),
+        );
+        for (const d of customForMonth) nextCustom.add(d);
         setCustomDates(nextCustom);
       }
       toast.success(t('availability.appliedForMonth', { yearMonth: targetYM }));

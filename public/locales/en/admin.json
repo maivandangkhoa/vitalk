@@ -155,7 +155,7 @@
     "tzNotice": "Times below are in your timezone: {{tz}} ({{label}}). Students see them converted to their own timezone.",
     "tzMismatch": "Previously saved in {{savedTz}}. Saving now will store as {{userTz}} — make sure that matches where you actually teach.",
     "applyForMonth": "Apply for month",
-    "applyHint": "Writes the template to every day of the selected month. Booked slots are preserved; per-date customizations for that month are reset.",
+    "applyHint": "Writes the template to every day of the selected month. Customized dates and booked slots are preserved.",
     "appliedForMonth": "Template applied for {{yearMonth}}.",
     "applyFailed": "Failed to apply template to selected month.",
     "today": "Today",

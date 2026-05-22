@@ -155,7 +155,7 @@
     "tzNotice": "Các giờ bên dưới đang theo múi giờ của bạn: {{tz}} ({{label}}). Học viên sẽ thấy giờ đã chuyển sang múi giờ của họ.",
     "tzMismatch": "Trước đây lưu bằng {{savedTz}}. Save bây giờ sẽ lưu là {{userTz}} — đảm bảo đúng nơi bạn đang dạy.",
     "applyForMonth": "Áp dụng cho tháng",
-    "applyHint": "Ghi template lên tất cả ngày của tháng đã chọn. Booked slot được giữ; tuỳ chỉnh per-date của tháng đó sẽ bị reset.",
+    "applyHint": "Ghi template lên tất cả ngày của tháng đã chọn. Ngày custom và slot đã booked được giữ nguyên.",
     "appliedForMonth": "Đã áp template cho {{yearMonth}}.",
     "applyFailed": "Không thể áp template cho tháng đã chọn.",
     "today": "Hôm nay",
