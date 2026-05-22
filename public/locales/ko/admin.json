@@ -149,7 +149,11 @@
     "booked": "예약됨",
     "noSlotsForDate": "이 날짜에 시간대가 없습니다.",
     "selectDateToManage": "시간대를 관리할 날짜를 선택하세요.",
-    "gridHint": "가능한 30분 단위 셀을 클릭하거나 드래그하여 선택한 후 \"Generate Slots\"를 눌러 이번 달에 적용합니다."
+    "gridHint": "가능한 30분 단위 셀을 클릭하거나 드래그하여 선택한 후 \"Generate Slots\"를 눌러 이번 달에 적용합니다.",
+    "resetToTemplate": "템플릿으로 초기화",
+    "customMark": "사용자 지정됨 — 템플릿 변경은 이 날짜에 영향을 주지 않습니다.",
+    "tzNotice": "아래 시간은 본인의 시간대 기준입니다: {{tz}} ({{label}}). 학생에게는 각자의 시간대로 변환되어 표시됩니다.",
+    "tzMismatch": "이전에 {{savedTz}}로 저장되었습니다. 지금 저장하면 {{userTz}}로 저장됩니다 — 실제 수업하는 곳과 일치하는지 확인하세요."
   },
   "bookings": {
     "title": "예약 관리",

@@ -13,6 +13,8 @@ import { AnimatedSection } from '@/components/shared/motion';
 import AvailabilityGrid, { type AvailabilityColumn } from '@/components/availability/AvailabilityGrid';
 import { SLOT_GRANULARITY_MINUTES } from '@/lib/constants';
 import { addMinutes } from '@/lib/availability';
+import { getUserTimezone, getTimezoneLabel } from '@/lib/timezone';
+import { Globe, RotateCcw } from 'lucide-react';
 import type { TimeSlot, WeeklyTemplate } from '@/types';
 
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
@@ -82,6 +84,10 @@ export default function AdminAvailability() {
   // Override state per date — Record<dateStr, Set<cellStartTime>> (free cells only)
   const [overrideCells, setOverrideCells] = useState<Record<string, Set<string>>>({});
 
+  // Dates the teacher has manually customized; preserved on save instead of
+  // being regenerated from the template.
+  const [customDates, setCustomDates] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (!templateLoading && !templateInitialized) {
       setTemplateCells(templateToSets(savedTemplate));
@@ -97,6 +103,7 @@ export default function AdminAvailability() {
         next[date] = slotsToCellSet(daySlots, false);
       }
       setOverrideCells(next);
+      setCustomDates(new Set(availability?.customDates ?? []));
       setOverrideInitialized(true);
     }
   }, [loading, availability, overrideInitialized]);
@@ -105,6 +112,7 @@ export default function AdminAvailability() {
   useEffect(() => {
     setOverrideInitialized(false);
     setOverrideCells({});
+    setCustomDates(new Set());
   }, [yearMonth, teacherId]);
 
   // Reset template init when teacher changes (template is teacher-level, not month-level)
@@ -149,24 +157,34 @@ export default function AdminAvailability() {
     try {
       const tpl = setsToTemplate(templateCells);
 
-      // Template is the source of truth: always regenerate the current month's
-      // per-date docs from the template. Booked cells are preserved. The
-      // Calendar Override tab is read-only for now.
+      // For each date: if user has customized it via Calendar Override, keep
+      // their cells as-is; otherwise regenerate from the template. Booked
+      // cells are always preserved.
       const generated = generateMonthSlots(viewMonth.getFullYear(), viewMonth.getMonth(), tpl);
-
       const slotsToSave: Record<string, TimeSlot[]> = {};
       const existing = availability?.slots ?? {};
-      const dates = new Set<string>([...Object.keys(generated), ...Object.keys(existing)]);
+      const dates = new Set<string>([
+        ...Object.keys(generated),
+        ...Object.keys(existing),
+        ...customDates,
+      ]);
       for (const date of dates) {
-        const generatedCells = new Set((generated[date] ?? []).map((s) => s.startTime));
+        const cells = customDates.has(date)
+          ? (overrideCells[date] ?? new Set<string>())
+          : new Set((generated[date] ?? []).map((s) => s.startTime));
         const booked = bookedByDate[date] ?? new Set<string>();
         const prev = existing[date] ?? [];
-        const merged = cellSetToSlots(generatedCells, booked, prev);
+        const merged = cellSetToSlots(cells, booked, prev);
         if (merged.length > 0) slotsToSave[date] = merged;
       }
 
-      await Promise.all([saveAvailability(slotsToSave), saveTemplate(tpl)]);
-      // Sync the override UI state with what was just saved.
+      const tz = getUserTimezone();
+      await Promise.all([
+        saveAvailability(slotsToSave, tz, Array.from(customDates)),
+        saveTemplate(tpl),
+      ]);
+      // Sync the override UI state with what was just saved (so a subsequent
+      // Save doesn't see stale data).
       const nextOverride: Record<string, Set<string>> = {};
       for (const [date, slots] of Object.entries(slotsToSave)) {
         nextOverride[date] = new Set(slots.filter((s) => !s.isBooked).map((s) => s.startTime));
@@ -178,6 +196,23 @@ export default function AdminAvailability() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleResetDate = (dateStr: string) => {
+    setCustomDates((s) => {
+      const next = new Set(s);
+      next.delete(dateStr);
+      return next;
+    });
+    // Replace this date's cells with the template-derived set so the user can
+    // see what will be saved.
+    const tpl = setsToTemplate(templateCells);
+    const generated = generateMonthSlots(viewMonth.getFullYear(), viewMonth.getMonth(), tpl);
+    setOverrideCells((prev) => {
+      const next = { ...prev };
+      next[dateStr] = new Set((generated[dateStr] ?? []).map((s) => s.startTime));
+      return next;
+    });
   };
 
   const weeklyColumns: AvailabilityColumn[] = useMemo(
@@ -208,6 +243,11 @@ export default function AdminAvailability() {
     );
   }
 
+  const userTz = getUserTimezone();
+  const userTzLabel = getTimezoneLabel(userTz);
+  const savedTz = availability?.timezone;
+  const tzMismatch = !!savedTz && savedTz !== userTz;
+
   return (
     <div>
       <AnimatedSection className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -227,6 +267,34 @@ export default function AdminAvailability() {
           {t('availability.saveChanges')}
         </Button>
       </AnimatedSection>
+
+      <div
+        className={`mb-4 flex items-start gap-2 rounded-xl border px-4 py-3 text-sm ${
+          tzMismatch
+            ? 'border-amber-200 bg-amber-50 text-amber-800'
+            : 'border-indigo-100 bg-indigo-50 text-indigo-800'
+        }`}
+      >
+        <Globe className="mt-0.5 h-4 w-4 shrink-0" />
+        <div>
+          <p>
+            {t('availability.tzNotice', {
+              defaultValue: 'Times below are in your timezone: {{tz}} ({{label}}). Students see them converted to their own timezone.',
+              tz: userTz,
+              label: userTzLabel,
+            })}
+          </p>
+          {tzMismatch && (
+            <p className="mt-1 text-xs">
+              {t('availability.tzMismatch', {
+                defaultValue: 'Previously saved in {{savedTz}}. Saving now will store as {{userTz}} — make sure that matches where you actually teach.',
+                savedTz,
+                userTz,
+              })}
+            </p>
+          )}
+        </div>
+      </div>
 
       <Tabs defaultValue="weekly">
         <TabsList>
@@ -275,11 +343,29 @@ export default function AdminAvailability() {
 
             <Card className="flex-1">
               <CardHeader>
-                <h3 className="font-medium">
-                  {selectedDate
-                    ? format(selectedDate, 'EEEE, MMM d, yyyy')
-                    : t('availability.selectDate')}
-                </h3>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-medium">
+                    {selectedDate
+                      ? format(selectedDate, 'EEEE, MMM d, yyyy')
+                      : t('availability.selectDate')}
+                  </h3>
+                  {selectedDateStr && customDates.has(selectedDateStr) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleResetDate(selectedDateStr)}
+                    >
+                      <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                      {t('availability.resetToTemplate', 'Reset to template')}
+                    </Button>
+                  )}
+                </div>
+                {selectedDateStr && customDates.has(selectedDateStr) && (
+                  <p className="mt-1 text-xs text-amber-600">
+                    {t('availability.customMark', 'Customized — edits to the template will not affect this date.')}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 {selectedDate ? (
@@ -287,7 +373,17 @@ export default function AdminAvailability() {
                     columns={dateColumns}
                     selected={overrideCells}
                     booked={dateBooked}
-                    onChange={setOverrideCells}
+                    onChange={(next) => {
+                      setOverrideCells(next);
+                      if (selectedDateStr) {
+                        setCustomDates((s) => {
+                          if (s.has(selectedDateStr)) return s;
+                          const updated = new Set(s);
+                          updated.add(selectedDateStr);
+                          return updated;
+                        });
+                      }
+                    }}
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">{t('availability.selectDateToManage')}</p>

@@ -15,6 +15,12 @@ export interface TimeSlot {
 
 export interface MonthlyAvailability {
   slots: Record<string, TimeSlot[]>;
+  /**
+   * Dates (in "YYYY-MM-DD" form) the teacher has manually customized via the
+   * Calendar Override tab. Save will preserve these and only regenerate the
+   * untouched dates from the weekly template.
+   */
+  customDates?: string[];
   timezone: string;
   updatedAt: Date;
 }

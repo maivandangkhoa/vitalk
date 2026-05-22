@@ -149,7 +149,11 @@
     "booked": "Booked",
     "noSlotsForDate": "No slots for this date.",
     "selectDateToManage": "Select a date to manage slots.",
-    "gridHint": "Click or drag to select 30-min cells you are available. Then press \"Generate Slots\" to apply the template to the current month."
+    "gridHint": "Click or drag to select 30-min cells you are available. Then press \"Generate Slots\" to apply the template to the current month.",
+    "resetToTemplate": "Reset to template",
+    "customMark": "Customized — edits to the template will not affect this date.",
+    "tzNotice": "Times below are in your timezone: {{tz}} ({{label}}). Students see them converted to their own timezone.",
+    "tzMismatch": "Previously saved in {{savedTz}}. Saving now will store as {{userTz}} — make sure that matches where you actually teach."
   },
   "bookings": {
     "title": "Manage Bookings",

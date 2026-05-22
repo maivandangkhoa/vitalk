@@ -118,9 +118,14 @@ export function useAvailability(teacherId: string, yearMonth: string) {
   }, [teacherId, yearMonth]);
 
   const saveAvailability = useCallback(
-    async (slots: Record<string, TimeSlot[]>, timezone: string = DEFAULT_TIMEZONE) => {
+    async (
+      slots: Record<string, TimeSlot[]>,
+      timezone: string = DEFAULT_TIMEZONE,
+      customDates: string[] = [],
+    ) => {
       const data: Omit<MonthlyAvailability, 'updatedAt'> & { updatedAt: ReturnType<typeof serverTimestamp> } = {
         slots,
+        customDates,
         timezone,
         updatedAt: serverTimestamp(),
       };

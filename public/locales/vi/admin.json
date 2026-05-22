@@ -149,7 +149,11 @@
     "booked": "Đã đặt",
     "noSlotsForDate": "Không có khung giờ cho ngày này.",
     "selectDateToManage": "Chọn một ngày để quản lý khung giờ.",
-    "gridHint": "Click hoặc kéo để chọn các khung 30 phút khả dụng. Sau đó bấm \"Generate Slots\" để áp template lên tháng đang xem."
+    "gridHint": "Click hoặc kéo để chọn các khung 30 phút khả dụng. Sau đó bấm \"Generate Slots\" để áp template lên tháng đang xem.",
+    "resetToTemplate": "Khôi phục theo template",
+    "customMark": "Đã tuỳ chỉnh — sửa template sẽ không ảnh hưởng ngày này.",
+    "tzNotice": "Các giờ bên dưới đang theo múi giờ của bạn: {{tz}} ({{label}}). Học viên sẽ thấy giờ đã chuyển sang múi giờ của họ.",
+    "tzMismatch": "Trước đây lưu bằng {{savedTz}}. Save bây giờ sẽ lưu là {{userTz}} — đảm bảo đúng nơi bạn đang dạy."
   },
   "bookings": {
     "title": "Quản lý đặt lịch",
