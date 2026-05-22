@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Loader2, Wand2, Globe, RotateCcw, ChevronLeft, ChevronRight, CalendarCheck } from 'lucide-react';
+import { Save, Loader2, Wand2, Globe, ChevronLeft, ChevronRight, CalendarCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addMonths, addDays, startOfWeek } from 'date-fns';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -100,10 +100,6 @@ export default function AdminAvailability() {
   // Override state per date — Record<dateStr, Set<cellStartTime>> (free cells only)
   const [overrideCells, setOverrideCells] = useState<Record<string, Set<string>>>({});
 
-  // Dates the teacher has manually customized; preserved on save instead of
-  // being regenerated from the template.
-  const [customDates, setCustomDates] = useState<Set<string>>(new Set());
-
   // Merged slots from primary + secondary month docs.
   const combinedSlots = useMemo(() => {
     return {
@@ -126,21 +122,14 @@ export default function AdminAvailability() {
         next[date] = slotsToCellSet(daySlots, false);
       }
       setOverrideCells(next);
-      setCustomDates(
-        new Set([
-          ...(primaryAvail?.customDates ?? []),
-          ...(secondaryAvail?.customDates ?? []),
-        ]),
-      );
       setOverrideInitialized(true);
     }
-  }, [loading, combinedSlots, primaryAvail, secondaryAvail, overrideInitialized]);
+  }, [loading, combinedSlots, overrideInitialized]);
 
   // Reset overrides when the loaded months or teacher change.
   useEffect(() => {
     setOverrideInitialized(false);
     setOverrideCells({});
-    setCustomDates(new Set());
   }, [primaryYM, secondaryYM, teacherId]);
 
   // Reset template init when teacher changes (template is teacher-level).
@@ -159,12 +148,11 @@ export default function AdminAvailability() {
   }, [combinedSlots]);
 
   /**
-   * Save persists the current state of the visible months. For primary +
-   * secondary (loaded) months: the full month is written with template-derived
-   * cells for every non-custom date and the user's overrideCells for custom
-   * dates. Booked cells are always preserved. This way each Save = a complete
-   * snapshot, so later template edits don't silently change saved months until
-   * the teacher explicitly Applies again.
+   * Save persists the current state of the visible months' month docs. Does
+   * NOT consult the template — each month doc is its own source of truth.
+   * For each affected month: write overrideCells as-is, preserving booked
+   * cells from existing data. The template doc is also saved so the Weekly
+   * Template tab's edits stick.
    */
   const handleSave = async () => {
     setSaving(true);
@@ -173,50 +161,31 @@ export default function AdminAvailability() {
       const tz = getUserTimezone();
 
       const ymsToSave = [primaryYM, ...(secondaryYM ? [secondaryYM] : [])];
-      const savesByMonth: Record<
-        string,
-        { slots: Record<string, TimeSlot[]>; custom: string[] }
-      > = {};
+      const savesByMonth: Record<string, Record<string, TimeSlot[]>> = {};
 
       for (const ym of ymsToSave) {
         const existingDoc = ym === primaryYM ? primaryAvail : secondaryAvail;
         const existingSlots = existingDoc?.slots ?? {};
-        const [y, m] = ym.split('-').map(Number);
-        const generated = generateMonthSlots(y, m - 1, tpl);
-
-        const dates = new Set<string>([
-          ...Object.keys(generated),
-          ...Object.keys(existingSlots),
-          ...Array.from(customDates).filter((d) => d.startsWith(ym)),
-        ]);
 
         const slotsToSave: Record<string, TimeSlot[]> = {};
-        const customForMonth: string[] = [];
+        const dates = new Set<string>([
+          ...Object.keys(existingSlots),
+          ...Object.keys(overrideCells).filter((d) => d.startsWith(ym)),
+        ]);
         for (const date of dates) {
-          const isCustom = customDates.has(date);
-          const cells = isCustom
-            ? (overrideCells[date] ?? new Set<string>())
-            : new Set((generated[date] ?? []).map((s) => s.startTime));
+          const cells = overrideCells[date] ?? new Set<string>();
           const booked = bookedByDate[date] ?? new Set<string>();
           const prev = existingSlots[date] ?? [];
           const merged = cellSetToSlots(cells, booked, prev);
           if (merged.length > 0) slotsToSave[date] = merged;
-          if (isCustom) customForMonth.push(date);
         }
-
-        savesByMonth[ym] = { slots: slotsToSave, custom: customForMonth };
+        savesByMonth[ym] = slotsToSave;
       }
 
       const writes: Promise<void>[] = [];
-      if (savesByMonth[primaryYM]) {
-        writes.push(
-          savePrimary(savesByMonth[primaryYM].slots, tz, savesByMonth[primaryYM].custom),
-        );
-      }
-      if (secondaryYM && savesByMonth[secondaryYM]) {
-        writes.push(
-          saveSecondary(savesByMonth[secondaryYM].slots, tz, savesByMonth[secondaryYM].custom),
-        );
+      writes.push(savePrimary(savesByMonth[primaryYM] ?? {}, tz));
+      if (secondaryYM) {
+        writes.push(saveSecondary(savesByMonth[secondaryYM] ?? {}, tz));
       }
       writes.push(saveTemplate(tpl));
 
@@ -231,13 +200,9 @@ export default function AdminAvailability() {
 
   /**
    * Apply the current template to every day of `applyMonth` and write the
-   * per-date doc to Firestore right away. Customized dates are preserved
-   * (their existing cells stay; only non-custom dates get template-derived
-   * cells). Booked cells are always preserved. The template doc is also
-   * saved so UI and Firestore stay in sync.
-   *
-   * If applyMonth is currently loaded, in-UI customDates take precedence
-   * over what's in Firestore (so unsaved customs aren't clobbered).
+   * per-date doc to Firestore. This is a blanket overwrite: any existing
+   * per-date customizations for that month are cleared. Booked cells are
+   * still preserved (otherwise we'd lose confirmed bookings).
    */
   const handleApplyForMonth = async () => {
     if (!teacherId) return;
@@ -247,11 +212,11 @@ export default function AdminAvailability() {
       const targetYM = format(applyMonth, 'yyyy-MM');
       const targetRef = doc(db, 'teachers', teacherId, 'availability', targetYM);
 
-      // Read target month's existing data so we can preserve customs + booked.
+      // Read target month so we can preserve booked cells.
       const targetSnap = await getDoc(targetRef);
       const targetData = targetSnap.exists()
         ? (targetSnap.data() as MonthlyAvailability)
-        : { slots: {} as Record<string, TimeSlot[]>, customDates: [], timezone: '' };
+        : { slots: {} as Record<string, TimeSlot[]>, timezone: '' };
       const targetExisting = targetData.slots ?? {};
       const targetBooked: Record<string, Set<string>> = {};
       for (const [date, daySlots] of Object.entries(targetExisting)) {
@@ -259,31 +224,14 @@ export default function AdminAvailability() {
         if (bk.size > 0) targetBooked[date] = bk;
       }
 
-      // Customs come from UI state if the target month is loaded, otherwise
-      // from Firestore. Same for the "current free cells" per custom date.
-      const isLoaded = targetYM === primaryYM || targetYM === secondaryYM;
-      const customForMonth = new Set<string>(
-        isLoaded
-          ? Array.from(customDates).filter((d) => d.startsWith(targetYM))
-          : (targetData.customDates ?? []),
-      );
-      const customCellsByDate = (date: string): Set<string> => {
-        if (isLoaded && overrideCells[date]) return overrideCells[date];
-        const prev = targetExisting[date] ?? [];
-        return new Set(prev.filter((s) => !s.bookingId).map((s) => s.startTime));
-      };
-
       const generated = generateMonthSlots(applyMonth.getFullYear(), applyMonth.getMonth(), tpl);
       const slotsToSave: Record<string, TimeSlot[]> = {};
       const dates = new Set<string>([
         ...Object.keys(generated),
         ...Object.keys(targetBooked),
-        ...customForMonth,
       ]);
       for (const date of dates) {
-        const cells = customForMonth.has(date)
-          ? customCellsByDate(date)
-          : new Set((generated[date] ?? []).map((s) => s.startTime));
+        const cells = new Set((generated[date] ?? []).map((s) => s.startTime));
         const booked = targetBooked[date] ?? new Set<string>();
         const prev = targetExisting[date] ?? [];
         const merged = cellSetToSlots(cells, booked, prev);
@@ -293,14 +241,13 @@ export default function AdminAvailability() {
       const tz = getUserTimezone();
       await setDoc(targetRef, {
         slots: slotsToSave,
-        customDates: Array.from(customForMonth),
         timezone: tz,
         updatedAt: serverTimestamp(),
       });
       await saveTemplate(tpl);
 
-      // If the target month is loaded, sync local state with what was saved.
-      if (isLoaded) {
+      // If the target month is loaded, sync local UI state.
+      if (targetYM === primaryYM || targetYM === secondaryYM) {
         const nextOverride: Record<string, Set<string>> = { ...overrideCells };
         for (const date of Object.keys(nextOverride)) {
           if (date.startsWith(targetYM)) delete nextOverride[date];
@@ -310,13 +257,6 @@ export default function AdminAvailability() {
           nextOverride[date] = new Set(slots.filter((s) => !s.bookingId).map((s) => s.startTime));
         }
         setOverrideCells(nextOverride);
-        // customForMonth already reflects what got saved; keep customDates
-        // for the unaffected month + customForMonth for the target.
-        const nextCustom = new Set(
-          Array.from(customDates).filter((d) => !d.startsWith(targetYM)),
-        );
-        for (const d of customForMonth) nextCustom.add(d);
-        setCustomDates(nextCustom);
       }
       toast.success(t('availability.appliedForMonth', { yearMonth: targetYM }));
     } catch {
@@ -324,22 +264,6 @@ export default function AdminAvailability() {
     } finally {
       setApplying(false);
     }
-  };
-
-  const handleResetDate = (dateStr: string) => {
-    setCustomDates((s) => {
-      const next = new Set(s);
-      next.delete(dateStr);
-      return next;
-    });
-    const tpl = setsToTemplate(templateCells);
-    const [y, m] = dateStr.split('-').slice(0, 2).map(Number);
-    const generated = generateMonthSlots(y, m - 1, tpl);
-    setOverrideCells((prev) => {
-      const next = { ...prev };
-      next[dateStr] = new Set((generated[dateStr] ?? []).map((s) => s.startTime));
-      return next;
-    });
   };
 
   const weeklyColumns: AvailabilityColumn[] = useMemo(
@@ -359,37 +283,6 @@ export default function AdminAvailability() {
       }),
     [weekDates],
   );
-
-  const weekCustomCount = useMemo(
-    () => weekColumns.filter((c) => customDates.has(c.key)).length,
-    [weekColumns, customDates],
-  );
-
-  /**
-   * Handle changes coming from the week-view grid: detect which dates changed
-   * (so we can mark them as custom) and update overrideCells + customDates.
-   */
-  const handleWeekChange = (next: Record<string, Set<string>>) => {
-    const changed: string[] = [];
-    const allKeys = new Set([...Object.keys(next), ...Object.keys(overrideCells)]);
-    for (const key of allKeys) {
-      const before = overrideCells[key] ?? new Set();
-      const after = next[key] ?? new Set();
-      if (before.size !== after.size || [...after].some((t) => !before.has(t))) {
-        // Only mark dates that are part of the visible week (which is what the
-        // grid edits in the first place).
-        if (weekColumns.some((c) => c.key === key)) changed.push(key);
-      }
-    }
-    setOverrideCells(next);
-    if (changed.length > 0) {
-      setCustomDates((s) => {
-        const updated = new Set(s);
-        for (const d of changed) updated.add(d);
-        return updated;
-      });
-    }
-  };
 
   if (!teacherId) {
     return (
@@ -542,45 +435,19 @@ export default function AdminAvailability() {
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                {weekCustomCount > 0 && (
-                  <span className="ml-2 text-xs text-amber-600">
-                    {t('availability.weekHasCustom', {
-                      defaultValue: '{{count}} customized day(s) — they ignore template changes.',
-                      count: weekCustomCount,
-                    })}
-                  </span>
-                )}
               </div>
 
-              {/* Quick reset row */}
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <p className="text-xs text-muted-foreground">
-                  {t('availability.calendarHint', {
-                    defaultValue: 'Click or drag cells to mark a date as a custom day (sick, holiday, …). Booked cells are read-only.',
-                  })}
-                </p>
-                {weekColumns.map(
-                  (c) =>
-                    customDates.has(c.key) && (
-                      <Button
-                        key={c.key}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleResetDate(c.key)}
-                      >
-                        <RotateCcw className="mr-1 h-3 w-3" />
-                        {format(new Date(c.key + 'T00:00:00'), 'EEE d')}
-                      </Button>
-                    ),
-                )}
-              </div>
+              <p className="mb-3 text-xs text-muted-foreground">
+                {t('availability.calendarHint', {
+                  defaultValue: 'Click or drag cells to edit this month\'s availability directly. Booked cells are read-only.',
+                })}
+              </p>
 
               <AvailabilityGrid
                 columns={weekColumns}
                 selected={overrideCells}
                 booked={bookedByDate}
-                onChange={handleWeekChange}
+                onChange={setOverrideCells}
               />
 
               {/* Legend */}
