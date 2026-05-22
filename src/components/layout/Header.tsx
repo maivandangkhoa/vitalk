@@ -71,9 +71,10 @@ export function Header() {
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
 
+          {user && <NotificationBell />}
+
           {user ? (
             <div className="hidden items-center gap-2 md:flex">
-              <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
