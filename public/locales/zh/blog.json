@@ -1,0 +1,11 @@
+{
+  "title": "博客",
+  "subtitle": "越南语学习的实用技巧、指南与见解",
+  "readMore": "阅读更多",
+  "backToBlog": "返回博客",
+  "noPostsYet": "暂无文章，敬请期待！",
+  "tags": "标签",
+  "allPosts": "所有文章",
+  "publishedOn": "发布于 {{date}}",
+  "minuteRead": "阅读约 {{minutes}} 分钟"
+}

@@ -1,6 +1,6 @@
 import type { Language } from '@/types';
 
-export type SupportedCurrency = 'USD' | 'KRW' | 'VND' | 'JPY';
+export type SupportedCurrency = 'USD' | 'KRW' | 'VND' | 'CNY' | 'JPY';
 
 export interface CurrencyConfig {
   baseCurrency: 'USD';
@@ -12,15 +12,16 @@ export const CURRENCY_SYMBOLS: Record<SupportedCurrency, string> = {
   USD: '$',
   KRW: '₩',
   VND: '₫',
+  CNY: '¥',
   JPY: '¥',
 };
 
-export const CURRENCIES: SupportedCurrency[] = ['USD', 'KRW', 'VND', 'JPY'];
+export const CURRENCIES: SupportedCurrency[] = ['USD', 'KRW', 'VND', 'CNY', 'JPY'];
 
 export const DEFAULT_CURRENCY_CONFIG: CurrencyConfig = {
   baseCurrency: 'USD',
-  exchangeRates: { KRW: 1350, VND: 25000, JPY: 150 },
-  languageCurrencyMap: { en: 'USD', ko: 'KRW', vi: 'VND', ja: 'JPY' },
+  exchangeRates: { KRW: 1350, VND: 25000, CNY: 7.2, JPY: 150 },
+  languageCurrencyMap: { en: 'USD', ko: 'KRW', vi: 'VND', zh: 'CNY', ja: 'JPY' },
 };
 
 /**

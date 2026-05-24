@@ -1,0 +1,83 @@
+{
+  "title": "预约课程",
+  "steps": {
+    "lessonType": "选择课程",
+    "dateTime": "选择日期与时间",
+    "details": "详细信息",
+    "payment": "付款"
+  },
+  "selectLesson": "选择课程类型",
+  "selectDate": "选择日期",
+  "selectTime": "选择时间段",
+  "noSlots": "当天没有可预约的时段",
+  "yourTimezone": "您的时区",
+  "teacherTimezone": "老师的时区",
+  "teachersAvailable": "{{count}} 位老师",
+  "selectTeacher": "选择老师",
+  "lockedTeacher": {
+    "label": "预约对象",
+    "change": "更改"
+  },
+  "format": {
+    "title": "上课形式",
+    "online": "在线课程",
+    "offline": "线下课程",
+    "selectPlatform": "选择平台",
+    "selectLocation": "选择地点",
+    "zoom": "Zoom",
+    "googleMeet": "Google Meet",
+    "teams": "Microsoft Teams",
+    "zalo": "Zalo",
+    "kakaoTalk": "KakaoTalk",
+    "noPlatformId": "该老师尚未设置 {{platform}} 的账号，请选择其他平台。",
+    "scanQrHint": "或扫描二维码添加老师。",
+    "noLocations": "暂无可用地点，请联系老师。",
+    "customLocation": "建议其他地点",
+    "customLocationHint": "请输入您希望的地点地址或名称。老师确认后会予以同意。",
+    "customLocationPlaceholder": "例如：星巴克江南站店，首尔江南区...",
+    "viewOnGoogleMaps": "Google 地图",
+    "viewOnNaverMap": "Naver 地图"
+  },
+  "notes": {
+    "label": "给老师的留言",
+    "placeholder": "您希望重点学习什么？有特定的话题或目标吗？"
+  },
+  "payment": {
+    "title": "付款方式",
+    "paypal": "使用 PayPal 付款",
+    "toss": "使用 Toss 付款",
+    "bankTransfer": "银行转账",
+    "bankInfo": "请将款项转入以下账户：",
+    "bankName": "银行名称",
+    "accountNumber": "账号",
+    "accountHolder": "户名",
+    "reference": "转账备注",
+    "bankNote": "请在转账备注中填写预约编号。我们确认收款后将确定您的预约。",
+    "total": "总计",
+    "confirmTransfer": "我已完成转账"
+  },
+  "summary": {
+    "lesson": "课程",
+    "date": "日期",
+    "time": "时间",
+    "format": "形式",
+    "teacher": "老师",
+    "duration": "时长"
+  },
+  "bookingFailed": "预约失败，请重试。",
+  "confirmation": {
+    "title": "预约成功！",
+    "subtitle": "确认邮件即将发送给您。",
+    "details": "预约详情",
+    "pendingPayment": "正在等待付款确认。",
+    "viewBookings": "查看我的预约",
+    "bookAnother": "预约其他课程"
+  },
+  "duration": {
+    "title": "选择时长",
+    "priceHint": "显示的价格为基础价格，所选老师的实际价格将在付款时计算。"
+  },
+  "lessonCard": {
+    "startingFrom": "起"
+  }
+}

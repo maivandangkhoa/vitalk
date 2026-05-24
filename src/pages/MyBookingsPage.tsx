@@ -29,7 +29,7 @@ import type { Booking } from '@/types';
 function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Booking; isReviewed: boolean; onReviewSubmitted: () => void }) {
   const { t, i18n } = useTranslation();
   const { t: tc } = useTranslation('common');
-  const lang = i18n.language as 'en' | 'vi' | 'ko' | 'ja';
+  const lang = i18n.language as 'en' | 'vi' | 'ko' | 'zh' | 'ja';
   const lessonName = booking.lessonTypeName[lang] || booking.lessonTypeName.en;
   const { userTz, userTzLabel } = useUserTimezone();
   const converted = convertSlotToUserTz(booking.startTime, booking.endTime, booking.date, userTz);

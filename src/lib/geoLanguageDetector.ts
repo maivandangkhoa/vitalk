@@ -3,6 +3,9 @@ import type { Language } from '@/types';
 const COUNTRY_TO_LANGUAGE: Record<string, Language> = {
   VN: 'vi',
   KR: 'ko',
+  CN: 'zh',
+  TW: 'zh',
+  HK: 'zh',
   JP: 'ja',
 };
 

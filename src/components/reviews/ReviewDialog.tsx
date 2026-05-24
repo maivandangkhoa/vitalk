@@ -30,7 +30,7 @@ export function ReviewDialog({ booking, open, onOpenChange, onSuccess }: ReviewD
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const lang = i18n.language as 'en' | 'vi' | 'ko' | 'ja';
+  const lang = i18n.language as 'en' | 'vi' | 'ko' | 'zh' | 'ja';
   const lessonName = booking.lessonTypeName[lang] || booking.lessonTypeName.en;
 
   const handleSubmit = async () => {

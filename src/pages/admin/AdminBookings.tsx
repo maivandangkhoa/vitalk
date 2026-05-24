@@ -46,7 +46,7 @@ function AdminBookingCard({
   const [meetingLinkInput, setMeetingLinkInput] = useState('');
   const [showLinkInput, setShowLinkInput] = useState(false);
 
-  const lang = i18n.language as 'en' | 'vi' | 'ko' | 'ja';
+  const lang = i18n.language as 'en' | 'vi' | 'ko' | 'zh' | 'ja';
   const lessonName = booking.lessonTypeName[lang] || booking.lessonTypeName.ko || booking.lessonTypeName.en;
 
   const handleAction = async (action: string, fn: () => Promise<void>) => {

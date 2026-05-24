@@ -1,0 +1,49 @@
+{
+  "hero": {
+    "greeting": "Xin chào! 🇻🇳",
+    "title": "跟随专业母语老师掌握越南语",
+    "subtitle": "HaviTalk 是一家越南语专业教学中心，让您与充满热情、经验丰富的母语老师建立联系。在线学习或在首尔进行线下课程。",
+    "cta": "预约首节课",
+    "stats": {
+      "teachers": "{{count}}+ 位老师",
+      "reviews": "{{count}}+ 条评价",
+      "rating": "{{rating}} 星评分"
+    }
+  },
+  "highlights": {
+    "title": "为什么选择 HaviTalk？",
+    "subtitle": "HaviTalk 不是普通的语言学校。下面介绍我们的特别之处。",
+    "native": {
+      "title": "100% 母语老师",
+      "description": "HaviTalk 的所有老师都是越南语母语者。准确的发音、深入的文化理解和实用的会话能力，全部融入您的课程。"
+    },
+    "proven": {
+      "title": "切实的学习成果",
+      "description": "平均 5 星好评和数百条优质评价。学员们正稳步达成自己的越南语学习目标。"
+    },
+    "multilingual": {
+      "title": "多语种授课",
+      "description": "老师们精通英语、韩语和日语，会用您最容易理解的语言讲解语法、声调和细微差别。"
+    },
+    "flexible": {
+      "title": "配合您的日程",
+      "description": "通过 Zoom 或 Google Meet 在线上课，或在首尔进行线下课程。灵活的安排让您学习更舒心。"
+    }
+  },
+  "teachers": {
+    "title": "认识我们的老师",
+    "subtitle": "精心挑选的越南语教师，热情专业，全力支持您的成功。",
+    "viewAll": "查看所有老师",
+    "viewProfile": "查看资料",
+    "bookLesson": "预约课程"
+  },
+  "testimonials": {
+    "title": "学员心声",
+    "viewAll": "查看所有评价"
+  },
+  "cta": {
+    "title": "准备好开启您的越南语之旅了吗？",
+    "subtitle": "与数百位在 HaviTalk 发现越南语学习乐趣的学员一同出发。无论您是完全初学者还是想提升高级会话——总有适合您的课程。",
+    "button": "查看并预约课程"
+  }
+}

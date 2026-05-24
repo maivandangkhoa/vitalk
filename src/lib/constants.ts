@@ -4,6 +4,7 @@ export const SUPPORTED_LANGUAGES: { code: Language; label: string; flag: string 
   { code: 'en', label: 'English', flag: '🇺🇸' },
   { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
   { code: 'ko', label: '한국어', flag: '🇰🇷' },
+  { code: 'zh', label: '中文', flag: '🇨🇳' },
   { code: 'ja', label: '日本語', flag: '🇯🇵' },
 ];
 

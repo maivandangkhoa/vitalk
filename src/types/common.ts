@@ -1,4 +1,4 @@
-export type Language = 'en' | 'vi' | 'ko' | 'ja';
+export type Language = 'en' | 'vi' | 'ko' | 'zh' | 'ja';
 
 export type MultiLangText = Record<Language, string>;
 

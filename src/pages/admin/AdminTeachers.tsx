@@ -269,7 +269,7 @@ export default function AdminTeachers() {
         location: form.location,
         timezone: form.timezone,
         profileImageUrl: form.profileImageUrl,
-        bio: { en: form.bio, vi: '', ko: '', ja: '' },
+        bio: { en: form.bio, vi: '', ko: '', zh: '', ja: '' },
         isActive: form.isActive,
         uid: form.uid,
         contactIds,
@@ -291,8 +291,8 @@ export default function AdminTeachers() {
           rating: italkiExtra?.rating || 0,
           totalReviews: italkiExtra?.totalReviews || 0,
           teachingStyle: italkiExtra?.teachingStyle
-            ? { en: italkiExtra.teachingStyle, vi: '', ko: '', ja: '' }
-            : { en: '', vi: '', ko: '', ja: '' },
+            ? { en: italkiExtra.teachingStyle, vi: '', ko: '', zh: '', ja: '' }
+            : { en: '', vi: '', ko: '', zh: '', ja: '' },
           videoIntroUrl: italkiExtra?.videoIntroUrl || '',
           socialLinks: {},
           ...(italkiExtra?.italkiId ? { italkiId: italkiExtra.italkiId } : {}),

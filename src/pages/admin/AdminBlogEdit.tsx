@@ -19,6 +19,7 @@ const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'en', label: 'English' },
   { code: 'vi', label: 'Tiếng Việt' },
   { code: 'ko', label: '한국어' },
+  { code: 'zh', label: '中文' },
   { code: 'ja', label: '日本語' },
 ];
 
@@ -42,9 +43,9 @@ export default function AdminBlogEdit() {
   const { saveBlogPost, loading: saving } = useSaveBlogPost();
 
   const [activeTab, setActiveTab] = useState('en');
-  const [title, setTitle] = useState<MultiLangText>({ en: '', vi: '', ko: '', ja: '' });
-  const [excerpt, setExcerpt] = useState<MultiLangText>({ en: '', vi: '', ko: '', ja: '' });
-  const [content, setContent] = useState<MultiLangText>({ en: '', vi: '', ko: '', ja: '' });
+  const [title, setTitle] = useState<MultiLangText>({ en: '', vi: '', ko: '', zh: '', ja: '' });
+  const [excerpt, setExcerpt] = useState<MultiLangText>({ en: '', vi: '', ko: '', zh: '', ja: '' });
+  const [content, setContent] = useState<MultiLangText>({ en: '', vi: '', ko: '', zh: '', ja: '' });
   const [slug, setSlug] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [tags, setTags] = useState('');

@@ -20,8 +20,8 @@ import { db } from '@/lib/firebase';
 import type { Language } from '@/types';
 import { ALLOWED_DURATIONS, type AllowedDuration } from '@/lib/constants';
 
-const LANGS: Language[] = ['en', 'vi', 'ko', 'ja'];
-const LANG_LABELS: Record<Language, string> = { en: 'EN', vi: 'VI', ko: 'KO', ja: 'JA' };
+const LANGS: Language[] = ['en', 'vi', 'ko', 'zh', 'ja'];
+const LANG_LABELS: Record<Language, string> = { en: 'EN', vi: 'VI', ko: 'KO', zh: 'ZH', ja: 'JA' };
 
 interface LessonTypeRow {
   id: string;
@@ -33,7 +33,7 @@ interface LessonTypeRow {
   sortOrder: number;
 }
 
-const EMPTY_LANG = { en: '', vi: '', ko: '', ja: '' };
+const EMPTY_LANG = { en: '', vi: '', ko: '', zh: '', ja: '' };
 
 export default function AdminLessons() {
   const { t } = useTranslation('admin');

@@ -87,9 +87,9 @@ export default function AdminBlog() {
       // Save as draft with Korean content (from Naver)
       const savedId = await saveBlogPost(null, {
         slug,
-        title: { en: '', vi: '', ko: title, ja: '' },
-        excerpt: { en: '', vi: '', ko: '', ja: '' },
-        content: { en: '', vi: '', ko: content, ja: '' },
+        title: { en: '', vi: '', ko: title, zh: '', ja: '' },
+        excerpt: { en: '', vi: '', ko: '', zh: '', ja: '' },
+        content: { en: '', vi: '', ko: content, zh: '', ja: '' },
         coverImageUrl: coverImageUrl || '',
         tags: [],
         isPublished: false,
