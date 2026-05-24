@@ -33,7 +33,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
 import { useCurrencySettings } from '@/hooks/useCurrency';
 import { getDurationPrice, formatDurationPrice, isAllowedDuration } from '@/lib/pricing';
-import { ALLOWED_DURATIONS, DURATION_MULTIPLIERS, DEFAULT_HOURLY_RATE_USD, type AllowedDuration } from '@/lib/constants';
+import { ALLOWED_DURATIONS, DEFAULT_HOURLY_RATE_USD, type AllowedDuration } from '@/lib/constants';
 import { AnimatedSection } from '@/components/shared/motion';
 import { useLocations } from '@/hooks/useLocations';
 import type { OnlinePlatform, PaymentMethod, Language } from '@/types';
@@ -454,12 +454,6 @@ export default function BookingPage() {
                     Array.isArray(opt.allowedDurations) && opt.allowedDurations.length > 0
                       ? opt.allowedDurations.filter(isAllowedDuration)
                       : [...ALLOWED_DURATIONS];
-                  const cheapest = Math.min(...lessonDurations.map((d) => DURATION_MULTIPLIERS[d]));
-                  const startingFromUSD = Math.round(
-                    (isTeacherLocked && selectedTeacher
-                      ? (selectedTeacher.hourlyRate ?? DEFAULT_HOURLY_RATE_USD)
-                      : DEFAULT_HOURLY_RATE_USD) * cheapest * 100,
-                  ) / 100;
                   return (
                     <Card
                       key={opt.id}
@@ -480,9 +474,6 @@ export default function BookingPage() {
                           <span className="flex items-center gap-1.5">
                             <Clock className="h-4 w-4" />
                             {lessonDurations.map((d) => `${d}m`).join(' / ')}
-                          </span>
-                          <span className="font-mono">
-                            {t('lessonCard.startingFrom', { defaultValue: 'From' })} ${startingFromUSD.toFixed(2)}
                           </span>
                         </div>
                         {features.length > 0 && (
