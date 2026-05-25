@@ -201,7 +201,7 @@ export default function AdminSettings() {
             <div>
               <label className="mb-2 block text-sm font-medium">{t('settings.displayCurrency')}</label>
               <div className="grid gap-4 sm:grid-cols-5">
-                {(['en', 'vi', 'ko', 'zh', 'ja'] as const).map((lang) => (
+                {(['en', 'ko', 'zh', 'ja', 'vi'] as const).map((lang) => (
                   <div key={lang}>
                     <label className="mb-1 block text-xs text-muted-foreground">{lang.toUpperCase()}</label>
                     <select
@@ -249,7 +249,7 @@ export default function AdminSettings() {
             </h3>
             <p className="text-sm text-muted-foreground">{t('settings.contactNote')}</p>
             <div className="grid gap-4 sm:grid-cols-2">
-              {(['en', 'vi', 'ko', 'zh', 'ja'] as const satisfies readonly Language[]).map((lang) => (
+              {(['en', 'ko', 'zh', 'ja', 'vi'] as const satisfies readonly Language[]).map((lang) => (
                 <div key={lang}>
                   <label className="mb-1 block text-xs text-muted-foreground">
                     {t('settings.addressLabel', { lang: lang.toUpperCase() })}

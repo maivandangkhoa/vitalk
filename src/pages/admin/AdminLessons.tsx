@@ -20,8 +20,8 @@ import { db } from '@/lib/firebase';
 import type { Language } from '@/types';
 import { ALLOWED_DURATIONS, type AllowedDuration } from '@/lib/constants';
 
-const LANGS: Language[] = ['en', 'vi', 'ko', 'zh', 'ja'];
-const LANG_LABELS: Record<Language, string> = { en: 'EN', vi: 'VI', ko: 'KO', zh: 'ZH', ja: 'JA' };
+const LANGS: Language[] = ['en', 'ko', 'zh', 'ja', 'vi'];
+const LANG_LABELS: Record<Language, string> = { en: 'EN', ko: 'KO', zh: 'ZH', ja: 'JA', vi: 'VI' };
 
 interface LessonTypeRow {
   id: string;

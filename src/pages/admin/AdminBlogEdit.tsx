@@ -17,10 +17,10 @@ const BlogEditor = lazy(() => import('@/components/admin/BlogEditor'));
 
 const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'en', label: 'English' },
-  { code: 'vi', label: 'Tiếng Việt' },
   { code: 'ko', label: '한국어' },
   { code: 'zh', label: '中文' },
   { code: 'ja', label: '日本語' },
+  { code: 'vi', label: 'Tiếng Việt' },
 ];
 
 function slugify(text: string): string {

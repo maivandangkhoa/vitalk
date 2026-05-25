@@ -11,8 +11,8 @@ import { AnimatedSection } from '@/components/shared/motion';
 import type { Language } from '@/types';
 import { ALLOWED_DURATIONS, DEFAULT_HOURLY_RATE_USD, DURATION_MULTIPLIERS, type AllowedDuration } from '@/lib/constants';
 
-const LANGS: Language[] = ['en', 'vi', 'ko', 'zh', 'ja'];
-const LANG_LABELS: Record<Language, string> = { en: 'English', vi: 'Tiếng Việt', ko: '한국어', zh: '中文', ja: '日本語' };
+const LANGS: Language[] = ['en', 'ko', 'zh', 'ja', 'vi'];
+const LANG_LABELS: Record<Language, string> = { en: 'English', ko: '한국어', zh: '中文', ja: '日本語', vi: 'Tiếng Việt' };
 
 export default function AdminProfile() {
   const { t } = useTranslation('admin');
