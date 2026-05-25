@@ -468,14 +468,8 @@ export default function BookingPage() {
                         </Badge>
                         <h3 className="text-xl font-bold leading-snug">{opt.title[lang] || opt.title.en}</h3>
                         {description && (
-                          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{description}</p>
+                          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{description}</p>
                         )}
-                        <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1.5">
-                            <Clock className="h-4 w-4" />
-                            {lessonDurations.map((d) => `${d}m`).join(' / ')}
-                          </span>
-                        </div>
                         {features.length > 0 && (
                           <ul className="mt-6 space-y-3.5">
                             {features.map((feature, i) => {
@@ -492,6 +486,12 @@ export default function BookingPage() {
                             })}
                           </ul>
                         )}
+                        <div className="mt-auto flex flex-col items-center gap-2 pt-6 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="h-4 w-4" />
+                            {lessonDurations.map((d) => `${d}m`).join(' / ')}
+                          </span>
+                        </div>
                       </CardContent>
                     </Card>
                   );

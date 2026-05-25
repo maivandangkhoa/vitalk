@@ -66,21 +66,12 @@ export default function LessonsPage() {
                       </Badge>
                       <h2 className="text-xl font-bold leading-snug">{title}</h2>
                       {description && (
-                        <p className="mt-3 leading-relaxed text-sm text-muted-foreground">
+                        <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                           {description}
                         </p>
                       )}
                     </CardHeader>
-                    <CardContent className="flex-1 px-8 pt-3">
-                      <div className="mb-6 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="h-4 w-4" />
-                          {durations.map((d) => `${d}m`).join(' / ')}
-                        </span>
-                        <span className="font-mono">
-                          {t('startingFrom', { defaultValue: 'From' })} {startingFrom} {tc('common.perLesson')}
-                        </span>
-                      </div>
+                    <CardContent className="flex flex-1 flex-col px-8 pt-3">
                       {features.length > 0 && (
                         <ul className="space-y-3.5">
                           {features.map((feature, i) => {
@@ -97,6 +88,15 @@ export default function LessonsPage() {
                           })}
                         </ul>
                       )}
+                      <div className="mt-auto flex flex-col items-center gap-2 pt-6 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="h-4 w-4" />
+                          {durations.map((d) => `${d}m`).join(' / ')}
+                        </span>
+                        <span className="font-mono">
+                          {t('startingFrom', { defaultValue: 'From' })} {startingFrom} {tc('common.perLesson')}
+                        </span>
+                      </div>
                     </CardContent>
                     <CardFooter className="px-8 pb-8">
                       <Button className="h-12 w-full" render={<Link to={`/book?lessonId=${lesson.id}`} />}>
