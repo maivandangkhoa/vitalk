@@ -196,14 +196,12 @@ export default function BookingPage() {
   }, [isTeacherLocked, lockedTeacherId, selectedTeacherId]);
 
   // Pre-select a lesson when arriving via /book?lessonId=… (e.g. from the
-  // /lessons page) and jump straight to the date/time step so the user
-  // doesn't have to re-confirm the choice they just clicked.
+  // /lessons page). Stay on step 1 so the user can still pick a duration.
   const lessonIdParam = searchParams.get('lessonId') || '';
   useEffect(() => {
     if (!lessonIdParam || selectedLesson) return;
     if (lessonTypes.some((l) => l.id === lessonIdParam)) {
       setSelectedLesson(lessonIdParam);
-      setCurrentStep(1);
     }
   }, [lessonIdParam, lessonTypes, selectedLesson]);
 
