@@ -28,11 +28,12 @@ jobs:
       - name: Create .env from secret
         run: printf '%s' "${{ secrets.DOTENV }}" > .env
 
-      - name: Create Firebase service account file
-        run: printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase-auth.json
-
       - name: Build
         run: npm run build
 
       - name: Deploy to Firebase Hosting
-        run: GOOGLE_APPLICATION_CREDENTIALS=firebase-auth.json npx firebase-tools deploy --only hosting --project vietalky --non-interactive
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: vietalky
