@@ -1,0 +1,38 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # cho phép chạy thủ công từ tab Actions
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true # huỷ deploy cũ nếu có commit mới đẩy lên
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env from secret
+        run: printf '%s' "${{ secrets.DOTENV }}" > .env
+
+      - name: Create Firebase service account file
+        run: printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase-auth.json
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Firebase Hosting
+        run: GOOGLE_APPLICATION_CREDENTIALS=firebase-auth.json npx firebase-tools deploy --only hosting --project vietalky --non-interactive
