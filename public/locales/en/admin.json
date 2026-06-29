@@ -25,7 +25,8 @@
     "locations": "Locations",
     "settings": "Settings",
     "migration": "Migration",
-    "backToSite": "Back to site"
+    "backToSite": "Back to site",
+    "policy": "Policy"
   },
   "profile": {
     "title": "Edit Profile",
@@ -316,5 +317,14 @@
     "titleLabel": "Title",
     "excerptLabel": "Excerpt",
     "contentLabel": "Content"
+  },
+  "policy": {
+    "title": "Edit Policy",
+    "subtitle": "Edit the policy page shown in the site footer.",
+    "contentLabel": "Content",
+    "save": "Save",
+    "saved": "Policy saved",
+    "saveFailed": "Failed to save policy",
+    "viewPage": "View page"
   }
 }

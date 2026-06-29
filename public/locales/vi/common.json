@@ -17,7 +17,9 @@
     "tagline": "Trung tâm Việt ngữ với đội ngũ giáo viên bản ngữ chuyên nghiệp",
     "contact": "Liên hệ",
     "location": "Seoul, Hàn Quốc",
-    "followUs": "Theo dõi"
+    "followUs": "Theo dõi",
+    "explore": "Khám phá",
+    "policy": "Chính sách"
   },
   "auth": {
     "loginTitle": "Chào mừng trở lại",
@@ -146,5 +148,9 @@
     "iosStep2": "Kéo xuống và bấm",
     "iosStep2Action": "Thêm vào màn hình chính",
     "iosStep3": "Bấm Thêm. Mở HaviTalk từ icon mới trên màn hình chính để bật thông báo."
+  },
+  "policy": {
+    "title": "Chính sách",
+    "empty": "Trang này chưa có nội dung."
   }
 }

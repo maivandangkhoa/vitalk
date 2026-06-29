@@ -17,7 +17,9 @@
     "tagline": "Vietnamese language center with expert native teachers",
     "contact": "Contact",
     "location": "Seoul, South Korea",
-    "followUs": "Follow Us"
+    "followUs": "Follow Us",
+    "explore": "Explore",
+    "policy": "Policy"
   },
   "auth": {
     "loginTitle": "Welcome Back",
@@ -146,5 +148,9 @@
     "iosStep2": "Scroll and tap",
     "iosStep2Action": "Add to Home Screen",
     "iosStep3": "Tap Add. Open HaviTalk from the new home-screen icon to enable notifications."
+  },
+  "policy": {
+    "title": "Policy",
+    "empty": "This page has no content yet."
   }
 }

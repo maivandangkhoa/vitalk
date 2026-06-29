@@ -12,6 +12,7 @@ import {
   GraduationCap,
   MapPin,
   Settings,
+  FileText,
   DatabaseZap,
   ArrowLeft,
   Menu,
@@ -33,6 +34,7 @@ const ADMIN_NAV = [
   { key: 'teachers', path: '/admin/teachers', icon: Users2, color: 'bg-violet-50 text-violet-500' },
   { key: 'lessons', path: '/admin/lessons', icon: GraduationCap, color: 'bg-teal-50 text-teal-500' },
   { key: 'locations', path: '/admin/locations', icon: MapPin, color: 'bg-cyan-50 text-cyan-500' },
+  { key: 'policy', path: '/admin/policy', icon: FileText, color: 'bg-fuchsia-50 text-fuchsia-500' },
   { key: 'migration', path: '/admin/migration', icon: DatabaseZap, color: 'bg-lime-50 text-lime-600' },
   { key: 'settings', path: '/admin/settings', icon: Settings, color: 'bg-zinc-100 text-zinc-500' },
 ] as const;

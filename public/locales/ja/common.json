@@ -17,7 +17,9 @@
     "tagline": "プロのネイティブ講師によるベトナム語教育センター",
     "contact": "お問い合わせ",
     "location": "ソウル、韓国",
-    "followUs": "フォロー"
+    "followUs": "フォロー",
+    "explore": "メニュー",
+    "policy": "ポリシー"
   },
   "auth": {
     "loginTitle": "おかえりなさい",
@@ -146,5 +148,9 @@
     "iosStep2": "スクロールして",
     "iosStep2Action": "ホーム画面に追加",
     "iosStep3": "「追加」をタップし、ホーム画面の新しいアイコンからHaviTalkを開いて通知を有効にしてください。"
+  },
+  "policy": {
+    "title": "ポリシー",
+    "empty": "このページにはまだ内容がありません。"
   }
 }

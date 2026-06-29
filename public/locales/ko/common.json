@@ -17,7 +17,9 @@
     "tagline": "전문 원어민 강사진의 베트남어 교육 센터",
     "contact": "연락처",
     "location": "서울, 대한민국",
-    "followUs": "팔로우"
+    "followUs": "팔로우",
+    "explore": "둘러보기",
+    "policy": "정책"
   },
   "auth": {
     "loginTitle": "다시 오신 것을 환영합니다",
@@ -146,5 +148,9 @@
     "iosStep2": "스크롤하여",
     "iosStep2Action": "홈 화면에 추가",
     "iosStep3": "추가를 누른 후 홈 화면의 새 아이콘에서 HaviTalk을 열어 알림을 활성화하세요."
+  },
+  "policy": {
+    "title": "정책",
+    "empty": "이 페이지에는 아직 내용이 없습니다."
   }
 }

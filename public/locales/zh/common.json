@@ -17,7 +17,9 @@
     "tagline": "由专业母语老师授课的越南语教学中心",
     "contact": "联系我们",
     "location": "韩国首尔",
-    "followUs": "关注我们"
+    "followUs": "关注我们",
+    "explore": "探索",
+    "policy": "政策"
   },
   "auth": {
     "loginTitle": "欢迎回来",
@@ -146,5 +148,9 @@
     "iosStep2": "向下滚动并选择",
     "iosStep2Action": "添加到主屏幕",
     "iosStep3": "点击「添加」，然后从主屏幕上的新图标打开 HaviTalk 并启用通知。"
+  },
+  "policy": {
+    "title": "政策",
+    "empty": "此页面暂无内容。"
   }
 }

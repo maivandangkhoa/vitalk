@@ -25,7 +25,8 @@
     "locations": "場所",
     "settings": "設定",
     "migration": "データ移行",
-    "backToSite": "サイトに戻る"
+    "backToSite": "サイトに戻る",
+    "policy": "ポリシー"
   },
   "profile": {
     "title": "プロフィール編集",
@@ -316,5 +317,14 @@
     "titleLabel": "タイトル",
     "excerptLabel": "抜粋",
     "contentLabel": "コンテンツ"
+  },
+  "policy": {
+    "title": "ポリシー編集",
+    "subtitle": "サイトのフッターに表示されるポリシーページを編集します。",
+    "contentLabel": "内容",
+    "save": "保存",
+    "saved": "ポリシーを保存しました",
+    "saveFailed": "ポリシーの保存に失敗しました",
+    "viewPage": "ページを見る"
   }
 }

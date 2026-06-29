@@ -25,7 +25,8 @@
     "locations": "Địa điểm",
     "settings": "Cài đặt",
     "migration": "Di chuyển dữ liệu",
-    "backToSite": "Quay lại trang chính"
+    "backToSite": "Quay lại trang chính",
+    "policy": "Chính sách"
   },
   "profile": {
     "title": "Chỉnh sửa hồ sơ",
@@ -316,5 +317,14 @@
     "titleLabel": "Tiêu đề",
     "excerptLabel": "Tóm tắt",
     "contentLabel": "Nội dung"
+  },
+  "policy": {
+    "title": "Chỉnh sửa chính sách",
+    "subtitle": "Chỉnh sửa nội dung trang chính sách hiển thị ở chân trang.",
+    "contentLabel": "Nội dung",
+    "save": "Lưu",
+    "saved": "Đã lưu chính sách",
+    "saveFailed": "Lưu chính sách thất bại",
+    "viewPage": "Xem trang"
   }
 }

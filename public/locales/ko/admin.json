@@ -25,7 +25,8 @@
     "locations": "장소",
     "settings": "설정",
     "migration": "데이터 마이그레이션",
-    "backToSite": "사이트로 돌아가기"
+    "backToSite": "사이트로 돌아가기",
+    "policy": "정책"
   },
   "profile": {
     "title": "프로필 수정",
@@ -316,5 +317,14 @@
     "titleLabel": "제목",
     "excerptLabel": "요약",
     "contentLabel": "내용"
+  },
+  "policy": {
+    "title": "정책 편집",
+    "subtitle": "사이트 하단에 표시되는 정책 페이지를 편집합니다.",
+    "contentLabel": "내용",
+    "save": "저장",
+    "saved": "정책이 저장되었습니다",
+    "saveFailed": "정책 저장에 실패했습니다",
+    "viewPage": "페이지 보기"
   }
 }

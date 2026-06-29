@@ -25,7 +25,8 @@
     "locations": "地点",
     "settings": "设置",
     "migration": "数据迁移",
-    "backToSite": "返回网站"
+    "backToSite": "返回网站",
+    "policy": "政策"
   },
   "profile": {
     "title": "编辑个人资料",
@@ -316,5 +317,14 @@
     "titleLabel": "标题",
     "excerptLabel": "摘要",
     "contentLabel": "正文"
+  },
+  "policy": {
+    "title": "编辑政策",
+    "subtitle": "编辑显示在网站页脚的政策页面。",
+    "contentLabel": "内容",
+    "save": "保存",
+    "saved": "政策已保存",
+    "saveFailed": "保存政策失败",
+    "viewPage": "查看页面"
   }
 }
