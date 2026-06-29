@@ -28,12 +28,25 @@ jobs:
       - name: Create .env from secret
         run: printf '%s' "${{ secrets.DOTENV }}" > .env
 
+      - name: Create Firebase service account file
+        run: printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase-auth.json
+
       - name: Build
         run: npm run build
 
       - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: vietalky
+        run: |
+          set -o pipefail
+          if GOOGLE_APPLICATION_CREDENTIALS=firebase-auth.json \
+               npx firebase-tools deploy --only hosting --project vietalky --non-interactive 2>&1 | tee deploy.log; then
+            exit 0
+          fi
+          # firebase-tools occasionally hits a "premature close" on the release
+          # POST and retries it; the retry fails with "is the current active
+          # version" because the first call already published the version.
+          # That specific 400 means the deploy actually succeeded.
+          if grep -q "is the current active version" deploy.log; then
+            echo "::notice::Version already published (benign firebase-tools retry race) — treating deploy as successful."
+            exit 0
+          fi
+          exit 1
