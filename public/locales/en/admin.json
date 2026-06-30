@@ -235,7 +235,13 @@
     "invalidImage": "Please select an image file",
     "contactIds": "Contact IDs for online lessons",
     "contactIdsHint": "Used to show students who to add on each platform after they pick it during booking. Leave blank if you don't use a platform.",
-    "uploadQr": "Upload QR"
+    "uploadQr": "Upload QR",
+    "languages": "Spoken Languages",
+    "languagesHint": "“Native (Teaches)” appears under Teaches; Levels 1–5 appear under Speaks with proficiency bars.",
+    "selectLanguage": "Select language",
+    "levelNative": "Native (Teaches)",
+    "levelLabel": "Level",
+    "addLanguage": "Add language"
   },
   "migration": {
     "title": "Data Migration",

@@ -1,4 +1,4 @@
-const LANG_INFO: Record<string, { name: string; flag: string }> = {
+export const LANG_INFO: Record<string, { name: string; flag: string }> = {
   vietnamese: { name: 'Vietnamese', flag: '🇻🇳' },
   english:    { name: 'English',    flag: '🇬🇧' },
   korean:     { name: 'Korean',     flag: '🇰🇷' },
@@ -19,10 +19,14 @@ const SHORT_CODE_MAP: Record<string, string> = {
   pt: 'portuguese', ru: 'russian', it: 'italian',
 };
 
-function langInfo(code: string): { name: string; flag: string } {
+/** Canonical key for a raw language code (strips `lang_` prefix, maps short codes). */
+export function normalizeLangKey(code: string): string {
   const lower = code.toLowerCase().replace(/^lang_/, '');
-  const key = SHORT_CODE_MAP[lower] ?? lower;
-  return LANG_INFO[key] ?? { name: code, flag: '' };
+  return SHORT_CODE_MAP[lower] ?? lower;
+}
+
+function langInfo(code: string): { name: string; flag: string } {
+  return LANG_INFO[normalizeLangKey(code)] ?? { name: code, flag: '' };
 }
 
 function levelToNumber(level: string): number | null {

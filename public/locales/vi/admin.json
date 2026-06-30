@@ -235,7 +235,13 @@
     "invalidImage": "Vui lòng chọn tệp ảnh",
     "contactIds": "ID liên hệ cho lớp học online",
     "contactIdsHint": "Dùng để hiển thị cho học viên biết liên hệ ai trên nền tảng họ chọn khi đặt lịch. Để trống nếu không dùng nền tảng đó.",
-    "uploadQr": "Tải lên QR"
+    "uploadQr": "Tải lên QR",
+    "languages": "Ngôn ngữ",
+    "languagesHint": "“Bản ngữ (Dạy)” hiển thị ở mục Teaches; Cấp 1–5 hiển thị ở mục Speaks kèm thanh trình độ.",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "levelNative": "Bản ngữ (Dạy)",
+    "levelLabel": "Cấp",
+    "addLanguage": "Thêm ngôn ngữ"
   },
   "migration": {
     "title": "Di chuyển dữ liệu",

@@ -235,7 +235,13 @@
     "invalidImage": "请选择图片文件",
     "contactIds": "在线课程的联系账号 ID",
     "contactIdsHint": "在学员预约时，根据所选平台显示要添加的联系人。不使用的平台请留空。",
-    "uploadQr": "上传二维码"
+    "uploadQr": "上传二维码",
+    "languages": "掌握语言",
+    "languagesHint": "“母语（教学）”显示在 Teaches；等级 1–5 显示在 Speaks 并带熟练度条。",
+    "selectLanguage": "选择语言",
+    "levelNative": "母语（教学）",
+    "levelLabel": "等级",
+    "addLanguage": "添加语言"
   },
   "migration": {
     "title": "数据迁移",

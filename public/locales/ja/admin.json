@@ -235,7 +235,13 @@
     "invalidImage": "画像ファイルを選択してください",
     "contactIds": "オンラインレッスン用の連絡先ID",
     "contactIdsHint": "予約時に学生が選んだプラットフォームで誰を追加すべきかを表示します。使わないプラットフォームは空のままにしてください。",
-    "uploadQr": "QRをアップロード"
+    "uploadQr": "QRをアップロード",
+    "languages": "話せる言語",
+    "languagesHint": "「ネイティブ（指導）」は Teaches に、レベル1–5は Speaks に習熟度バー付きで表示されます。",
+    "selectLanguage": "言語を選択",
+    "levelNative": "ネイティブ（指導）",
+    "levelLabel": "レベル",
+    "addLanguage": "言語を追加"
   },
   "migration": {
     "title": "データ移行",
