@@ -452,45 +452,51 @@ export default function AdminTeachers() {
                 </div>
                 <div className="md:col-span-2">
                   <label className="mb-1.5 block text-sm font-medium">{t('teachers.profileImageUrl')}</label>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-4">
                     {form.profileImageUrl ? (
                       <img
                         src={form.profileImageUrl}
                         alt="Profile preview"
-                        className="h-12 w-12 shrink-0 rounded-full object-cover"
+                        className="h-16 w-16 shrink-0 rounded-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
                     ) : (
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-50">
-                        <Users2 className="h-5 w-5 text-indigo-400" />
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-indigo-50">
+                        <Users2 className="h-6 w-6 text-indigo-400" />
                       </div>
                     )}
-                    <input
-                      value={form.profileImageUrl}
-                      onChange={(e) => setForm({ ...form, profileImageUrl: e.target.value })}
-                      className={`${inputClass} flex-1`}
-                      placeholder="https://example.com/photo.jpg"
-                    />
-                    <input
-                      ref={imageInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-12 shrink-0"
-                      onClick={() => imageInputRef.current?.click()}
-                      disabled={uploadingImage}
-                    >
-                      {uploadingImage ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col gap-2">
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10"
+                        onClick={() => imageInputRef.current?.click()}
+                        disabled={uploadingImage}
+                      >
+                        {uploadingImage ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="mr-2 h-4 w-4" />
+                        )}
+                        {t('teachers.uploadImage')}
+                      </Button>
+                      {form.profileImageUrl && (
+                        <button
+                          type="button"
+                          className="text-xs text-muted-foreground hover:text-destructive"
+                          onClick={() => setForm((prev) => ({ ...prev, profileImageUrl: '' }))}
+                        >
+                          {t('teachers.removeImage', { defaultValue: 'Xoá ảnh' })}
+                        </button>
                       )}
-                      {t('teachers.uploadImage')}
-                    </Button>
+                    </div>
                   </div>
                 </div>
                 <div className="md:col-span-2">

@@ -28,6 +28,7 @@ export default function AdminProfile() {
   const [teachingStyle, setTeachingStyle] = useState<Record<Language, string>>({ en: '', vi: '', ko: '', zh: '', ja: '' });
   const [hourlyRate, setHourlyRate] = useState<number>(DEFAULT_HOURLY_RATE_USD);
   const [overrides, setOverrides] = useState<Partial<Record<AllowedDuration, number | ''>>>({});
+  const [languages, setLanguages] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!teacherId) {
@@ -47,6 +48,7 @@ export default function AdminProfile() {
           setVideoIntroUrl(data.videoIntroUrl || '');
           if (data.bio) setBio(data.bio);
           if (data.teachingStyle) setTeachingStyle(data.teachingStyle);
+          if (data.languages && typeof data.languages === 'object') setLanguages(data.languages);
           const rate = typeof data.hourlyRate === 'number'
             ? data.hourlyRate
             : typeof data.lessonPrice === 'number' && data.lessonPrice > 0
@@ -84,6 +86,7 @@ export default function AdminProfile() {
         videoIntroUrl,
         bio,
         teachingStyle,
+        languages,
         hourlyRate,
         lessonPriceOverrides: cleanOverrides,
         updatedAt: serverTimestamp(),
@@ -233,10 +236,73 @@ export default function AdminProfile() {
             ))}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="space-y-4 pt-6">
+            <h3 className="flex items-center gap-2 font-semibold">
+              <span className="h-5 w-1 rounded-full bg-indigo-500" />
+              {t('profile.languages', 'Ngoại ngữ')}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {t('profile.languagesHint', 'Thêm ngôn ngữ và chọn trình độ. Native/Community hiển thị ở mục "Dạy". Level 1–5 hiển thị ở mục "Nói" với số vạch tương ứng.')}
+            </p>
+            <div className="space-y-3">
+              {PROFILE_LANGUAGES.map(({ key, label, flag }) => {
+                const level = languages[key] ?? '';
+                return (
+                  <div key={key} className="flex items-center gap-3">
+                    <span className="w-6 text-lg">{flag}</span>
+                    <span className="w-28 shrink-0 text-sm font-medium">{label}</span>
+                    <select
+                      value={level}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setLanguages((prev) => {
+                          const next = { ...prev };
+                          if (val === '') {
+                            delete next[key];
+                          } else {
+                            next[key] = val;
+                          }
+                          return next;
+                        });
+                      }}
+                      className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                    >
+                      <option value="">— không hiển thị —</option>
+                      <option value="native">Native (dạy được)</option>
+                      <option value="community">Community (dạy được)</option>
+                      <option value="level_1">Level 1 (1 vạch)</option>
+                      <option value="level_2">Level 2 (2 vạch)</option>
+                      <option value="level_3">Level 3 (3 vạch)</option>
+                      <option value="level_4">Level 4 (4 vạch)</option>
+                      <option value="level_5">Level 5 (5 vạch)</option>
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
+
+const PROFILE_LANGUAGES = [
+  { key: 'vietnamese', label: 'Tiếng Việt', flag: '🇻🇳' },
+  { key: 'english',    label: 'English',    flag: '🇬🇧' },
+  { key: 'korean',     label: '한국어',      flag: '🇰🇷' },
+  { key: 'french',     label: 'Français',   flag: '🇫🇷' },
+  { key: 'japanese',   label: '日本語',      flag: '🇯🇵' },
+  { key: 'chinese',    label: '中文',        flag: '🇨🇳' },
+  { key: 'spanish',    label: 'Español',    flag: '🇪🇸' },
+  { key: 'german',     label: 'Deutsch',    flag: '🇩🇪' },
+  { key: 'thai',       label: 'ภาษาไทย',   flag: '🇹🇭' },
+  { key: 'portuguese', label: 'Português',  flag: '🇵🇹' },
+  { key: 'russian',    label: 'Русский',    flag: '🇷🇺' },
+  { key: 'italian',    label: 'Italiano',   flag: '🇮🇹' },
+];
 
 function Field({ label, value, onChange, placeholder }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string;
