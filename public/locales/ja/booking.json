@@ -75,7 +75,8 @@
   },
   "duration": {
     "title": "時間を選択",
-    "priceHint": "表示価格は基本料金です。選択した先生の実際の料金は決済時に適用されます。"
+    "priceHint": "表示価格は基本料金です。選択した先生の実際の料金は決済時に適用されます。",
+    "priceHintNoTeacher": "料金は先生ごとに異なり、先生を選択した後に表示されます。"
   },
   "lessonCard": {
     "startingFrom": "〜"

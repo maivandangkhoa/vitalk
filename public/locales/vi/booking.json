@@ -75,7 +75,8 @@
   },
   "duration": {
     "title": "Chọn thời lượng",
-    "priceHint": "Giá hiển thị dùng mức cơ bản; mức của giáo viên được áp dụng khi thanh toán."
+    "priceHint": "Giá hiển thị dùng mức cơ bản; mức của giáo viên được áp dụng khi thanh toán.",
+    "priceHintNoTeacher": "Giá do mỗi giáo viên quy định và sẽ hiển thị sau khi bạn chọn giáo viên."
   },
   "lessonCard": {
     "startingFrom": "Từ"

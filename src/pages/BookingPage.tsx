@@ -33,7 +33,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUserTimezone } from '@/hooks/useTimezone';
 import { useCurrencySettings } from '@/hooks/useCurrency';
 import { getDurationPrice, formatDurationPrice, isAllowedDuration } from '@/lib/pricing';
-import { ALLOWED_DURATIONS, DEFAULT_HOURLY_RATE_USD, type AllowedDuration } from '@/lib/constants';
+import { ALLOWED_DURATIONS, type AllowedDuration } from '@/lib/constants';
 import { AnimatedSection } from '@/components/shared/motion';
 import { useLocations } from '@/hooks/useLocations';
 import type { OnlinePlatform, PaymentMethod, Language } from '@/types';
@@ -505,11 +505,10 @@ export default function BookingPage() {
                   </p>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {allowedDurations.map((d) => {
-                      const teacherForPrice =
-                        isTeacherLocked && selectedTeacher
-                          ? selectedTeacher
-                          : { hourlyRate: DEFAULT_HOURLY_RATE_USD };
-                      const priceLabel = formatDurationPrice(teacherForPrice, d, currency, config);
+                      const showPrice = isTeacherLocked && selectedTeacher;
+                      const priceLabel = showPrice
+                        ? formatDurationPrice(selectedTeacher, d, currency, config)
+                        : null;
                       const active = selectedDuration === d;
                       return (
                         <button
@@ -523,14 +522,16 @@ export default function BookingPage() {
                           }`}
                         >
                           <span className="font-semibold">{d} {tc('common.minutes', { defaultValue: 'min' })}</span>
-                          <span className="font-mono text-xs text-muted-foreground">{priceLabel}</span>
+                          {priceLabel && (
+                            <span className="font-mono text-xs text-muted-foreground">{priceLabel}</span>
+                          )}
                         </button>
                       );
                     })}
                   </div>
                   {!isTeacherLocked && (
                     <p className="text-xs text-muted-foreground">
-                      {t('duration.priceHint', { defaultValue: 'Prices shown use the base rate; the chosen teacher\'s actual rate is applied at checkout.' })}
+                      {t('duration.priceHintNoTeacher', { defaultValue: 'The price is set by each teacher and shown after you choose one.' })}
                     </p>
                   )}
                 </CardContent>
