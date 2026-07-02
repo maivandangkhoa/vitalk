@@ -61,12 +61,16 @@ export function TeacherLanguages({ languages, size = 'md' }: Props) {
   const entries = Object.entries(languages);
   if (entries.length === 0) return null;
 
-  const teaches = entries.filter(
-    ([, lvl]) => lvl === 'community' || lvl.toLowerCase() === 'native',
-  );
-  const speaks = entries.filter(
-    ([, lvl]) => lvl !== 'community' && lvl.toLowerCase() !== 'native',
-  );
+  const teaches = entries
+    .filter(([, lvl]) => lvl === 'community' || lvl.toLowerCase() === 'native')
+    .sort(([a], [b]) => langInfo(a).name.localeCompare(langInfo(b).name));
+  const speaks = entries
+    .filter(([, lvl]) => lvl !== 'community' && lvl.toLowerCase() !== 'native')
+    .sort(([aCode, aLvl], [bCode, bLvl]) => {
+      const byLevel = (levelToNumber(bLvl) ?? 3) - (levelToNumber(aLvl) ?? 3);
+      if (byLevel !== 0) return byLevel;
+      return langInfo(aCode).name.localeCompare(langInfo(bCode).name);
+    });
 
   const labelClass = size === 'sm'
     ? 'w-16 shrink-0 text-xs font-medium text-muted-foreground'
