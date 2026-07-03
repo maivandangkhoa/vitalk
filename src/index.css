@@ -4,6 +4,8 @@
 @import "@fontsource-variable/inter";
 @import "@fontsource/jetbrains-mono";
 
+@plugin "@tailwindcss/typography";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
