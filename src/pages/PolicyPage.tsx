@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { usePolicy } from '@/hooks/usePolicy';
 import { AnimatedSection } from '@/components/shared/motion';
+import { sanitizeHtml } from '@/lib/sanitize';
 import type { Language } from '@/types';
 
 export default function PolicyPage() {
@@ -56,7 +57,7 @@ export default function PolicyPage() {
                 prose-ul:my-4 prose-li:my-1.5 prose-li:text-zinc-600
                 prose-li:marker:text-indigo-400
                 prose-hr:my-10 prose-hr:border-zinc-100"
-              dangerouslySetInnerHTML={{ __html: html }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
             />
           ) : (
             <p className="text-center text-muted-foreground">{t('policy.empty')}</p>

@@ -45,6 +45,16 @@ export const confirmTossPayment = onCall(
       throw new HttpsError("already-exists", "Already paid");
     }
 
+    // Never trust the client-sent amount: it must equal the booking's own
+    // server-stored amount, otherwise a cheap payment could confirm an
+    // expensive booking.
+    if (Number(amount) !== Number(booking.amount)) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Payment amount does not match booking"
+      );
+    }
+
     const secretKey = process.env.TOSS_SECRET_KEY;
     if (!secretKey) {
       throw new HttpsError("failed-precondition", "Toss secret key not configured");
