@@ -90,7 +90,7 @@ export const createPaypalOrder = onCall(
       ],
     };
 
-    console.log("Creating PayPal order:", JSON.stringify(orderPayload));
+    console.log("Creating PayPal order for booking:", bookingId);
 
     const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
       method: "POST",
