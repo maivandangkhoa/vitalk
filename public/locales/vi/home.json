@@ -2,7 +2,7 @@
   "hero": {
     "greeting": "Xin chào! 🇻🇳",
     "title": "Học tiếng Việt cùng giáo viên bản ngữ chuyên nghiệp",
-    "subtitle": "HaviTalk là trung tâm Việt ngữ trực tuyến kết nối bạn với đội ngũ giáo viên bản ngữ giàu kinh nghiệm và nhiệt huyết. Online hoặc trực tiếp tại Seoul.",
+    "subtitle": "HaviTalk là nền tảng kết nối người học với các giáo viên tiếng Việt bản ngữ nhiệt huyết, giàu kinh nghiệm. Tìm kiếm giáo viên phù hợp, đặt lịch và quản lý buổi học một cách dễ dàng. Học trực tuyến hoặc trực tiếp, tùy theo lịch trình và phong cách học của bạn.",
     "cta": "Đặt buổi học đầu tiên",
     "stats": {
       "teachers": "{{count}}+ Giáo viên",
