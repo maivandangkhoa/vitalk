@@ -163,3 +163,5 @@ The following credentials are required as Firebase Function environment config o
 - **Naver app credentials** — Naver OAuth
 - **Kakao app credentials** — Kakao OAuth
 - **SMTP credentials** — email notifications (via Nodemailer)
+
+2026-07-05
