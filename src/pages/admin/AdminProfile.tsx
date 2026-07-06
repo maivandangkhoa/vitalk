@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, Upload, Users2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase';
 import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { AnimatedSection } from '@/components/shared/motion';
 import type { Language } from '@/types';
@@ -19,7 +20,8 @@ export default function AdminProfile() {
   const { teacherId, teachers, isAdmin, setTeacherId } = useTeacherSelector();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [name, setName] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [age, setAge] = useState('');
   const [location, setLocation] = useState('');
   const [profileImageUrl, setProfileImageUrl] = useState('');
@@ -40,7 +42,6 @@ export default function AdminProfile() {
         const snap = await getDoc(doc(db, 'teachers', teacherId));
         if (snap.exists()) {
           const data = snap.data();
-          setName(data.name || '');
           setAge(data.age || '');
           setLocation(data.location || '');
           setProfileImageUrl(data.profileImageUrl || '');
@@ -67,6 +68,30 @@ export default function AdminProfile() {
     fetch();
   }, [teacherId]);
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('teachers.invalidImage'));
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filePath = `teacher-profiles/${Date.now()}.${ext}`;
+      const storageRef = ref(storage, filePath);
+      const snapshot = await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+      setProfileImageUrl(url);
+      toast.success(t('teachers.imageUploaded'));
+    } catch {
+      toast.error(t('teachers.imageUploadFailed'));
+    } finally {
+      setUploadingImage(false);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     if (!teacherId) return;
     setSaving(true);
@@ -77,7 +102,6 @@ export default function AdminProfile() {
         if (typeof v === 'number' && v > 0) cleanOverrides[d] = v;
       }
       await setDoc(doc(db, 'teachers', teacherId), {
-        name,
         age,
         location,
         profileImageUrl,
@@ -131,15 +155,54 @@ export default function AdminProfile() {
         <Card>
           <CardContent className="space-y-4 pt-6">
             <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />{t('profile.basicInfo')}</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Field label={t('profile.name')} value={name} onChange={setName} />
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t('profile.age')} value={age} onChange={setAge} />
               <Field label={t('profile.location')} value={location} onChange={setLocation} />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t('profile.profileImageUrl')} value={profileImageUrl} onChange={setProfileImageUrl} placeholder="https://..." />
-              <Field label={t('profile.videoIntroUrl')} value={videoIntroUrl} onChange={setVideoIntroUrl} placeholder="https://youtube.com/..." />
+            <div>
+              <label className="mb-1 block text-sm font-medium">{t('profile.profileImageUrl')}</label>
+              <div className="flex items-start gap-3">
+                {profileImageUrl ? (
+                  <img
+                    src={profileImageUrl}
+                    alt="Profile preview"
+                    className="h-12 w-12 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-50">
+                    <Users2 className="h-5 w-5 text-indigo-400" />
+                  </div>
+                )}
+                <input
+                  value={profileImageUrl}
+                  onChange={(e) => setProfileImageUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="h-12 flex-1 rounded-xl border border-input bg-background px-3 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                />
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 shrink-0"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={uploadingImage}
+                >
+                  {uploadingImage ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  {t('teachers.uploadImage')}
+                </Button>
+              </div>
             </div>
+            <Field label={t('profile.videoIntroUrl')} value={videoIntroUrl} onChange={setVideoIntroUrl} placeholder="https://youtube.com/..." />
           </CardContent>
         </Card>
 

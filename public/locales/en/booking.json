@@ -75,7 +75,8 @@
   },
   "duration": {
     "title": "Choose duration",
-    "priceHint": "Prices shown use the base rate; the chosen teacher's actual rate is applied at checkout."
+    "priceHint": "Prices shown use the base rate; the chosen teacher's actual rate is applied at checkout.",
+    "priceHintNoTeacher": "The price is set by each teacher and shown after you choose one."
   },
   "lessonCard": {
     "startingFrom": "From"

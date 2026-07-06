@@ -5,10 +5,9 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock, Loader2 } from 'lucide-react';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
-import { useCurrencySettings } from '@/hooks/useCurrency';
 import { useLessonTypes } from '@/hooks/useLessonTypes';
-import { ALLOWED_DURATIONS, DEFAULT_HOURLY_RATE_USD, DURATION_MULTIPLIERS, type AllowedDuration } from '@/lib/constants';
-import { isAllowedDuration, formatDurationPrice } from '@/lib/pricing';
+import { ALLOWED_DURATIONS, type AllowedDuration } from '@/lib/constants';
+import { isAllowedDuration } from '@/lib/pricing';
 import type { Language } from '@/types';
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -19,8 +18,6 @@ const LEVEL_COLORS: Record<string, string> = {
 
 export default function LessonsPage() {
   const { t, i18n } = useTranslation('lessons');
-  const { t: tc } = useTranslation('common');
-  const { currency, config } = useCurrencySettings();
   const { lessonTypes, loading } = useLessonTypes();
   const lang = i18n.language as Language;
 
@@ -46,17 +43,6 @@ export default function LessonsPage() {
                 Array.isArray(lesson.allowedDurations) && lesson.allowedDurations.length > 0
                   ? lesson.allowedDurations.filter(isAllowedDuration)
                   : [...ALLOWED_DURATIONS];
-              const shortestDuration = durations.reduce(
-                (acc, d) => (DURATION_MULTIPLIERS[d] < DURATION_MULTIPLIERS[acc] ? d : acc),
-                durations[0],
-              );
-              const startingFrom = formatDurationPrice(
-                { hourlyRate: DEFAULT_HOURLY_RATE_USD },
-                shortestDuration,
-                currency,
-                config,
-              );
-
               return (
                 <StaggerItem key={lesson.id}>
                   <Card className="flex h-full flex-col">
@@ -92,9 +78,6 @@ export default function LessonsPage() {
                         <span className="flex items-center gap-1.5">
                           <Clock className="h-4 w-4" />
                           {durations.map((d) => `${d}m`).join(' / ')}
-                        </span>
-                        <span className="font-mono">
-                          {t('startingFrom', { defaultValue: 'From' })} {startingFrom} {tc('common.perLesson')}
                         </span>
                       </div>
                     </CardContent>

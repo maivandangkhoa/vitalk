@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { formatPrice, type SupportedCurrency } from '@/lib/currency';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { normalizeBankAccounts, type BankAccount } from '@/types';
 
 interface BankTransferInfoProps {
   bookingId: string;
@@ -22,18 +23,20 @@ export default function BankTransferInfo({
   const { t } = useTranslation('booking');
   const { t: tc } = useTranslation('common');
   const [copied, setCopied] = useState('');
-  const [bankInfo, setBankInfo] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
+  const [accounts, setAccounts] = useState<BankAccount[]>([]);
+  const [selectedId, setSelectedId] = useState('');
 
   useEffect(() => {
     getDoc(doc(db, 'siteConfig', 'general')).then((snap) => {
       if (snap.exists()) {
-        const data = snap.data();
-        if (data.bankTransfer) {
-          setBankInfo(data.bankTransfer);
-        }
+        const list = normalizeBankAccounts(snap.data());
+        setAccounts(list);
+        setSelectedId((prev) => prev || list[0]?.id || '');
       }
     });
   }, []);
+
+  const selected = accounts.find((a) => a.id === selectedId) ?? accounts[0];
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -46,23 +49,42 @@ export default function BankTransferInfo({
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">{t('payment.bankNote')}</p>
 
+      {accounts.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {accounts.map((acc) => (
+            <button
+              key={acc.id}
+              type="button"
+              onClick={() => setSelectedId(acc.id)}
+              className={`rounded-xl border px-3 py-1.5 text-sm font-medium transition-all ${
+                selected?.id === acc.id
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
+                  : 'border-input text-muted-foreground hover:border-indigo-200 hover:text-indigo-500'
+              }`}
+            >
+              {acc.bankName || t('payment.bankName')}
+            </button>
+          ))}
+        </div>
+      )}
+
       <Card>
         <CardContent className="space-y-3 pt-4">
           <InfoRow
             label={t('payment.bankName')}
-            value={bankInfo.bankName}
+            value={selected?.bankName ?? ''}
             copied={copied}
             onCopy={copyToClipboard}
           />
           <InfoRow
             label={t('payment.accountNumber')}
-            value={bankInfo.accountNumber}
+            value={selected?.accountNumber ?? ''}
             copied={copied}
             onCopy={copyToClipboard}
           />
           <InfoRow
             label={t('payment.accountHolder')}
-            value={bankInfo.accountHolder}
+            value={selected?.accountHolder ?? ''}
             copied={copied}
             onCopy={copyToClipboard}
           />

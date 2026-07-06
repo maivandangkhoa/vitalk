@@ -44,11 +44,16 @@ service cloud.firestore {
       allow update: if isAdmin() || isTeacherOwner(teacherId);
       allow delete: if isAdmin();
 
-      // Teacher's availability subcollection
+      // Teacher's availability subcollection.
+      // Owner/admin have full control; a booking student may only touch the
+      // `slots` map + `updatedAt` (to mark/free a slot), nothing else.
       match /availability/{monthId} {
         allow read: if true;
         allow create, delete: if isAdmin() || isTeacherOwner(teacherId);
-        allow update: if isAuthenticated();
+        allow update: if isAdmin() || isTeacherOwner(teacherId)
+          || (isAuthenticated()
+              && request.resource.data.diff(resource.data)
+                   .affectedKeys().hasOnly(['slots', 'updatedAt']));
       }
     }
 
@@ -66,16 +71,27 @@ service cloud.firestore {
     }
 
     // Users - own doc read/write, admin read all
+    // Non-admins may never set/change their own `role` or `teacherId`
+    // (prevents self-escalation to admin/teacher). Only admins can.
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      allow create: if isAdmin()
+        || (isOwner(userId) && request.resource.data.get('role', 'user') == 'user');
+      allow update: if isAdmin()
+        || (isOwner(userId)
+            && request.resource.data.get('role', 'user') == resource.data.get('role', 'user')
+            && request.resource.data.get('teacherId', '') == resource.data.get('teacherId', ''));
       allow delete: if isAdmin();
     }
 
     // Bookings - students create + read own, teacher read/update own, admin full access
+    // On create a student may only book as themselves and cannot pre-mark
+    // the booking as paid/confirmed (only Cloud Functions / admin flip those).
     match /bookings/{bookingId} {
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.paymentStatus == 'pending';
       allow read: if isAdmin()
         || (isAuthenticated() && resource.data.studentId == request.auth.uid)
         || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId());
@@ -89,7 +105,11 @@ service cloud.firestore {
       allow read: if resource.data.isVisible == true || isAdmin()
         || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId())
         || (isAuthenticated() && resource.data.studentId == request.auth.uid);
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
       allow update, delete: if isAdmin()
         || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId());
     }

@@ -6,6 +6,22 @@ interface ScrapeRequest {
   url: string;
 }
 
+// Encode a value for safe use inside a double-quoted HTML attribute, so a
+// scraped src/href can't break out of the attribute and inject markup into
+// the stored blog HTML.
+function attr(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+// Only keep http(s) URLs; anything else collapses to empty (drops the element).
+function safeSrc(value: string): string {
+  return /^https?:\/\//i.test(value.trim()) ? attr(value.trim()) : "";
+}
+
 interface ScrapeResult {
   title: string;
   content: string;
@@ -203,14 +219,14 @@ function extractSE3Content($: cheerio.CheerioAPI): string {
       });
     } else if ($mod.hasClass("se-module-image")) {
       const img = $mod.find("img.se-image-resource");
-      const src = img.attr("data-src") || img.attr("src");
+      const src = safeSrc(img.attr("data-src") || img.attr("src") || "");
       if (src) {
         blocks.push(`<p><img src="${src}" alt="" /></p>`);
       }
     } else if ($mod.hasClass("se-module-sticker")) {
       // Sticker/emoji - skip or get image
       const img = $mod.find("img");
-      const src = img.attr("data-src") || img.attr("src");
+      const src = safeSrc(img.attr("data-src") || img.attr("src") || "");
       if (src) {
         blocks.push(`<p><img src="${src}" alt="" style="max-width:120px" /></p>`);
       }
@@ -221,7 +237,7 @@ function extractSE3Content($: cheerio.CheerioAPI): string {
       blocks.push("<hr />");
     } else if ($mod.hasClass("se-module-video")) {
       // Video embed - try to get thumbnail or link
-      const link = $mod.find("a").attr("href");
+      const link = safeSrc($mod.find("a").attr("href") || "");
       if (link) {
         blocks.push(`<p><a href="${link}">[Video]</a></p>`);
       }

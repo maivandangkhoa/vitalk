@@ -43,7 +43,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-3 text-sm font-semibold">{t('nav.lessons')}</h3>
+            <h3 className="mb-3 text-sm font-semibold">{t('footer.explore')}</h3>
             <nav className="flex flex-col gap-2">
               <Link to="/lessons" className="text-sm text-muted-foreground transition-colors hover:text-indigo-500">
                 {t('nav.lessons')}
@@ -53,6 +53,9 @@ export function Footer() {
               </Link>
               <Link to="/blog" className="text-sm text-muted-foreground transition-colors hover:text-indigo-500">
                 {t('nav.blog')}
+              </Link>
+              <Link to="/policy" className="text-sm text-muted-foreground transition-colors hover:text-indigo-500">
+                {t('footer.policy')}
               </Link>
             </nav>
           </div>

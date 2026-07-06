@@ -90,7 +90,7 @@ export const createPaypalOrder = onCall(
       ],
     };
 
-    console.log("Creating PayPal order:", JSON.stringify(orderPayload));
+    console.log("Creating PayPal order for booking:", bookingId);
 
     const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
       method: "POST",
@@ -145,6 +145,28 @@ export const capturePaypalOrder = onCall(
       throw new HttpsError("invalid-argument", "orderId and bookingId are required");
     }
 
+    // Verify the booking belongs to the caller and that this order is the one
+    // we created for it (createPaypalOrder stored order.id in paymentReference).
+    // Without this, any authenticated user could capture any order against any
+    // booking they don't own, or point a cheap order at an expensive booking.
+    const bookingSnap = await admin.firestore().doc(`bookings/${bookingId}`).get();
+    if (!bookingSnap.exists) {
+      throw new HttpsError("not-found", "Booking not found");
+    }
+    const booking = bookingSnap.data()!;
+    if (booking.studentId !== request.auth.uid) {
+      throw new HttpsError("permission-denied", "Not your booking");
+    }
+    if (booking.paymentStatus === "confirmed") {
+      throw new HttpsError("already-exists", "Already paid");
+    }
+    if (booking.paymentReference !== orderId) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Order does not match this booking"
+      );
+    }
+
     const accessToken = await getPaypalAccessToken();
 
     const response = await fetch(
@@ -158,9 +180,26 @@ export const capturePaypalOrder = onCall(
       }
     );
 
-    const capture = await response.json() as { status: string };
+    const capture = await response.json() as {
+      status: string;
+      purchase_units?: Array<{
+        reference_id?: string;
+        payments?: {
+          captures?: Array<{ amount?: { value?: string; currency_code?: string } }>;
+        };
+      }>;
+    };
 
-    if (capture.status === "COMPLETED") {
+    // Confirm the captured money actually matches this booking's reference and
+    // amount/currency — the capture response is authoritative, not the client.
+    const unit = capture.purchase_units?.[0];
+    const captured = unit?.payments?.captures?.[0]?.amount;
+    const amountMatches = captured
+      && Number(captured.value) === Number(booking.amount)
+      && captured.currency_code === (booking.currency || "USD");
+    const referenceMatches = unit?.reference_id === bookingId;
+
+    if (capture.status === "COMPLETED" && amountMatches && referenceMatches) {
       await admin.firestore().doc(`bookings/${bookingId}`).update({
         paymentStatus: "confirmed",
         status: "confirmed",

@@ -2,22 +2,18 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Save, Loader2, CreditCard, Building2, Landmark, FileText, Coins, MapPin } from 'lucide-react';
+import { Save, Loader2, CreditCard, Building2, Landmark, FileText, Coins, MapPin, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AnimatedSection } from '@/components/shared/motion';
 import { CURRENCIES, CURRENCY_SYMBOLS, DEFAULT_CURRENCY_CONFIG, type CurrencyConfig, type SupportedCurrency } from '@/lib/currency';
-import type { MultiLangText, Language } from '@/types';
+import { normalizeBankAccounts, newBankAccount, type BankAccount, type MultiLangText, type Language } from '@/types';
 
 interface SiteConfig {
   paypal: { email: string };
   toss: { merchantId: string };
-  bankTransfer: {
-    bankName: string;
-    accountNumber: string;
-    accountHolder: string;
-  };
+  bankAccounts: BankAccount[];
   cancellationPolicy: string;
   currency: CurrencyConfig;
   contact: { address: MultiLangText };
@@ -26,11 +22,7 @@ interface SiteConfig {
 const DEFAULT_CONFIG: SiteConfig = {
   paypal: { email: '' },
   toss: { merchantId: '' },
-  bankTransfer: {
-    bankName: 'Shinhan Bank',
-    accountNumber: '',
-    accountHolder: '',
-  },
+  bankAccounts: [],
   cancellationPolicy: '',
   currency: DEFAULT_CURRENCY_CONFIG,
   contact: { address: { en: '', vi: '', ko: '', zh: '', ja: '' } },
@@ -48,7 +40,8 @@ export default function AdminSettings() {
       try {
         const snap = await getDoc(doc(db, 'siteConfig', 'general'));
         if (snap.exists()) {
-          setConfig({ ...DEFAULT_CONFIG, ...snap.data() } as SiteConfig);
+          const data = snap.data();
+          setConfig({ ...DEFAULT_CONFIG, ...data, bankAccounts: normalizeBankAccounts(data) } as SiteConfig);
         }
       } finally {
         setLoading(false);
@@ -122,48 +115,78 @@ export default function AdminSettings() {
 
         <Card>
           <CardContent className="space-y-4 pt-6">
-            <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50"><Landmark className="h-4 w-4 text-emerald-500" /></div>{t('settings.bankTransfer')}</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">{t('settings.bankName')}</label>
-                <input
-                  value={config.bankTransfer.bankName}
-                  onChange={(e) =>
-                    setConfig((c) => ({
-                      ...c,
-                      bankTransfer: { ...c.bankTransfer, bankName: e.target.value },
-                    }))
-                  }
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">{t('settings.accountNumber')}</label>
-                <input
-                  value={config.bankTransfer.accountNumber}
-                  onChange={(e) =>
-                    setConfig((c) => ({
-                      ...c,
-                      bankTransfer: { ...c.bankTransfer, accountNumber: e.target.value },
-                    }))
-                  }
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">{t('settings.accountHolder')}</label>
-                <input
-                  value={config.bankTransfer.accountHolder}
-                  onChange={(e) =>
-                    setConfig((c) => ({
-                      ...c,
-                      bankTransfer: { ...c.bankTransfer, accountHolder: e.target.value },
-                    }))
-                  }
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                />
-              </div>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="flex items-center gap-2 font-semibold"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50"><Landmark className="h-4 w-4 text-emerald-500" /></div>{t('settings.bankTransfer')}</h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setConfig((c) => ({ ...c, bankAccounts: [...c.bankAccounts, newBankAccount()] }))}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                {t('settings.addBank')}
+              </Button>
             </div>
+            <p className="text-sm text-muted-foreground">{t('settings.bankTransferNote')}</p>
+
+            {config.bankAccounts.length === 0 && (
+              <p className="rounded-xl border border-dashed border-input py-6 text-center text-sm text-muted-foreground">
+                {t('settings.noBanks')}
+              </p>
+            )}
+
+            {config.bankAccounts.map((acc, idx) => {
+              const update = (patch: Partial<BankAccount>) =>
+                setConfig((c) => ({
+                  ...c,
+                  bankAccounts: c.bankAccounts.map((a) => (a.id === acc.id ? { ...a, ...patch } : a)),
+                }));
+              return (
+                <div key={acc.id} className="rounded-xl border border-input p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {t('settings.bankAccountTitle', { n: idx + 1 })}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setConfig((c) => ({ ...c, bankAccounts: c.bankAccounts.filter((a) => a.id !== acc.id) }))
+                      }
+                      className="rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-rose-50 hover:text-rose-500"
+                      aria-label={t('settings.removeBank')}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium">{t('settings.bankName')}</label>
+                      <input
+                        value={acc.bankName}
+                        onChange={(e) => update({ bankName: e.target.value })}
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium">{t('settings.accountNumber')}</label>
+                      <input
+                        value={acc.accountNumber}
+                        onChange={(e) => update({ accountNumber: e.target.value })}
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium">{t('settings.accountHolder')}</label>
+                      <input
+                        value={acc.accountHolder}
+                        onChange={(e) => update({ accountHolder: e.target.value })}
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
 

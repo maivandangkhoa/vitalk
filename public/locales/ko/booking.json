@@ -75,7 +75,8 @@
   },
   "duration": {
     "title": "수업 시간 선택",
-    "priceHint": "표시된 가격은 기본 요율입니다. 선택한 선생님의 실제 요율은 결제 시 적용됩니다."
+    "priceHint": "표시된 가격은 기본 요율입니다. 선택한 선생님의 실제 요율은 결제 시 적용됩니다.",
+    "priceHintNoTeacher": "가격은 선생님마다 다르며, 선생님을 선택한 후에 표시됩니다."
   },
   "lessonCard": {
     "startingFrom": "시작"

@@ -25,7 +25,8 @@
     "locations": "地点",
     "settings": "设置",
     "migration": "数据迁移",
-    "backToSite": "返回网站"
+    "backToSite": "返回网站",
+    "policy": "政策"
   },
   "profile": {
     "title": "编辑个人资料",
@@ -57,6 +58,11 @@
     "bankName": "银行名称",
     "accountNumber": "账号",
     "accountHolder": "户名",
+    "addBank": "添加银行",
+    "removeBank": "删除",
+    "bankTransferNote": "添加一个或多个供学员转账的银行账户。",
+    "noBanks": "暂无银行。点击\"添加银行\"以创建。",
+    "bankAccountTitle": "银行 {{n}}",
     "currency": "货币与汇率",
     "currencyNote": "请设置以 USD 为基准的汇率，并为每种语言选择显示货币。",
     "exchangeRate": "汇率（1 USD 为基准）",
@@ -234,7 +240,13 @@
     "invalidImage": "请选择图片文件",
     "contactIds": "在线课程的联系账号 ID",
     "contactIdsHint": "在学员预约时，根据所选平台显示要添加的联系人。不使用的平台请留空。",
-    "uploadQr": "上传二维码"
+    "uploadQr": "上传二维码",
+    "languages": "掌握语言",
+    "languagesHint": "“母语（教学）”显示在 Teaches；等级 1–5 显示在 Speaks 并带熟练度条。",
+    "selectLanguage": "选择语言",
+    "levelNative": "母语（教学）",
+    "levelLabel": "等级",
+    "addLanguage": "添加语言"
   },
   "migration": {
     "title": "数据迁移",
@@ -316,5 +328,14 @@
     "titleLabel": "标题",
     "excerptLabel": "摘要",
     "contentLabel": "正文"
+  },
+  "policy": {
+    "title": "编辑政策",
+    "subtitle": "编辑显示在网站页脚的政策页面。",
+    "contentLabel": "内容",
+    "save": "保存",
+    "saved": "政策已保存",
+    "saveFailed": "保存政策失败",
+    "viewPage": "查看页面"
   }
 }

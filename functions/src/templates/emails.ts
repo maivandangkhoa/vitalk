@@ -1,3 +1,22 @@
+// Escape values that originate from user input (student name, notes, lesson
+// name, etc.) before interpolating them into HTML email bodies, to prevent
+// HTML/markup injection in emails sent to teachers, admins and students.
+function esc(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Only allow http(s) URLs into href attributes; anything else (javascript:,
+// data:, etc.) collapses to a harmless placeholder.
+function safeUrl(url: unknown): string {
+  const s = String(url ?? "").trim();
+  return /^https?:\/\//i.test(s) ? esc(s) : "#";
+}
+
 interface BookingEmailData {
   studentName: string;
   teacherName: string;
@@ -16,7 +35,7 @@ interface BookingEmailData {
 
 function baseLayout(content: string, teacherName?: string): string {
   const footerText = teacherName
-    ? `HaviTalk - Vietnamese Language Lessons with ${teacherName}`
+    ? `HaviTalk - Vietnamese Language Lessons with ${esc(teacherName)}`
     : "HaviTalk - Vietnamese Language Lessons";
   return `
 <!DOCTYPE html>
@@ -58,21 +77,21 @@ function baseLayout(content: string, teacherName?: string): string {
 
 function bookingDetails(data: BookingEmailData): string {
   const formatDisplay = data.format === "online"
-    ? `Online${data.platform ? ` (${data.platform.replace("_", " ")})` : ""}`
+    ? `Online${data.platform ? ` (${esc(data.platform.replace("_", " "))})` : ""}`
     : "In-person";
-  const paymentDisplay = data.paymentMethod.replace("_", " ");
+  const paymentDisplay = esc(data.paymentMethod.replace("_", " "));
 
   return `
     <table style="width:100%; border-collapse:collapse; margin: 16px 0;">
-      <tr><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; color:#6b7280; font-size:14px;">Student</td><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:500; font-size:14px;">${data.studentName}</td></tr>
-      <tr><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; color:#6b7280; font-size:14px;">Lesson</td><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:500; font-size:14px;">${data.lessonName}</td></tr>
+      <tr><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; color:#6b7280; font-size:14px;">Student</td><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:500; font-size:14px;">${esc(data.studentName)}</td></tr>
+      <tr><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; color:#6b7280; font-size:14px;">Lesson</td><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:500; font-size:14px;">${esc(data.lessonName)}</td></tr>
       <tr><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; color:#6b7280; font-size:14px;">Date</td><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:500; font-size:14px;">${data.date}</td></tr>
       <tr><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; color:#6b7280; font-size:14px;">Time</td><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:500; font-size:14px;">${data.startTime} - ${data.endTime} KST</td></tr>
       <tr><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; color:#6b7280; font-size:14px;">Format</td><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:500; font-size:14px;">${formatDisplay}</td></tr>
       <tr><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; color:#6b7280; font-size:14px;">Payment</td><td style="padding:8px 0; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:500; font-size:14px;">${paymentDisplay}</td></tr>
       <tr><td style="padding:8px 0; color:#6b7280; font-size:14px; font-weight:600;">Total</td><td style="padding:8px 0; text-align:right; font-weight:700; font-size:16px;">$${data.amount} ${data.currency}</td></tr>
     </table>
-    ${data.notes ? `<div class="highlight"><strong>Notes:</strong> ${data.notes}</div>` : ""}`;
+    ${data.notes ? `<div class="highlight"><strong>Notes:</strong> ${esc(data.notes)}</div>` : ""}`;
 }
 
 // --- Teacher emails ---
@@ -174,7 +193,7 @@ export function lessonReminderStudent(data: BookingEmailData & { meetingLink?: s
       ${data.meetingLink ? `
         <div class="highlight" style="text-align:center;">
           <p style="margin:0 0 8px; font-weight:600;">Join your lesson:</p>
-          <a href="${data.meetingLink}" class="btn">Join Meeting</a>
+          <a href="${safeUrl(data.meetingLink)}" class="btn">Join Meeting</a>
         </div>
       ` : `
         <div class="highlight">

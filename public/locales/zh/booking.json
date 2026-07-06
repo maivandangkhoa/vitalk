@@ -75,7 +75,8 @@
   },
   "duration": {
     "title": "选择时长",
-    "priceHint": "显示的价格为基础价格，所选老师的实际价格将在付款时计算。"
+    "priceHint": "显示的价格为基础价格，所选老师的实际价格将在付款时计算。",
+    "priceHintNoTeacher": "价格由每位老师设定，选择老师后即会显示。"
   },
   "lessonCard": {
     "startingFrom": "起"

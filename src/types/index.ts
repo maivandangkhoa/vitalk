@@ -5,3 +5,4 @@ export * from './booking';
 export * from './review';
 export * from './blog';
 export * from './notification';
+export * from './payment';

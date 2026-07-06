@@ -25,7 +25,8 @@
     "locations": "Địa điểm",
     "settings": "Cài đặt",
     "migration": "Di chuyển dữ liệu",
-    "backToSite": "Quay lại trang chính"
+    "backToSite": "Quay lại trang chính",
+    "policy": "Chính sách"
   },
   "profile": {
     "title": "Chỉnh sửa hồ sơ",
@@ -57,6 +58,11 @@
     "bankName": "Tên ngân hàng",
     "accountNumber": "Số tài khoản",
     "accountHolder": "Chủ tài khoản",
+    "addBank": "Thêm ngân hàng",
+    "removeBank": "Xóa",
+    "bankTransferNote": "Thêm một hoặc nhiều tài khoản ngân hàng để học viên chuyển khoản.",
+    "noBanks": "Chưa có ngân hàng nào. Nhấn \"Thêm ngân hàng\" để tạo mới.",
+    "bankAccountTitle": "Ngân hàng {{n}}",
     "currency": "Tiền tệ & Tỉ giá",
     "currencyNote": "Cài đặt tỉ giá từ USD và chọn đơn vị tiền tệ hiển thị cho từng ngôn ngữ.",
     "exchangeRate": "Tỉ giá (từ 1 USD)",
@@ -234,7 +240,13 @@
     "invalidImage": "Vui lòng chọn tệp ảnh",
     "contactIds": "ID liên hệ cho lớp học online",
     "contactIdsHint": "Dùng để hiển thị cho học viên biết liên hệ ai trên nền tảng họ chọn khi đặt lịch. Để trống nếu không dùng nền tảng đó.",
-    "uploadQr": "Tải lên QR"
+    "uploadQr": "Tải lên QR",
+    "languages": "Ngôn ngữ",
+    "languagesHint": "“Bản ngữ (Dạy)” hiển thị ở mục Teaches; Cấp 1–5 hiển thị ở mục Speaks kèm thanh trình độ.",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "levelNative": "Bản ngữ (Dạy)",
+    "levelLabel": "Cấp",
+    "addLanguage": "Thêm ngôn ngữ"
   },
   "migration": {
     "title": "Di chuyển dữ liệu",
@@ -316,5 +328,14 @@
     "titleLabel": "Tiêu đề",
     "excerptLabel": "Tóm tắt",
     "contentLabel": "Nội dung"
+  },
+  "policy": {
+    "title": "Chỉnh sửa chính sách",
+    "subtitle": "Chỉnh sửa nội dung trang chính sách hiển thị ở chân trang.",
+    "contentLabel": "Nội dung",
+    "save": "Lưu",
+    "saved": "Đã lưu chính sách",
+    "saveFailed": "Lưu chính sách thất bại",
+    "viewPage": "Xem trang"
   }
 }

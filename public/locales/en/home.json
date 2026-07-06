@@ -2,7 +2,7 @@
   "hero": {
     "greeting": "Xin chào! 🇻🇳",
     "title": "Master Vietnamese with Expert Native Teachers",
-    "subtitle": "HaviTalk is a curated Vietnamese language center connecting you with passionate, experienced native teachers. Online or in-person in Seoul.",
+    "subtitle": "HaviTalk is a platform that connects learners with passionate, experienced native Vietnamese teachers. Find the right teacher, book and manage your lessons with ease. Learn online or in-person, to fit your schedule and learning style.",
     "cta": "Book Your First Lesson",
     "stats": {
       "teachers": "{{count}}+ Teachers",
@@ -27,7 +27,7 @@
     },
     "flexible": {
       "title": "Learn on Your Schedule",
-      "description": "Choose online lessons via platforms like Teams or Google Meet, or join in-person sessions at designated locations. Flexible scheduling that fits the needs and lifestyle of each learner."
+      "description": "Choose online lessons via platforms like Microsoft Teams or Google Meet, or join in-person sessions at designated locations. Flexible scheduling that fits the needs and lifestyle of each learner."
     }
   },
   "teachers": {
@@ -43,7 +43,7 @@
   },
   "cta": {
     "title": "Ready to Start Your Vietnamese Journey?",
-    "subtitle": "Join hundreds of students who have discovered the joy of learning Vietnamese with HaviTalk. From complete beginner to advanced conversation — we have a lesson for you.",
-    "button": "View Lessons & Book"
+    "subtitle": "Connect with native Vietnamese teachers and enjoy personalized lessons designed around your goals, schedule, and learning style.",
+    "button": "Get Started"
   }
 }

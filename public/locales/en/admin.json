@@ -25,7 +25,8 @@
     "locations": "Locations",
     "settings": "Settings",
     "migration": "Migration",
-    "backToSite": "Back to site"
+    "backToSite": "Back to site",
+    "policy": "Policy"
   },
   "profile": {
     "title": "Edit Profile",
@@ -57,6 +58,11 @@
     "bankName": "Bank Name",
     "accountNumber": "Account Number",
     "accountHolder": "Account Holder",
+    "addBank": "Add Bank",
+    "removeBank": "Remove",
+    "bankTransferNote": "Add one or more bank accounts learners can transfer to.",
+    "noBanks": "No banks yet. Click \"Add Bank\" to create one.",
+    "bankAccountTitle": "Bank {{n}}",
     "currency": "Currency & Exchange Rates",
     "currencyNote": "Set exchange rates from USD and choose which currency to display for each language.",
     "exchangeRate": "Exchange Rates (from 1 USD)",
@@ -234,7 +240,13 @@
     "invalidImage": "Please select an image file",
     "contactIds": "Contact IDs for online lessons",
     "contactIdsHint": "Used to show students who to add on each platform after they pick it during booking. Leave blank if you don't use a platform.",
-    "uploadQr": "Upload QR"
+    "uploadQr": "Upload QR",
+    "languages": "Spoken Languages",
+    "languagesHint": "“Native (Teaches)” appears under Teaches; Levels 1–5 appear under Speaks with proficiency bars.",
+    "selectLanguage": "Select language",
+    "levelNative": "Native (Teaches)",
+    "levelLabel": "Level",
+    "addLanguage": "Add language"
   },
   "migration": {
     "title": "Data Migration",
@@ -316,5 +328,14 @@
     "titleLabel": "Title",
     "excerptLabel": "Excerpt",
     "contentLabel": "Content"
+  },
+  "policy": {
+    "title": "Edit Policy",
+    "subtitle": "Edit the policy page shown in the site footer.",
+    "contentLabel": "Content",
+    "save": "Save",
+    "saved": "Policy saved",
+    "saveFailed": "Failed to save policy",
+    "viewPage": "View page"
   }
 }

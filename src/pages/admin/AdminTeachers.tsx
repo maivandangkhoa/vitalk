@@ -27,15 +27,44 @@ import {
   deleteTeacher,
 } from '@/hooks/useTeachers';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
+import { LANG_INFO, normalizeLangKey } from '@/components/teachers/TeacherLanguages';
+
+/** Language proficiency row used by the editor (flattened from the stored Record). */
+interface LangRow {
+  key: string;
+  level: string;
+}
+
+const LANGUAGE_OPTIONS = Object.entries(LANG_INFO).map(([key, info]) => ({ key, ...info }));
+
+/** Map a stored level value onto one of the editable options. */
+function normalizeLevel(level: string): string {
+  const l = level.toLowerCase();
+  if (l === 'community' || l === 'native') return 'native';
+  const m = l.match(/level[_\s]?(\d)/);
+  return m ? `level_${m[1]}` : 'level_3';
+}
+
+function languagesToRows(languages: Record<string, string>): LangRow[] {
+  return Object.entries(languages).map(([code, level]) => ({
+    key: normalizeLangKey(code),
+    level: normalizeLevel(level),
+  }));
+}
+
+function rowsToLanguages(rows: LangRow[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const r of rows) {
+    if (r.key) out[r.key] = r.level;
+  }
+  return out;
+}
 
 interface TeacherForm {
   name: string;
   slug: string;
   email: string;
-  location: string;
   timezone: string;
-  profileImageUrl: string;
-  bio: string;
   isActive: boolean;
   uid: string;
   contactTeams: string;
@@ -44,16 +73,14 @@ interface TeacherForm {
   contactKakaoTalk: string;
   contactZaloQrUrl: string;
   contactKakaoTalkQrUrl: string;
+  languages: LangRow[];
 }
 
 const EMPTY_FORM: TeacherForm = {
   name: '',
   slug: '',
   email: '',
-  location: '',
   timezone: '',
-  profileImageUrl: '',
-  bio: '',
   isActive: true,
   uid: '',
   contactTeams: '',
@@ -62,6 +89,7 @@ const EMPTY_FORM: TeacherForm = {
   contactKakaoTalk: '',
   contactZaloQrUrl: '',
   contactKakaoTalkQrUrl: '',
+  languages: [],
 };
 
 interface ItalkiProfileResult {
@@ -94,38 +122,11 @@ export default function AdminTeachers() {
   // Store extra fields from italki that don't fit in the form
   const [italkiExtra, setItalkiExtra] = useState<Partial<ItalkiProfileResult> | null>(null);
 
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const imageInputRef = useRef<HTMLInputElement>(null);
-
   // QR image uploads: track per-slot so a Zalo upload doesn't disable the
   // Kakao button (and vice versa).
   const [uploadingQr, setUploadingQr] = useState<'zalo' | 'kakao' | null>(null);
   const zaloQrInputRef = useRef<HTMLInputElement>(null);
   const kakaoQrInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('teachers.invalidImage'));
-      return;
-    }
-    setUploadingImage(true);
-    try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const filePath = `teacher-profiles/${Date.now()}.${ext}`;
-      const storageRef = ref(storage, filePath);
-      const snapshot = await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(snapshot.ref);
-      setForm((prev) => ({ ...prev, profileImageUrl: url }));
-      toast.success(t('teachers.imageUploaded'));
-    } catch {
-      toast.error(t('teachers.imageUploadFailed'));
-    } finally {
-      setUploadingImage(false);
-      if (imageInputRef.current) imageInputRef.current.value = '';
-    }
-  };
 
   const handleQrUpload = async (
     slot: 'zalo' | 'kakao',
@@ -171,10 +172,7 @@ export default function AdminTeachers() {
       name: teacher.name,
       slug: teacher.slug,
       email: teacher.email,
-      location: teacher.location,
       timezone: teacher.timezone,
-      profileImageUrl: teacher.profileImageUrl,
-      bio: typeof teacher.bio === 'object' ? (teacher.bio.en || '') : '',
       isActive: teacher.isActive,
       uid: teacher.uid,
       contactTeams: teacher.contactIds?.teams || '',
@@ -183,8 +181,19 @@ export default function AdminTeachers() {
       contactKakaoTalk: teacher.contactIds?.kakaoTalk || '',
       contactZaloQrUrl: teacher.contactIds?.zaloQrUrl || '',
       contactKakaoTalkQrUrl: teacher.contactIds?.kakaoTalkQrUrl || '',
+      languages: languagesToRows(teacher.languages || {}),
     });
   };
+
+  const addLangRow = () =>
+    setForm((f) => ({ ...f, languages: [...f.languages, { key: '', level: 'level_5' }] }));
+  const removeLangRow = (i: number) =>
+    setForm((f) => ({ ...f, languages: f.languages.filter((_, idx) => idx !== i) }));
+  const updateLangRow = (i: number, patch: Partial<LangRow>) =>
+    setForm((f) => ({
+      ...f,
+      languages: f.languages.map((r, idx) => (idx === i ? { ...r, ...patch } : r)),
+    }));
 
   const cancelEdit = () => {
     setEditing(null);
@@ -213,10 +222,7 @@ export default function AdminTeachers() {
         name: data.name,
         slug,
         email: '',
-        location: data.location,
         timezone: '',
-        profileImageUrl: data.profileImageUrl,
-        bio: data.bio,
         isActive: true,
         uid: '',
         contactTeams: '',
@@ -225,12 +231,17 @@ export default function AdminTeachers() {
         contactKakaoTalk: '',
         contactZaloQrUrl: '',
         contactKakaoTalkQrUrl: '',
+        languages: languagesToRows(data.languages || {}),
       });
 
-      // Save extra italki data for when we create the teacher
+      // Save extra italki data for when we create the teacher. Presentation
+      // fields (location, image, bio) live on the Profile page now, so they
+      // are seeded here on create only — not editable in this form.
       setItalkiExtra({
+        location: data.location,
+        profileImageUrl: data.profileImageUrl,
+        bio: data.bio,
         teachingStyle: data.teachingStyle,
-        languages: data.languages,
         rating: data.rating,
         totalReviews: data.totalReviews,
         lessonPrice: data.lessonPrice,
@@ -262,17 +273,17 @@ export default function AdminTeachers() {
         zaloQrUrl: form.contactZaloQrUrl,
         kakaoTalkQrUrl: form.contactKakaoTalkQrUrl,
       };
+      // Identity/admin fields only — presentation fields (location, image,
+      // bio, teachingStyle, video, pricing) are owned by the Profile page.
       const payload = {
         name: form.name,
         slug: form.slug,
         email: form.email,
-        location: form.location,
         timezone: form.timezone,
-        profileImageUrl: form.profileImageUrl,
-        bio: { en: form.bio, vi: '', ko: '', zh: '', ja: '' },
         isActive: form.isActive,
         uid: form.uid,
         contactIds,
+        languages: rowsToLanguages(form.languages),
       };
 
       if (editing === 'new') {
@@ -280,9 +291,13 @@ export default function AdminTeachers() {
           ...payload,
           sortOrder: teachers.length,
           age: 0,
+          location: italkiExtra?.location || '',
+          profileImageUrl: italkiExtra?.profileImageUrl || '',
+          bio: italkiExtra?.bio
+            ? { en: italkiExtra.bio, vi: '', ko: '', zh: '', ja: '' }
+            : { en: '', vi: '', ko: '', zh: '', ja: '' },
           locationSince: 0,
           origin: '',
-          languages: italkiExtra?.languages || {},
           education: '',
           previousLocations: [],
           interests: [],
@@ -433,73 +448,12 @@ export default function AdminTeachers() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium">{t('teachers.location')}</label>
-                  <input
-                    value={form.location}
-                    onChange={(e) => setForm({ ...form, location: e.target.value })}
-                    className={inputClass}
-                    placeholder="Seoul, South Korea"
-                  />
-                </div>
-                <div>
                   <label className="mb-1.5 block text-sm font-medium">{t('teachers.timezone')}</label>
                   <input
                     value={form.timezone}
                     onChange={(e) => setForm({ ...form, timezone: e.target.value })}
                     className={inputClass}
                     placeholder="Asia/Seoul"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="mb-1.5 block text-sm font-medium">{t('teachers.profileImageUrl')}</label>
-                  <div className="flex items-start gap-3">
-                    {form.profileImageUrl ? (
-                      <img
-                        src={form.profileImageUrl}
-                        alt="Profile preview"
-                        className="h-12 w-12 shrink-0 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-50">
-                        <Users2 className="h-5 w-5 text-indigo-400" />
-                      </div>
-                    )}
-                    <input
-                      value={form.profileImageUrl}
-                      onChange={(e) => setForm({ ...form, profileImageUrl: e.target.value })}
-                      className={`${inputClass} flex-1`}
-                      placeholder="https://example.com/photo.jpg"
-                    />
-                    <input
-                      ref={imageInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-12 shrink-0"
-                      onClick={() => imageInputRef.current?.click()}
-                      disabled={uploadingImage}
-                    >
-                      {uploadingImage ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="mr-2 h-4 w-4" />
-                      )}
-                      {t('teachers.uploadImage')}
-                    </Button>
-                  </div>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="mb-1.5 block text-sm font-medium">{t('teachers.bio')}</label>
-                  <textarea
-                    value={form.bio}
-                    onChange={(e) => setForm({ ...form, bio: e.target.value })}
-                    className="min-h-[120px] w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                    placeholder="Teacher bio (English)"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -562,6 +516,53 @@ export default function AdminTeachers() {
                       className="hidden"
                       onChange={(e) => handleQrUpload('kakao', e)}
                     />
+                  </div>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="mb-2 text-sm font-medium">{t('teachers.languages')}</p>
+                  <p className="mb-3 text-xs text-muted-foreground">{t('teachers.languagesHint')}</p>
+                  <div className="space-y-2">
+                    {form.languages.map((row, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <select
+                          value={row.key}
+                          onChange={(e) => updateLangRow(i, { key: e.target.value })}
+                          className={`${inputClass} flex-1`}
+                        >
+                          <option value="">{t('teachers.selectLanguage')}</option>
+                          {LANGUAGE_OPTIONS.map((o) => (
+                            <option key={o.key} value={o.key}>
+                              {o.flag} {o.name}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={row.level}
+                          onChange={(e) => updateLangRow(i, { level: e.target.value })}
+                          className={`${inputClass} flex-1`}
+                        >
+                          <option value="native">{t('teachers.levelNative')}</option>
+                          {[5, 4, 3, 2, 1].map((n) => (
+                            <option key={n} value={`level_${n}`}>
+                              {t('teachers.levelLabel')} {n}
+                            </option>
+                          ))}
+                        </select>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="shrink-0 text-destructive hover:text-destructive"
+                          onClick={() => removeLangRow(i)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={addLangRow}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t('teachers.addLanguage')}
+                    </Button>
                   </div>
                 </div>
               </div>

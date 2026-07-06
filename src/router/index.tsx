@@ -13,6 +13,7 @@ const BookingPage = lazyWithRetry(() => import('@/pages/BookingPage'));
 const BlogListPage = lazyWithRetry(() => import('@/pages/BlogListPage'));
 const BlogPostPage = lazyWithRetry(() => import('@/pages/BlogPostPage'));
 const ReviewsPage = lazyWithRetry(() => import('@/pages/ReviewsPage'));
+const PolicyPage = lazyWithRetry(() => import('@/pages/PolicyPage'));
 const LoginPage = lazyWithRetry(() => import('@/pages/LoginPage'));
 const MyBookingsPage = lazyWithRetry(() => import('@/pages/MyBookingsPage'));
 const NotFoundPage = lazyWithRetry(() => import('@/pages/NotFoundPage'));
@@ -34,6 +35,7 @@ const AdminLocations = lazyWithRetry(() => import('@/pages/admin/AdminLocations'
 const AdminSettings = lazyWithRetry(() => import('@/pages/admin/AdminSettings'));
 const AdminTeachers = lazyWithRetry(() => import('@/pages/admin/AdminTeachers'));
 const AdminMigration = lazyWithRetry(() => import('@/pages/admin/AdminMigration'));
+const AdminPolicy = lazyWithRetry(() => import('@/pages/admin/AdminPolicy'));
 
 // Public teacher pages
 const TeachersListPage = lazyWithRetry(() => import('@/pages/TeachersListPage'));
@@ -82,6 +84,10 @@ export const router = createBrowserRouter([
       {
         path: '/reviews',
         element: <SuspenseWrapper><ReviewsPage /></SuspenseWrapper>,
+      },
+      {
+        path: '/policy',
+        element: <SuspenseWrapper><PolicyPage /></SuspenseWrapper>,
       },
       {
         path: '/login',
@@ -172,6 +178,10 @@ export const router = createBrowserRouter([
       {
         path: 'migration',
         element: <SuspenseWrapper><AdminMigration /></SuspenseWrapper>,
+      },
+      {
+        path: 'policy',
+        element: <SuspenseWrapper><AdminPolicy /></SuspenseWrapper>,
       },
     ],
   },

@@ -25,7 +25,8 @@
     "locations": "場所",
     "settings": "設定",
     "migration": "データ移行",
-    "backToSite": "サイトに戻る"
+    "backToSite": "サイトに戻る",
+    "policy": "ポリシー"
   },
   "profile": {
     "title": "プロフィール編集",
@@ -57,6 +58,11 @@
     "bankName": "銀行名",
     "accountNumber": "口座番号",
     "accountHolder": "口座名義",
+    "addBank": "銀行を追加",
+    "removeBank": "削除",
+    "bankTransferNote": "受講者が送金できる銀行口座を1つ以上追加してください。",
+    "noBanks": "銀行がまだありません。「銀行を追加」をクリックして追加してください。",
+    "bankAccountTitle": "銀行 {{n}}",
     "currency": "通貨 & 為替レート",
     "currencyNote": "USDからの為替レートを設定し、各言語の表示通貨を選択してください。",
     "exchangeRate": "為替レート（1 USD基準）",
@@ -234,7 +240,13 @@
     "invalidImage": "画像ファイルを選択してください",
     "contactIds": "オンラインレッスン用の連絡先ID",
     "contactIdsHint": "予約時に学生が選んだプラットフォームで誰を追加すべきかを表示します。使わないプラットフォームは空のままにしてください。",
-    "uploadQr": "QRをアップロード"
+    "uploadQr": "QRをアップロード",
+    "languages": "話せる言語",
+    "languagesHint": "「ネイティブ（指導）」は Teaches に、レベル1–5は Speaks に習熟度バー付きで表示されます。",
+    "selectLanguage": "言語を選択",
+    "levelNative": "ネイティブ（指導）",
+    "levelLabel": "レベル",
+    "addLanguage": "言語を追加"
   },
   "migration": {
     "title": "データ移行",
@@ -316,5 +328,14 @@
     "titleLabel": "タイトル",
     "excerptLabel": "抜粋",
     "contentLabel": "コンテンツ"
+  },
+  "policy": {
+    "title": "ポリシー編集",
+    "subtitle": "サイトのフッターに表示されるポリシーページを編集します。",
+    "contentLabel": "内容",
+    "save": "保存",
+    "saved": "ポリシーを保存しました",
+    "saveFailed": "ポリシーの保存に失敗しました",
+    "viewPage": "ページを見る"
   }
 }

@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useBlogPost, useBlogPostPreview, togglePublish } from '@/hooks/useBlog';
 import { useAuthStore } from '@/stores/authStore';
 import { AnimatedSection } from '@/components/shared/motion';
+import { sanitizeHtml } from '@/lib/sanitize';
 import type { Language } from '@/types';
 
 export default function BlogPostPage() {
@@ -151,7 +152,7 @@ export default function BlogPostPage() {
         <div className="mt-8 rounded-2xl bg-white p-8 shadow-sm">
           <div
             className="prose prose-lg max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
           />
         </div>
       </AnimatedSection>
