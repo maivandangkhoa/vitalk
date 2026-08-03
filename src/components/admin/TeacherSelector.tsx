@@ -12,12 +12,13 @@ export function useTeacherSelector() {
   const { teachers, loading } = useAdminTeachers();
   const [selectedId, setSelectedId] = useState<string>('');
 
-  // Auto-select first teacher for admin if none selected
+  // Auto-select for admin: their own profile if they also teach, else the first
   useEffect(() => {
     if (role === 'admin' && !selectedId && teachers.length > 0) {
-      setSelectedId(teachers[0].id);
+      const own = ownTeacherId && teachers.some((t) => t.id === ownTeacherId);
+      setSelectedId(own ? ownTeacherId : teachers[0].id);
     }
-  }, [role, selectedId, teachers]);
+  }, [role, selectedId, teachers, ownTeacherId]);
 
   if (role === 'teacher') {
     return {

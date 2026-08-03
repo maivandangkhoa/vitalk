@@ -27,11 +27,21 @@ import { DEFAULT_HOURLY_RATE_USD } from './constants';
 
 /** Point a user doc at a teacher profile and promote them to `teacher`. */
 async function linkUser(uid: string, teacherId: string): Promise<void> {
+  // An admin who also teaches keeps `admin` — that role is a superset, and
+  // demoting them here would silently revoke their own access.
+  const snap = await getDoc(doc(db, 'users', uid));
+  const isAdmin = snap.exists() && snap.data().role === 'admin';
+
   // merge so a teacher who has not signed in yet gets a stub doc that
   // `ensureUserDoc` will later fill in with their identity fields.
   await setDoc(
     doc(db, 'users', uid),
-    { uid, teacherId, role: 'teacher', updatedAt: serverTimestamp() },
+    {
+      uid,
+      teacherId,
+      ...(isAdmin ? {} : { role: 'teacher' }),
+      updatedAt: serverTimestamp(),
+    },
     { merge: true }
   );
 }
