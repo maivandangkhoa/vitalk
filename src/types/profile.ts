@@ -3,9 +3,13 @@ import type { AllowedDuration } from '@/lib/constants';
 import type { SupportedCurrency } from '@/lib/currency';
 
 export interface TeacherProfile {
+  /**
+   * Auth uid of the owner for a claimed profile; an opaque generated id while
+   * the profile is unclaimed (imported, or created before the person signed
+   * up). `claimProfile` in `lib/teacherLink` is what moves one to the other.
+   */
   id: string;
   slug: string;
-  uid: string;
   email: string;
   timezone: string;
   isActive: boolean;

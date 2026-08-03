@@ -48,13 +48,15 @@ export async function signOut() {
 }
 
 export async function getUserRole(user: User): Promise<{ role: UserRole; teacherId: string | null }> {
-  const userRef = doc(db, 'users', user.uid);
-  const userSnap = await getDoc(userRef);
-  const data = userSnap.data();
-  return {
-    role: (data?.role as UserRole) || 'user',
-    teacherId: data?.teacherId || null,
-  };
+  const userSnap = await getDoc(doc(db, 'users', user.uid));
+  const role = (userSnap.data()?.role as UserRole) || 'user';
+
+  // A teacher profile is stored under its owner's uid, so the only question is
+  // whether one exists. Plain students never need the extra read.
+  if (role === 'user') return { role, teacherId: null };
+  const profile = await getDoc(doc(db, 'teachers', user.uid));
+
+  return { role, teacherId: profile.exists() ? user.uid : null };
 }
 
 async function ensureUserDoc(

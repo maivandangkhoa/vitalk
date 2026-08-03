@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 
 /**
  * Hook that provides a teacherId for admin pages.
- * - Teacher role: auto-returns their own teacherId
- * - Admin role: returns the selected teacherId from a dropdown
+ * - Teacher role: their own profile, which lives at `teachers/{their uid}`
+ * - Admin role: the profile picked in the dropdown, defaulting to their own
  */
 export function useTeacherSelector() {
   const { role, teacherId: ownTeacherId } = useAuthStore();

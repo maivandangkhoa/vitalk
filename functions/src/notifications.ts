@@ -17,8 +17,10 @@ interface BookingCreatedInput {
 }
 
 async function getTeacherUid(teacherId: string): Promise<string | null> {
-  const doc = await admin.firestore().doc(`teachers/${teacherId}`).get();
-  return doc.exists ? (doc.data()?.uid as string) || null : null;
+  // A teacher profile is stored under its owner's uid, so the id *is* the uid.
+  // An unclaimed profile has no owner account and nobody to notify.
+  const user = await admin.firestore().doc(`users/${teacherId}`).get();
+  return user.exists ? teacherId : null;
 }
 
 async function getAdminUserIds(): Promise<string[]> {

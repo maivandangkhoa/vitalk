@@ -22,13 +22,22 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    // A claimed teacher profile is keyed by the owner's uid, so ownership is a
+    // plain string compare. The `||` branch is the pre-migration form (link
+    // carried in a `uid` field) and goes away once every profile is moved.
+    // Order matters: `||` short-circuits, so the cheap compare runs first and
+    // the `get()` only happens for not-yet-migrated docs.
     function isTeacherOwner(teacherId) {
       return isAuthenticated()
-        && get(/databases/$(database)/documents/teachers/$(teacherId)).data.uid == request.auth.uid;
+        && (request.auth.uid == teacherId
+            || get(/databases/$(database)/documents/teachers/$(teacherId)).data.get('uid', '') == request.auth.uid);
     }
 
-    function getUserTeacherId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teacherId;
+    // Same transitional shape for docs that *reference* a teacher.
+    function ownsTeacher(teacherId) {
+      return isAuthenticated()
+        && (teacherId == request.auth.uid
+            || teacherId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('teacherId', ''));
     }
 
     // Profile - legacy, kept for backward compat
@@ -94,16 +103,16 @@ service cloud.firestore {
         && request.resource.data.paymentStatus == 'pending';
       allow read: if isAdmin()
         || (isAuthenticated() && resource.data.studentId == request.auth.uid)
-        || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId());
+        || (isTeacher() && isAuthenticated() && ownsTeacher(resource.data.teacherId));
       allow update: if isAdmin()
-        || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId());
+        || (isTeacher() && isAuthenticated() && ownsTeacher(resource.data.teacherId));
       allow delete: if isAdmin();
     }
 
     // Reviews - public read visible, auth create, teacher+admin manage own, student reads own
     match /reviews/{reviewId} {
       allow read: if resource.data.isVisible == true || isAdmin()
-        || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId())
+        || (isTeacher() && isAuthenticated() && ownsTeacher(resource.data.teacherId))
         || (isAuthenticated() && resource.data.studentId == request.auth.uid);
       allow create: if isAuthenticated()
         && request.resource.data.studentId == request.auth.uid
@@ -111,7 +120,7 @@ service cloud.firestore {
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5;
       allow update, delete: if isAdmin()
-        || (isTeacher() && isAuthenticated() && resource.data.teacherId == getUserTeacherId());
+        || (isTeacher() && isAuthenticated() && ownsTeacher(resource.data.teacherId));
     }
 
     // Blog Posts - public read published, admin write

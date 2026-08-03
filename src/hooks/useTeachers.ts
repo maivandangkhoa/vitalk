@@ -3,6 +3,7 @@ import {
   collection,
   doc,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -129,15 +130,25 @@ export function useAdminTeachers() {
   return { teachers, loading, refetch: fetchTeachers };
 }
 
-/** Create a new teacher profile */
+/**
+ * Create a teacher profile.
+ * Pass the owner's uid as `id` to create it already claimed; omit it for an
+ * unclaimed profile that an admin can hand to an account later.
+ */
 export async function createTeacher(
-  data: Omit<TeacherProfile, 'id' | 'createdAt' | 'updatedAt'>
+  data: Omit<TeacherProfile, 'id' | 'createdAt' | 'updatedAt'>,
+  id?: string
 ): Promise<string> {
-  const ref = await addDoc(collection(db, 'teachers'), {
+  const payload = {
     ...data,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+  if (id) {
+    await setDoc(doc(db, 'teachers', id), payload);
+    return id;
+  }
+  const ref = await addDoc(collection(db, 'teachers'), payload);
   return ref.id;
 }
 

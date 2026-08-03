@@ -15,7 +15,6 @@ import {
   Download,
   Trash2,
   Upload,
-  Link2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
@@ -28,10 +27,10 @@ import {
   deleteTeacher,
 } from '@/hooks/useTeachers';
 import {
-  syncTeacherUserLink,
-  backfillTeacherUserLinks,
+  claimProfile,
+  grantTeacherRole,
+  releaseTeacherRole,
   listLinkableAccounts,
-  unlinkUser,
   AccountAlreadyLinkedError,
   type LinkableAccount,
 } from '@/lib/teacherLink';
@@ -128,7 +127,6 @@ export default function AdminTeachers() {
   const [showImport, setShowImport] = useState(false);
   const [importUrl, setImportUrl] = useState('');
   const [importing, setImporting] = useState(false);
-  const [backfilling, setBackfilling] = useState(false);
   const [accounts, setAccounts] = useState<LinkableAccount[]>([]);
 
   // Accounts to pick from in the "Linked account" dropdown. Refreshed whenever
@@ -176,25 +174,6 @@ export default function AdminTeachers() {
     }
   };
 
-  /** Repair `users/{uid}.teacherId` for teachers created before it was synced. */
-  const handleBackfillLinks = async () => {
-    setBackfilling(true);
-    try {
-      const { linked, skipped } = await backfillTeacherUserLinks();
-      toast.success(
-        t('teachers.syncAccountsDone', {
-          defaultValue: 'Linked {{linked}} teacher account(s), {{skipped}} without UID.',
-          linked,
-          skipped,
-        })
-      );
-    } catch {
-      toast.error(t('teachers.syncAccountsFailed', 'Failed to sync teacher accounts'));
-    } finally {
-      setBackfilling(false);
-    }
-  };
-
   const startAdd = () => {
     setEditing('new');
     setForm(EMPTY_FORM);
@@ -210,7 +189,8 @@ export default function AdminTeachers() {
       email: teacher.email,
       timezone: teacher.timezone,
       isActive: teacher.isActive,
-      uid: teacher.uid,
+      // A claimed profile's id *is* its owner's uid; an unclaimed one has none.
+      uid: accounts.some((a) => a.uid === teacher.id) ? teacher.id : '',
       contactTeams: teacher.contactIds?.teams || '',
       contactGoogleMeet: teacher.contactIds?.googleMeet || '',
       contactZalo: teacher.contactIds?.zalo || '',
@@ -317,20 +297,13 @@ export default function AdminTeachers() {
         email: form.email,
         timezone: form.timezone,
         isActive: form.isActive,
-        uid: form.uid,
         contactIds,
         languages: rowsToLanguages(form.languages),
       };
 
-      // A teacher can only edit their own profile once `users/{uid}.teacherId`
-      // points back here, so keep that link in sync on every save.
-      const prevUid = editing && editing !== 'new'
-        ? teachers.find((x) => x.id === editing)?.uid
-        : undefined;
-      let savedId = editing;
-
       if (editing === 'new') {
-        savedId = await createTeacher({
+        // With an account picked the profile is born claimed, keyed by its uid.
+        await createTeacher({
           ...payload,
           sortOrder: teachers.length,
           age: 0,
@@ -354,25 +327,22 @@ export default function AdminTeachers() {
           videoIntroUrl: italkiExtra?.videoIntroUrl || '',
           socialLinks: {},
           ...(italkiExtra?.italkiId ? { italkiId: italkiExtra.italkiId } : {}),
-        });
+        }, form.uid || undefined);
+        if (form.uid) await grantTeacherRole(form.uid);
       } else if (editing) {
         await updateTeacher(editing, payload);
+        // Handing an unclaimed profile to an account moves the document, so it
+        // has to happen after the field updates land on the old id.
+        if (form.uid && form.uid !== editing) await claimProfile(editing, form.uid);
       }
 
-      if (savedId) {
-        const linked = await syncTeacherUserLink({
-          teacherId: savedId,
-          uid: form.uid,
-          prevUid,
-        });
-        if (!linked) {
-          toast.warning(
-            t(
-              'teachers.noUidWarning',
-              'No account linked — this teacher cannot edit their own profile yet.'
-            )
-          );
-        }
+      if (!form.uid) {
+        toast.warning(
+          t(
+            'teachers.noAccountWarning',
+            'No account linked — this teacher cannot edit their own profile yet.'
+          )
+        );
       }
 
       toast.success(t('teachers.saved'));
@@ -382,11 +352,11 @@ export default function AdminTeachers() {
       refetch();
     } catch (err) {
       if (err instanceof AccountAlreadyLinkedError) {
-        const other = teachers.find((x) => x.id === err.otherTeacherId);
+        const other = teachers.find((x) => x.id === err.uid);
         toast.error(
           t('teachers.accountTaken', {
-            defaultValue: 'That account is already linked to {{name}}.',
-            name: other?.name || err.otherTeacherId,
+            defaultValue: 'That account already owns the profile "{{name}}".',
+            name: other?.name || err.uid,
           })
         );
       } else {
@@ -399,11 +369,10 @@ export default function AdminTeachers() {
 
   const handleDelete = async (id: string) => {
     try {
-      // Release the account first: a user left pointing at a deleted profile
-      // keeps teacher access and hits an unexplained permission error on save.
-      const uid = teachers.find((x) => x.id === id)?.uid;
-      if (uid) await unlinkUser(uid, id);
       await deleteTeacher(id);
+      // Teacher access exists only to edit that profile; without one the role
+      // would leave them staring at an empty admin area.
+      await releaseTeacherRole(id);
       toast.success(t('teachers.deleted'));
       setDeleting(null);
       refetch();
@@ -430,22 +399,6 @@ export default function AdminTeachers() {
       <AnimatedSection className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('teachers.title')}</h1>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBackfillLinks}
-            disabled={editing !== null || backfilling}
-          >
-            {backfilling ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Link2 className="mr-2 h-4 w-4" />
-            )}
-            <span className="hidden sm:inline">
-              {t('teachers.syncAccounts', 'Sync accounts')}
-            </span>
-            <span className="sm:hidden">Sync</span>
-          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -541,21 +494,26 @@ export default function AdminTeachers() {
                       {t('teachers.noAccount', '— not linked —')}
                     </option>
                     {accounts.map((a) => (
-                      <option key={a.uid} value={a.uid}>
+                      <option
+                        key={a.uid}
+                        value={a.uid}
+                        disabled={a.hasProfile && a.uid !== editing}
+                      >
                         {a.email || a.displayName || a.uid}
-                        {a.linkedTo && a.linkedTo !== editing ? ' (linked elsewhere)' : ''}
+                        {a.hasProfile && a.uid !== editing ? ' — already has a profile' : ''}
                       </option>
                     ))}
-                    {/* keep a UID that no longer matches a user doc visible */}
-                    {form.uid && !accounts.some((a) => a.uid === form.uid) && (
-                      <option value={form.uid}>{form.uid}</option>
-                    )}
                   </select>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {t(
-                      'teachers.linkedAccountHint',
-                      'The account this teacher signs in with. They must sign in once before appearing here.'
-                    )}
+                    {form.uid && form.uid !== editing
+                      ? t(
+                          'teachers.willMove',
+                          'Saving hands this profile to that account, keeping its availability.'
+                        )
+                      : t(
+                          'teachers.linkedAccountHint',
+                          'The account this teacher signs in with. They must sign in once before appearing here.'
+                        )}
                   </p>
                 </div>
                 <div>

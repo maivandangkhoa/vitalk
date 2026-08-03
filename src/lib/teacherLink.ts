@@ -1,7 +1,6 @@
 import {
   collection,
   doc,
-  addDoc,
   getDoc,
   getDocs,
   query,
@@ -9,158 +8,145 @@ import {
   setDoc,
   updateDoc,
   deleteField,
+  writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { DEFAULT_HOURLY_RATE_USD } from './constants';
 
 /**
- * A teacher account needs TWO links to work:
- *   - `teachers/{teacherId}.uid`  → Firestore rules allow the teacher to write
- *     their own profile (`isTeacherOwner`).
- *   - `users/{uid}.teacherId`     → the admin UI knows which profile to edit
- *     (`useTeacherSelector` reads it via the auth store).
+ * A teacher profile's document id IS the owner's auth uid. That single fact
+ * replaces the pair of cross-references this used to keep in sync, and it is
+ * what firestore.rules checks: `request.auth.uid == teacherId`.
  *
- * Only the first one is set by the teacher editor, so this module keeps the
- * reverse link in sync. Both sides are admin-only writes per firestore.rules.
+ * A profile whose id is not a uid is *unclaimed* — it exists (imported from
+ * italki, or created before the person signed up) but nobody can self-edit it.
+ * `claimProfile` moves such a doc onto an account, which is the only way a
+ * profile ever changes owner.
  */
-
-/** Point a user doc at a teacher profile and promote them to `teacher`. */
-async function linkUser(uid: string, teacherId: string): Promise<void> {
-  // An admin who also teaches keeps `admin` — that role is a superset, and
-  // demoting them here would silently revoke their own access.
-  const snap = await getDoc(doc(db, 'users', uid));
-  const isAdmin = snap.exists() && snap.data().role === 'admin';
-
-  // merge so a teacher who has not signed in yet gets a stub doc that
-  // `ensureUserDoc` will later fill in with their identity fields.
-  await setDoc(
-    doc(db, 'users', uid),
-    {
-      uid,
-      teacherId,
-      ...(isAdmin ? {} : { role: 'teacher' }),
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
-}
-
-/** Drop the reverse link, but only if it still points at `teacherId`. */
-export async function unlinkUser(uid: string, teacherId: string): Promise<void> {
-  const ref = doc(db, 'users', uid);
-  const snap = await getDoc(ref);
-  if (!snap.exists() || snap.data().teacherId !== teacherId) return;
-  await updateDoc(ref, {
-    teacherId: deleteField(),
-    // Never touch an admin's role here — an admin who also has a teacher
-    // profile would otherwise demote themselves by editing that profile.
-    ...(snap.data().role === 'teacher' ? { role: 'user' } : {}),
-    updatedAt: serverTimestamp(),
-  });
-}
 
 export interface LinkableAccount {
   uid: string;
   email: string;
   displayName: string;
-  /** id of the teacher profile already claiming this account, if any */
-  linkedTo?: string;
+  /** true when this account already owns a profile */
+  hasProfile: boolean;
 }
 
 /**
- * Accounts an admin can attach a teacher profile to. A person only shows up
- * here after signing in at least once — that is what creates their user doc.
+ * Accounts an admin can hand a profile to. A person appears here only after
+ * signing in at least once — that is what creates their user doc and uid.
  */
 export async function listLinkableAccounts(): Promise<LinkableAccount[]> {
   const [users, teachers] = await Promise.all([
     getDocs(collection(db, 'users')),
     getDocs(collection(db, 'teachers')),
   ]);
-
-  const claimed = new Map<string, string>();
-  teachers.docs.forEach((d) => {
-    const uid = (d.data().uid || '').trim();
-    if (uid) claimed.set(uid, d.id);
-  });
+  const owned = new Set(teachers.docs.map((d) => d.id));
 
   return users.docs
     .map((d) => ({
       uid: d.id,
       email: d.data().email || '',
       displayName: d.data().displayName || '',
-      linkedTo: claimed.get(d.id),
+      hasProfile: owned.has(d.id),
     }))
     .sort((a, b) => (a.email || a.uid).localeCompare(b.email || b.uid));
 }
 
-/** Thrown when an account is already claimed by a different teacher profile. */
-export class AccountAlreadyLinkedError extends Error {
-  otherTeacherId: string;
-
-  constructor(otherTeacherId: string) {
-    super(`Account already linked to teacher ${otherTeacherId}`);
-    this.name = 'AccountAlreadyLinkedError';
-    this.otherTeacherId = otherTeacherId;
-  }
+/** Give the account the teacher role, unless it is an admin (a superset). */
+export async function grantTeacherRole(uid: string): Promise<void> {
+  const snap = await getDoc(doc(db, 'users', uid));
+  if (snap.exists() && snap.data().role === 'admin') return;
+  // merge so an account that has not signed in yet still gets a usable doc
+  await setDoc(
+    doc(db, 'users', uid),
+    { uid, role: 'teacher', updatedAt: serverTimestamp() },
+    { merge: true }
+  );
 }
 
-/**
- * Sync `users/{uid}.teacherId` after a teacher profile is saved.
- * Returns whether the teacher is now linked to a real account.
- * Throws `AccountAlreadyLinkedError` if another profile claims the account —
- * two profiles sharing a uid makes "which profile do I edit?" ambiguous.
- */
-export async function syncTeacherUserLink({
-  teacherId,
-  uid,
-  prevUid,
-}: {
-  teacherId: string;
-  uid: string;
-  prevUid?: string;
-}): Promise<boolean> {
-  const next = uid.trim();
-  const prev = (prevUid || '').trim();
+/** Drop the teacher role when their profile goes away. Admins keep theirs. */
+export async function releaseTeacherRole(uid: string): Promise<void> {
+  const ref = doc(db, 'users', uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists() || snap.data().role !== 'teacher') return;
+  await updateDoc(ref, { role: 'user', updatedAt: serverTimestamp() });
+}
 
-  if (next) {
-    const claimed = await getDocs(
-      query(collection(db, 'teachers'), where('uid', '==', next))
+/** Repoint every doc referencing `from` at `to`. */
+async function rewriteReferences(from: string, to: string): Promise<number> {
+  let n = 0;
+  for (const name of ['bookings', 'reviews']) {
+    const snap = await getDocs(
+      query(collection(db, name), where('teacherId', '==', from))
     );
-    const other = claimed.docs.find((d) => d.id !== teacherId);
-    if (other) throw new AccountAlreadyLinkedError(other.id);
+    for (let i = 0; i < snap.docs.length; i += 400) {
+      const batch = writeBatch(db);
+      snap.docs.slice(i, i + 400).forEach((d) => {
+        batch.update(d.ref, { teacherId: to });
+        n++;
+      });
+      await batch.commit();
+    }
   }
-
-  if (prev && prev !== next) await unlinkUser(prev, teacherId);
-  if (next) await linkUser(next, teacherId);
-
-  return Boolean(next);
+  return n;
 }
 
 /**
- * One-shot repair for teachers created before the link was kept in sync:
- * walks every teacher that has a `uid` and rewrites the reverse link.
- * Safe to re-run — writes are idempotent.
+ * Move an unclaimed profile onto an account: the doc is recreated under the
+ * uid, its availability comes with it, and references are repointed.
+ * Copy-then-delete, so a failure leaves the original intact.
  */
-export async function backfillTeacherUserLinks(): Promise<{
-  linked: number;
-  skipped: number;
-}> {
-  const snap = await getDocs(collection(db, 'teachers'));
-  let linked = 0;
-  let skipped = 0;
+export async function claimProfile(
+  teacherId: string,
+  uid: string
+): Promise<void> {
+  if (teacherId === uid) return;
 
-  for (const d of snap.docs) {
-    const uid = (d.data().uid || '').trim();
-    if (!uid) {
-      skipped++;
-      continue;
-    }
-    await linkUser(uid, d.id);
-    linked++;
+  const source = await getDoc(doc(db, 'teachers', teacherId));
+  if (!source.exists()) throw new Error(`teachers/${teacherId} not found`);
+  if ((await getDoc(doc(db, 'teachers', uid))).exists()) {
+    throw new AccountAlreadyLinkedError(uid);
   }
 
-  return { linked, skipped };
+  const availability = await getDocs(
+    collection(db, 'teachers', teacherId, 'availability')
+  );
+
+  // `uid` is no longer part of the model — the document id carries it.
+  const { uid: _legacy, ...data } = source.data();
+  await setDoc(doc(db, 'teachers', uid), data);
+  for (const a of availability.docs) {
+    await setDoc(doc(db, 'teachers', uid, 'availability', a.id), a.data());
+  }
+
+  const copied = await getDocs(collection(db, 'teachers', uid, 'availability'));
+  if (copied.size !== availability.size) {
+    throw new Error(
+      `availability copy incomplete (${copied.size}/${availability.size}) — original left untouched`
+    );
+  }
+
+  await rewriteReferences(teacherId, uid);
+
+  const batch = writeBatch(db);
+  availability.docs.forEach((a) => batch.delete(a.ref));
+  batch.delete(doc(db, 'teachers', teacherId));
+  await batch.commit();
+
+  await grantTeacherRole(uid);
+}
+
+/** Thrown when the target account already owns a profile. */
+export class AccountAlreadyLinkedError extends Error {
+  uid: string;
+
+  constructor(uid: string) {
+    super(`Account ${uid} already owns a teacher profile`);
+    this.name = 'AccountAlreadyLinkedError';
+    this.uid = uid;
+  }
 }
 
 /** Build a URL-safe slug, falling back to the email local part. */
@@ -168,7 +154,7 @@ function toSlug(name: string, email: string): string {
   const base = (name || email.split('@')[0] || 'teacher')
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/[đĐ]/g, 'd')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
@@ -176,7 +162,7 @@ function toSlug(name: string, email: string): string {
 }
 
 /** Append `-2`, `-3`, … until the slug is free. */
-async function uniqueSlug(base: string): Promise<string> {
+export async function uniqueSlug(base: string): Promise<string> {
   for (let n = 1; n < 50; n++) {
     const candidate = n === 1 ? base : `${base}-${n}`;
     const taken = await getDocs(
@@ -188,20 +174,24 @@ async function uniqueSlug(base: string): Promise<string> {
 }
 
 /**
- * Create a blank teacher profile for a freshly promoted user.
- * Left `isActive: false` on purpose — an empty profile must not appear on the
+ * Ensure an account owns a profile, creating a blank one if not.
+ * Left `isActive: false` on purpose — an empty profile must not reach the
  * public teachers list until an admin fills it in and flips the toggle.
+ * Returns true when a profile was created.
  */
-async function createBlankTeacher(
+export async function ensureTeacherProfile(
   uid: string,
-  name: string,
-  email: string
-): Promise<string> {
+  profile?: { name?: string; email?: string }
+): Promise<boolean> {
+  const ref = doc(db, 'teachers', uid);
+  if ((await getDoc(ref)).exists()) return false;
+
+  const name = profile?.name || '';
+  const email = profile?.email || '';
   const count = (await getDocs(collection(db, 'teachers'))).size;
   const empty = { en: '', vi: '', ko: '', zh: '', ja: '' };
 
-  const ref = await addDoc(collection(db, 'teachers'), {
-    uid,
+  await setDoc(ref, {
     name: name || email.split('@')[0] || 'New teacher',
     slug: await uniqueSlug(toSlug(name, email)),
     email,
@@ -229,36 +219,22 @@ async function createBlankTeacher(
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  return ref.id;
+  return true;
 }
 
 /**
- * Sync the link after a user's role is changed from the Users page.
- * Promoting to `teacher` resolves the profile by matching `teachers.uid`,
- * creating a blank one when the user has none yet.
+ * Remove the `teacherId` pointer left on user docs by the old two-link model.
+ * Safe to run repeatedly; returns how many docs were cleaned.
  */
-export async function syncUserRoleLink(
-  uid: string,
-  role: string,
-  profile?: { name?: string; email?: string }
-): Promise<{ teacherId: string | null; created: boolean }> {
-  if (role !== 'teacher') {
-    const snap = await getDoc(doc(db, 'users', uid));
-    if (snap.exists() && snap.data().teacherId) {
-      await updateDoc(doc(db, 'users', uid), { teacherId: deleteField() });
-    }
-    return { teacherId: null, created: false };
+export async function dropLegacyUserPointers(): Promise<number> {
+  const users = await getDocs(collection(db, 'users'));
+  const stale = users.docs.filter((d) => d.data().teacherId !== undefined);
+  for (let i = 0; i < stale.length; i += 400) {
+    const batch = writeBatch(db);
+    stale.slice(i, i + 400).forEach((d) => {
+      batch.update(d.ref, { teacherId: deleteField() });
+    });
+    await batch.commit();
   }
-
-  const match = await getDocs(
-    query(collection(db, 'teachers'), where('uid', '==', uid))
-  );
-  const existing = match.docs[0]?.id;
-  const created = !existing;
-  const teacherId =
-    existing ??
-    (await createBlankTeacher(uid, profile?.name || '', profile?.email || ''));
-
-  await updateDoc(doc(db, 'users', uid), { teacherId });
-  return { teacherId, created };
+  return stale.length;
 }
