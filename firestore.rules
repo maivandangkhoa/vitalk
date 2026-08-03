@@ -22,22 +22,17 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // A claimed teacher profile is keyed by the owner's uid, so ownership is a
-    // plain string compare. The `||` branch is the pre-migration form (link
-    // carried in a `uid` field) and goes away once every profile is moved.
-    // Order matters: `||` short-circuits, so the cheap compare runs first and
-    // the `get()` only happens for not-yet-migrated docs.
+    // A teacher profile lives at `teachers/{owner uid}`, so ownership is the
+    // document id — no lookup, and no second reference that could disagree.
+    // A profile with a generated id has no owner: nobody satisfies this, which
+    // is exactly right for one that has not been claimed yet.
     function isTeacherOwner(teacherId) {
-      return isAuthenticated()
-        && (request.auth.uid == teacherId
-            || get(/databases/$(database)/documents/teachers/$(teacherId)).data.get('uid', '') == request.auth.uid);
+      return isAuthenticated() && request.auth.uid == teacherId;
     }
 
-    // Same transitional shape for docs that *reference* a teacher.
+    // Same check for documents that *reference* a teacher.
     function ownsTeacher(teacherId) {
-      return isAuthenticated()
-        && (teacherId == request.auth.uid
-            || teacherId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('teacherId', ''));
+      return isAuthenticated() && teacherId == request.auth.uid;
     }
 
     // Profile - legacy, kept for backward compat
@@ -80,16 +75,15 @@ service cloud.firestore {
     }
 
     // Users - own doc read/write, admin read all
-    // Non-admins may never set/change their own `role` or `teacherId`
-    // (prevents self-escalation to admin/teacher). Only admins can.
+    // Non-admins may never set/change their own `role` (prevents
+    // self-escalation to admin/teacher). Only admins can.
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isAdmin()
         || (isOwner(userId) && request.resource.data.get('role', 'user') == 'user');
       allow update: if isAdmin()
         || (isOwner(userId)
-            && request.resource.data.get('role', 'user') == resource.data.get('role', 'user')
-            && request.resource.data.get('teacherId', '') == resource.data.get('teacherId', ''));
+            && request.resource.data.get('role', 'user') == resource.data.get('role', 'user'));
       allow delete: if isAdmin();
     }
 
