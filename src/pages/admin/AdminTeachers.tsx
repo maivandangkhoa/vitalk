@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,14 @@ import {
   updateTeacher,
   deleteTeacher,
 } from '@/hooks/useTeachers';
-import { syncTeacherUserLink, backfillTeacherUserLinks } from '@/lib/teacherLink';
+import {
+  syncTeacherUserLink,
+  backfillTeacherUserLinks,
+  listLinkableAccounts,
+  unlinkUser,
+  AccountAlreadyLinkedError,
+  type LinkableAccount,
+} from '@/lib/teacherLink';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { LANG_INFO, normalizeLangKey } from '@/components/teachers/TeacherLanguages';
 
@@ -122,6 +129,13 @@ export default function AdminTeachers() {
   const [importUrl, setImportUrl] = useState('');
   const [importing, setImporting] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
+  const [accounts, setAccounts] = useState<LinkableAccount[]>([]);
+
+  // Accounts to pick from in the "Linked account" dropdown. Refreshed whenever
+  // the teacher list changes so a newly signed-in teacher shows up.
+  useEffect(() => {
+    listLinkableAccounts().then(setAccounts).catch(() => setAccounts([]));
+  }, [teachers]);
   // Store extra fields from italki that don't fit in the form
   const [italkiExtra, setItalkiExtra] = useState<Partial<ItalkiProfileResult> | null>(null);
 
@@ -355,7 +369,7 @@ export default function AdminTeachers() {
           toast.warning(
             t(
               'teachers.noUidWarning',
-              'No account UID set — this teacher cannot edit their own profile yet.'
+              'No account linked — this teacher cannot edit their own profile yet.'
             )
           );
         }
@@ -366,8 +380,18 @@ export default function AdminTeachers() {
       setForm(EMPTY_FORM);
       setItalkiExtra(null);
       refetch();
-    } catch {
-      toast.error(t('teachers.saveFailed'));
+    } catch (err) {
+      if (err instanceof AccountAlreadyLinkedError) {
+        const other = teachers.find((x) => x.id === err.otherTeacherId);
+        toast.error(
+          t('teachers.accountTaken', {
+            defaultValue: 'That account is already linked to {{name}}.',
+            name: other?.name || err.otherTeacherId,
+          })
+        );
+      } else {
+        toast.error(t('teachers.saveFailed'));
+      }
     } finally {
       setSaving(false);
     }
@@ -375,6 +399,10 @@ export default function AdminTeachers() {
 
   const handleDelete = async (id: string) => {
     try {
+      // Release the account first: a user left pointing at a deleted profile
+      // keeps teacher access and hits an unexplained permission error on save.
+      const uid = teachers.find((x) => x.id === id)?.uid;
+      if (uid) await unlinkUser(uid, id);
       await deleteTeacher(id);
       toast.success(t('teachers.deleted'));
       setDeleting(null);
@@ -501,13 +529,34 @@ export default function AdminTeachers() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium">{t('teachers.uid')}</label>
-                  <input
+                  <label className="mb-1.5 block text-sm font-medium">
+                    {t('teachers.linkedAccount', 'Linked account')}
+                  </label>
+                  <select
                     value={form.uid}
                     onChange={(e) => setForm({ ...form, uid: e.target.value })}
                     className={inputClass}
-                    placeholder="Firebase Auth UID"
-                  />
+                  >
+                    <option value="">
+                      {t('teachers.noAccount', '— not linked —')}
+                    </option>
+                    {accounts.map((a) => (
+                      <option key={a.uid} value={a.uid}>
+                        {a.email || a.displayName || a.uid}
+                        {a.linkedTo && a.linkedTo !== editing ? ' (linked elsewhere)' : ''}
+                      </option>
+                    ))}
+                    {/* keep a UID that no longer matches a user doc visible */}
+                    {form.uid && !accounts.some((a) => a.uid === form.uid) && (
+                      <option value={form.uid}>{form.uid}</option>
+                    )}
+                  </select>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t(
+                      'teachers.linkedAccountHint',
+                      'The account this teacher signs in with. They must sign in once before appearing here.'
+                    )}
+                  </p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium">{t('teachers.timezone')}</label>

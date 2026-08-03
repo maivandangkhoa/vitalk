@@ -37,20 +37,69 @@ async function linkUser(uid: string, teacherId: string): Promise<void> {
 }
 
 /** Drop the reverse link, but only if it still points at `teacherId`. */
-async function unlinkUser(uid: string, teacherId: string): Promise<void> {
+export async function unlinkUser(uid: string, teacherId: string): Promise<void> {
   const ref = doc(db, 'users', uid);
   const snap = await getDoc(ref);
   if (!snap.exists() || snap.data().teacherId !== teacherId) return;
   await updateDoc(ref, {
     teacherId: deleteField(),
-    role: 'user',
+    // Never touch an admin's role here — an admin who also has a teacher
+    // profile would otherwise demote themselves by editing that profile.
+    ...(snap.data().role === 'teacher' ? { role: 'user' } : {}),
     updatedAt: serverTimestamp(),
   });
+}
+
+export interface LinkableAccount {
+  uid: string;
+  email: string;
+  displayName: string;
+  /** id of the teacher profile already claiming this account, if any */
+  linkedTo?: string;
+}
+
+/**
+ * Accounts an admin can attach a teacher profile to. A person only shows up
+ * here after signing in at least once — that is what creates their user doc.
+ */
+export async function listLinkableAccounts(): Promise<LinkableAccount[]> {
+  const [users, teachers] = await Promise.all([
+    getDocs(collection(db, 'users')),
+    getDocs(collection(db, 'teachers')),
+  ]);
+
+  const claimed = new Map<string, string>();
+  teachers.docs.forEach((d) => {
+    const uid = (d.data().uid || '').trim();
+    if (uid) claimed.set(uid, d.id);
+  });
+
+  return users.docs
+    .map((d) => ({
+      uid: d.id,
+      email: d.data().email || '',
+      displayName: d.data().displayName || '',
+      linkedTo: claimed.get(d.id),
+    }))
+    .sort((a, b) => (a.email || a.uid).localeCompare(b.email || b.uid));
+}
+
+/** Thrown when an account is already claimed by a different teacher profile. */
+export class AccountAlreadyLinkedError extends Error {
+  otherTeacherId: string;
+
+  constructor(otherTeacherId: string) {
+    super(`Account already linked to teacher ${otherTeacherId}`);
+    this.name = 'AccountAlreadyLinkedError';
+    this.otherTeacherId = otherTeacherId;
+  }
 }
 
 /**
  * Sync `users/{uid}.teacherId` after a teacher profile is saved.
  * Returns whether the teacher is now linked to a real account.
+ * Throws `AccountAlreadyLinkedError` if another profile claims the account —
+ * two profiles sharing a uid makes "which profile do I edit?" ambiguous.
  */
 export async function syncTeacherUserLink({
   teacherId,
@@ -63,6 +112,14 @@ export async function syncTeacherUserLink({
 }): Promise<boolean> {
   const next = uid.trim();
   const prev = (prevUid || '').trim();
+
+  if (next) {
+    const claimed = await getDocs(
+      query(collection(db, 'teachers'), where('uid', '==', next))
+    );
+    const other = claimed.docs.find((d) => d.id !== teacherId);
+    if (other) throw new AccountAlreadyLinkedError(other.id);
+  }
 
   if (prev && prev !== next) await unlinkUser(prev, teacherId);
   if (next) await linkUser(next, teacherId);
