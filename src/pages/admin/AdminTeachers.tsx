@@ -15,6 +15,7 @@ import {
   Download,
   Trash2,
   Upload,
+  Link2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
@@ -26,6 +27,7 @@ import {
   updateTeacher,
   deleteTeacher,
 } from '@/hooks/useTeachers';
+import { syncTeacherUserLink, backfillTeacherUserLinks } from '@/lib/teacherLink';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { LANG_INFO, normalizeLangKey } from '@/components/teachers/TeacherLanguages';
 
@@ -119,6 +121,7 @@ export default function AdminTeachers() {
   const [showImport, setShowImport] = useState(false);
   const [importUrl, setImportUrl] = useState('');
   const [importing, setImporting] = useState(false);
+  const [backfilling, setBackfilling] = useState(false);
   // Store extra fields from italki that don't fit in the form
   const [italkiExtra, setItalkiExtra] = useState<Partial<ItalkiProfileResult> | null>(null);
 
@@ -156,6 +159,25 @@ export default function AdminTeachers() {
     } finally {
       setUploadingQr(null);
       if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  /** Repair `users/{uid}.teacherId` for teachers created before it was synced. */
+  const handleBackfillLinks = async () => {
+    setBackfilling(true);
+    try {
+      const { linked, skipped } = await backfillTeacherUserLinks();
+      toast.success(
+        t('teachers.syncAccountsDone', {
+          defaultValue: 'Linked {{linked}} teacher account(s), {{skipped}} without UID.',
+          linked,
+          skipped,
+        })
+      );
+    } catch {
+      toast.error(t('teachers.syncAccountsFailed', 'Failed to sync teacher accounts'));
+    } finally {
+      setBackfilling(false);
     }
   };
 
@@ -286,8 +308,15 @@ export default function AdminTeachers() {
         languages: rowsToLanguages(form.languages),
       };
 
+      // A teacher can only edit their own profile once `users/{uid}.teacherId`
+      // points back here, so keep that link in sync on every save.
+      const prevUid = editing && editing !== 'new'
+        ? teachers.find((x) => x.id === editing)?.uid
+        : undefined;
+      let savedId = editing;
+
       if (editing === 'new') {
-        await createTeacher({
+        savedId = await createTeacher({
           ...payload,
           sortOrder: teachers.length,
           age: 0,
@@ -315,6 +344,23 @@ export default function AdminTeachers() {
       } else if (editing) {
         await updateTeacher(editing, payload);
       }
+
+      if (savedId) {
+        const linked = await syncTeacherUserLink({
+          teacherId: savedId,
+          uid: form.uid,
+          prevUid,
+        });
+        if (!linked) {
+          toast.warning(
+            t(
+              'teachers.noUidWarning',
+              'No account UID set — this teacher cannot edit their own profile yet.'
+            )
+          );
+        }
+      }
+
       toast.success(t('teachers.saved'));
       setEditing(null);
       setForm(EMPTY_FORM);
@@ -356,6 +402,22 @@ export default function AdminTeachers() {
       <AnimatedSection className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('teachers.title')}</h1>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBackfillLinks}
+            disabled={editing !== null || backfilling}
+          >
+            {backfilling ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Link2 className="mr-2 h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">
+              {t('teachers.syncAccounts', 'Sync accounts')}
+            </span>
+            <span className="sm:hidden">Sync</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"

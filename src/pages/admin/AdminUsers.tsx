@@ -24,6 +24,7 @@ import {
   query,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { syncUserRoleLink } from '@/lib/teacherLink';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import type { UserRole } from '@/types';
 
@@ -85,6 +86,18 @@ export default function AdminUsers() {
         prev.map((u) => (u.uid === uid ? { ...u, role: newRole } : u))
       );
       toast.success(t('users.roleUpdated', { role: newRole }));
+
+      // Role alone is not enough: the admin pages resolve the teacher's own
+      // profile through `users/{uid}.teacherId`.
+      const teacherId = await syncUserRoleLink(uid, newRole);
+      if (newRole === 'teacher' && !teacherId) {
+        toast.warning(
+          t(
+            'users.noTeacherProfile',
+            'No teacher profile has this UID yet — set it in Teachers, or they cannot edit their profile.'
+          )
+        );
+      }
     } catch (err) {
       console.error('Failed to update role:', err);
       toast.error(t('users.roleUpdateFailed'));

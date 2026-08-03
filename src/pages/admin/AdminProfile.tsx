@@ -123,7 +123,14 @@ export default function AdminProfile() {
   if (!teacherId) {
     return (
       <div className="flex items-center justify-center py-16">
-        <p className="text-muted-foreground">Select a teacher to edit their profile.</p>
+        <p className="max-w-md text-center text-muted-foreground">
+          {isAdmin
+            ? t('profile.selectTeacher', 'Select a teacher to edit their profile.')
+            : t(
+                'profile.notLinked',
+                'Your account is not linked to a teacher profile yet. Ask an admin to set your UID in Admin → Teachers.'
+              )}
+        </p>
       </div>
     );
   }

@@ -81,6 +81,23 @@ async function ensureUserDoc(
     };
     await setDoc(userRef, newUser);
   } else {
-    await setDoc(userRef, { lastLoginAt: serverTimestamp() }, { merge: true });
+    // An admin may have pre-created this doc to link a teacher profile, so it
+    // can be missing identity fields. Refresh them, never `role`/`teacherId`
+    // (firestore.rules rejects a non-admin changing those).
+    const existing = userSnap.data();
+    await setDoc(
+      userRef,
+      {
+        uid: user.uid,
+        displayName: user.displayName || existing.displayName || '',
+        email: user.email || existing.email || '',
+        photoURL: user.photoURL ?? existing.photoURL ?? null,
+        provider: existing.provider || provider,
+        preferredLanguage: existing.preferredLanguage || ('en' as Language),
+        ...(existing.createdAt ? {} : { createdAt: serverTimestamp() }),
+        lastLoginAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
   }
 }
