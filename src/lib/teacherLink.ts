@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  addDoc,
   getDoc,
   getDocs,
   query,
@@ -11,6 +12,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { DEFAULT_HOURLY_RATE_USD } from './constants';
 
 /**
  * A teacher account needs TWO links to work:
@@ -94,29 +96,102 @@ export async function backfillTeacherUserLinks(): Promise<{
   return { linked, skipped };
 }
 
+/** Build a URL-safe slug, falling back to the email local part. */
+function toSlug(name: string, email: string): string {
+  const base = (name || email.split('@')[0] || 'teacher')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return base || 'teacher';
+}
+
+/** Append `-2`, `-3`, … until the slug is free. */
+async function uniqueSlug(base: string): Promise<string> {
+  for (let n = 1; n < 50; n++) {
+    const candidate = n === 1 ? base : `${base}-${n}`;
+    const taken = await getDocs(
+      query(collection(db, 'teachers'), where('slug', '==', candidate))
+    );
+    if (taken.empty) return candidate;
+  }
+  return `${base}-${Math.floor(performance.now())}`;
+}
+
+/**
+ * Create a blank teacher profile for a freshly promoted user.
+ * Left `isActive: false` on purpose — an empty profile must not appear on the
+ * public teachers list until an admin fills it in and flips the toggle.
+ */
+async function createBlankTeacher(
+  uid: string,
+  name: string,
+  email: string
+): Promise<string> {
+  const count = (await getDocs(collection(db, 'teachers'))).size;
+  const empty = { en: '', vi: '', ko: '', zh: '', ja: '' };
+
+  const ref = await addDoc(collection(db, 'teachers'), {
+    uid,
+    name: name || email.split('@')[0] || 'New teacher',
+    slug: await uniqueSlug(toSlug(name, email)),
+    email,
+    timezone: '',
+    isActive: false,
+    sortOrder: count,
+    age: 0,
+    location: '',
+    locationSince: 0,
+    origin: '',
+    languages: {},
+    education: '',
+    previousLocations: [],
+    interests: [],
+    hourlyRate: DEFAULT_HOURLY_RATE_USD,
+    currency: 'USD',
+    rating: 0,
+    totalReviews: 0,
+    bio: empty,
+    teachingStyle: empty,
+    profileImageUrl: '',
+    videoIntroUrl: '',
+    socialLinks: {},
+    contactIds: {},
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
 /**
  * Sync the link after a user's role is changed from the Users page.
- * Promoting to `teacher` resolves the profile by matching `teachers.uid`.
- * Returns the linked teacherId, or null if no profile matched.
+ * Promoting to `teacher` resolves the profile by matching `teachers.uid`,
+ * creating a blank one when the user has none yet.
  */
 export async function syncUserRoleLink(
   uid: string,
-  role: string
-): Promise<string | null> {
+  role: string,
+  profile?: { name?: string; email?: string }
+): Promise<{ teacherId: string | null; created: boolean }> {
   if (role !== 'teacher') {
     const snap = await getDoc(doc(db, 'users', uid));
     if (snap.exists() && snap.data().teacherId) {
       await updateDoc(doc(db, 'users', uid), { teacherId: deleteField() });
     }
-    return null;
+    return { teacherId: null, created: false };
   }
 
   const match = await getDocs(
     query(collection(db, 'teachers'), where('uid', '==', uid))
   );
-  const teacherId = match.docs[0]?.id ?? null;
-  if (teacherId) {
-    await updateDoc(doc(db, 'users', uid), { teacherId });
-  }
-  return teacherId;
+  const existing = match.docs[0]?.id;
+  const created = !existing;
+  const teacherId =
+    existing ??
+    (await createBlankTeacher(uid, profile?.name || '', profile?.email || ''));
+
+  await updateDoc(doc(db, 'users', uid), { teacherId });
+  return { teacherId, created };
 }

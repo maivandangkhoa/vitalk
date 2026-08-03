@@ -88,13 +88,18 @@ export default function AdminUsers() {
       toast.success(t('users.roleUpdated', { role: newRole }));
 
       // Role alone is not enough: the admin pages resolve the teacher's own
-      // profile through `users/{uid}.teacherId`.
-      const teacherId = await syncUserRoleLink(uid, newRole);
-      if (newRole === 'teacher' && !teacherId) {
-        toast.warning(
+      // profile through `users/{uid}.teacherId`. Creates the profile if the
+      // user does not have one yet.
+      const target = users.find((u) => u.uid === uid);
+      const { created } = await syncUserRoleLink(uid, newRole, {
+        name: target?.displayName,
+        email: target?.email,
+      });
+      if (created) {
+        toast.info(
           t(
-            'users.noTeacherProfile',
-            'No teacher profile has this UID yet — set it in Teachers, or they cannot edit their profile.'
+            'users.teacherProfileCreated',
+            'Teacher profile created (hidden). Fill it in under Teachers, then set it active.'
           )
         );
       }
