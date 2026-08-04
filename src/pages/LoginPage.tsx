@@ -9,6 +9,10 @@ import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '@/lib/auth';
 import { toast } from 'sonner';
 import { AnimatedSection } from '@/components/shared/motion';
 
+// Naver hasn't approved our OAuth app yet, so the button stays hidden.
+// Flip this back to true once the review passes.
+const NAVER_LOGIN_ENABLED = false;
+
 function authErrorKey(err: unknown): string {
   const code = (err as { code?: string })?.code;
   switch (code) {
@@ -232,6 +236,7 @@ export default function LoginPage() {
               {t('auth.loginWithKakao')}
             </Button>
 
+            {NAVER_LOGIN_ENABLED && (
             <Button
               variant="outline"
               className="h-12 w-full rounded-xl bg-[#03C75A] text-white hover:bg-[#02b351]"
@@ -246,6 +251,7 @@ export default function LoginPage() {
               </svg>
               {t('auth.loginWithNaver')}
             </Button>
+            )}
 
             <div className="flex items-center gap-4">
               <Separator className="flex-1" />
