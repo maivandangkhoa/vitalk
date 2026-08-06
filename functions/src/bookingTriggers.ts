@@ -85,12 +85,16 @@ async function fireNewBookingNotifications(
     logger.warn(`No email found for teacher ${data.teacherId}, skipping teacher notification`);
   }
 
-  try {
-    const studentEmail = bookingConfirmationStudent(emailData);
-    await sendToStudent({ to: data.studentEmail, ...studentEmail });
-    logger.info(`Sent booking confirmation to ${data.studentEmail}`);
-  } catch (err) {
-    logger.error("Failed to send student email", err);
+  if (data.studentEmail) {
+    try {
+      const studentEmail = bookingConfirmationStudent(emailData);
+      await sendToStudent({ to: data.studentEmail, ...studentEmail });
+      logger.info(`Sent booking confirmation to ${data.studentEmail}`);
+    } catch (err) {
+      logger.error("Failed to send student email", err);
+    }
+  } else {
+    logger.warn(`No student email on booking ${bookingId}, skipping confirmation`);
   }
 
   try {
@@ -168,7 +172,7 @@ export const onBookingUpdated = onDocumentUpdated(
       // notifications, so just send the payment-confirmed email here.
       if (ONLINE_PAYMENT_METHODS.has(after.paymentMethod)) {
         await fireNewBookingNotifications(bookingId, after);
-      } else {
+      } else if (after.studentEmail) {
         try {
           const email = paymentConfirmedStudent(emailData);
           await sendToStudent({ to: after.studentEmail, ...email });
@@ -176,17 +180,23 @@ export const onBookingUpdated = onDocumentUpdated(
         } catch (err) {
           logger.error("Failed to send payment confirmation email", err);
         }
+      } else {
+        logger.warn(`No student email on booking ${bookingId}, skipping payment confirmation`);
       }
     }
 
     // Booking cancelled
     if (before.status !== "cancelled" && after.status === "cancelled") {
-      try {
-        const studentEmail = cancelledBookingStudent(emailData);
-        await sendToStudent({ to: after.studentEmail, ...studentEmail });
-        logger.info(`Sent cancellation email to ${after.studentEmail}`);
-      } catch (err) {
-        logger.error("Failed to send student cancellation email", err);
+      if (after.studentEmail) {
+        try {
+          const studentEmail = cancelledBookingStudent(emailData);
+          await sendToStudent({ to: after.studentEmail, ...studentEmail });
+          logger.info(`Sent cancellation email to ${after.studentEmail}`);
+        } catch (err) {
+          logger.error("Failed to send student cancellation email", err);
+        }
+      } else {
+        logger.warn(`No student email on booking ${bookingId}, skipping student cancellation`);
       }
 
       const teacherEmailAddr = await getTeacherEmail(after.teacherId);

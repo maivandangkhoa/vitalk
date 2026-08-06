@@ -38,6 +38,12 @@
     "viewOnGoogleMaps": "Google Maps",
     "viewOnNaverMap": "Naver Map"
   },
+  "contactEmail": {
+    "label": "確認メールの送信先",
+    "placeholder": "you@example.com",
+    "hint": "予約確認とレッスンのリマインダーをこのアドレスに送信します。",
+    "invalid": "有効なメールアドレスを入力してください。"
+  },
   "notes": {
     "label": "講師へのメモ",
     "placeholder": "何に集中したいですか？特定のトピックや目標はありますか？"

@@ -38,6 +38,12 @@
     "viewOnGoogleMaps": "Google Maps",
     "viewOnNaverMap": "Naver Map"
   },
+  "contactEmail": {
+    "label": "Email nhận xác nhận",
+    "placeholder": "ban@example.com",
+    "hint": "Chúng tôi gửi xác nhận đặt lịch và nhắc lịch học tới địa chỉ này.",
+    "invalid": "Vui lòng nhập địa chỉ email hợp lệ."
+  },
   "notes": {
     "label": "Ghi chú cho giáo viên",
     "placeholder": "Bạn muốn tập trung vào phần nào? Có chủ đề hay mục tiêu cụ thể nào không?"

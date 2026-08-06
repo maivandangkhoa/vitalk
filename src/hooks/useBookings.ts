@@ -101,6 +101,8 @@ interface CreateBookingData {
   platform: Booking['platform'];
   offlineLocation: Booking['offlineLocation'];
   paymentMethod: Booking['paymentMethod'];
+  /** Collected in the booking form — the auth provider may not give us one. */
+  studentEmail: string;
   notes: string;
   amount: number;
   currency: string;
@@ -156,7 +158,7 @@ export function useCreateBooking() {
             teacherName: data.teacherName,
             studentId: user.uid,
             studentName: user.displayName || '',
-            studentEmail: user.email || '',
+            studentEmail: data.studentEmail || user.email || '',
             lessonTypeId: data.lessonTypeId,
             lessonTypeName: data.lessonTypeName,
             date: data.date,

@@ -64,12 +64,16 @@ export const sendLessonReminders = onSchedule(
       };
 
       // Remind student
-      try {
-        const studentEmail = lessonReminderStudent(emailData);
-        await sendToStudent({ to: data.studentEmail, ...studentEmail });
-        logger.info(`Sent reminder to ${data.studentEmail} for ${doc.id}`);
-      } catch (err) {
-        logger.error(`Failed to send student reminder for ${doc.id}`, err);
+      if (data.studentEmail) {
+        try {
+          const studentEmail = lessonReminderStudent(emailData);
+          await sendToStudent({ to: data.studentEmail, ...studentEmail });
+          logger.info(`Sent reminder to ${data.studentEmail} for ${doc.id}`);
+        } catch (err) {
+          logger.error(`Failed to send student reminder for ${doc.id}`, err);
+        }
+      } else {
+        logger.warn(`No student email on booking ${doc.id}, skipping student reminder`);
       }
 
       // Remind teacher

@@ -38,6 +38,12 @@
     "viewOnGoogleMaps": "Google 地图",
     "viewOnNaverMap": "Naver 地图"
   },
+  "contactEmail": {
+    "label": "接收确认的邮箱",
+    "placeholder": "you@example.com",
+    "hint": "我们会将预约确认和课程提醒发送到此邮箱。",
+    "invalid": "请输入有效的邮箱地址。"
+  },
   "notes": {
     "label": "给老师的留言",
     "placeholder": "您希望重点学习什么？有特定的话题或目标吗？"

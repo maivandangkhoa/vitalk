@@ -81,7 +81,10 @@ function AdminBookingCard({
             <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
               <div className="flex items-center gap-2.5">
                 <Mail className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{booking.studentName} ({booking.studentEmail})</span>
+                <span className="truncate">
+                  {booking.studentName}
+                  {booking.studentEmail ? ` (${booking.studentEmail})` : ''}
+                </span>
               </div>
               <div className="flex items-center gap-2.5">
                 <CalendarDays className="h-3.5 w-3.5 shrink-0" />

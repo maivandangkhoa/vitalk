@@ -44,6 +44,9 @@ const TossCheckout = lazy(() => import('@/components/booking/TossCheckout'));
 const BankTransferInfo = lazy(() => import('@/components/booking/BankTransferInfo'));
 const TossRedirectHandler = lazy(() => import('@/components/booking/TossRedirectHandler'));
 
+/** Loose on purpose: catches typos, leaves real-address checking to delivery. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const STEPS = ['lessonType', 'dateTime', 'details', 'payment'] as const;
 type Step = (typeof STEPS)[number];
 
@@ -96,6 +99,9 @@ export default function BookingPage() {
   const [platform, setPlatform] = useState<typeof PLATFORM_OPTIONS[number]>('teams');
   const [selectedLocationId, setSelectedLocationId] = useState('');
   const [customLocationAddress, setCustomLocationAddress] = useState('');
+  // null until the user types or a draft is restored, so the field can fall
+  // back to the account email as it loads without clobbering either.
+  const [emailOverride, setEmailOverride] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer');
   const [bookingComplete, setBookingComplete] = useState(false);
@@ -134,6 +140,12 @@ export default function BookingPage() {
   const { userTzLabel } = useUserTimezone(selectedTeacher?.timezone);
 
   const step: Step = STEPS[currentStep];
+  // Social providers that don't release an email (Kakao without the verified
+  // consent item, a Facebook app limited to public_profile) leave this blank,
+  // so the user types one in and notifications always have somewhere to go.
+  const contactEmail = emailOverride ?? user?.email ?? '';
+  const trimmedEmail = contactEmail.trim();
+  const emailValid = EMAIL_RE.test(trimmedEmail);
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
   const daySlots: AggregatedSlot[] = selectedDateStr ? (aggregatedSlots[selectedDateStr] || []) : [];
 
@@ -226,6 +238,7 @@ export default function BookingPage() {
       if (draft.platform) setPlatform(draft.platform);
       if (draft.selectedLocationId) setSelectedLocationId(draft.selectedLocationId);
       if (draft.customLocationAddress) setCustomLocationAddress(draft.customLocationAddress);
+      if (draft.contactEmail) setEmailOverride(draft.contactEmail);
       if (draft.notes) setNotes(draft.notes);
       if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod);
       if (typeof draft.currentStep === 'number') setCurrentStep(draft.currentStep);
@@ -257,7 +270,10 @@ export default function BookingPage() {
     switch (step) {
       case 'lessonType': return !!selectedLesson;
       case 'dateTime': return !!selectedDate && !!selectedTime && !!selectedSlot && !!selectedTeacherId;
-      case 'details': return lessonFormat === 'online' || !!selectedLocationId || (selectedLocationId === 'custom' && !!customLocationAddress.trim());
+      case 'details': {
+        const locationOk = lessonFormat === 'online' || !!selectedLocationId || (selectedLocationId === 'custom' && !!customLocationAddress.trim());
+        return locationOk && emailValid;
+      }
       case 'payment': return true;
     }
   };
@@ -275,6 +291,7 @@ export default function BookingPage() {
         platform,
         selectedLocationId,
         customLocationAddress,
+        contactEmail,
         notes,
         paymentMethod,
         currentStep,
@@ -285,6 +302,13 @@ export default function BookingPage() {
       return;
     }
     if (!selectedLessonData || !selectedDate || !selectedTeacherSlotInfo || !selectedTeacher) return;
+    // A draft restored straight onto the payment step can carry an empty email
+    // (saved before login, provider gave us none), so re-check here too.
+    if (!emailValid) {
+      toast.error(t('contactEmail.invalid'));
+      setCurrentStep(STEPS.indexOf('details'));
+      return;
+    }
 
     try {
       const selectedLocation = offlineLocations.find((l) => l.id === selectedLocationId);
@@ -309,6 +333,7 @@ export default function BookingPage() {
         platform: lessonFormat === 'online' ? PLATFORM_MAP[platform] : null,
         offlineLocation,
         paymentMethod,
+        studentEmail: trimmedEmail,
         notes,
         amount: amountUSD,
         currency: 'USD',
@@ -802,6 +827,28 @@ export default function BookingPage() {
             )}
 
             <div>
+              <label htmlFor="booking-contact-email" className="mb-2 block text-sm font-medium">
+                {t('contactEmail.label')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="booking-contact-email"
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setEmailOverride(e.target.value)}
+                placeholder={t('contactEmail.placeholder')}
+                autoComplete="email"
+                className={`w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none transition-all focus:ring-2 ${
+                  trimmedEmail && !emailValid
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                    : 'border-input focus:border-indigo-500 focus:ring-indigo-500/20'
+                }`}
+              />
+              <p className={`mt-1.5 text-xs ${trimmedEmail && !emailValid ? 'text-red-500' : 'text-muted-foreground'}`}>
+                {trimmedEmail && !emailValid ? t('contactEmail.invalid') : t('contactEmail.hint')}
+              </p>
+            </div>
+
+            <div>
               <label className="mb-2 block text-sm font-medium">{t('notes.label')}</label>
               <textarea
                 value={notes}
@@ -902,7 +949,7 @@ export default function BookingPage() {
                     bookingId={createdBookingId}
                     amount={getDurationPrice(selectedTeacher, selectedDuration, 'USD', config)}
                     customerName={user.displayName || ''}
-                    customerEmail={user.email || ''}
+                    customerEmail={trimmedEmail}
                     orderName={`HaviTalk - ${selectedLessonData?.title?.en ?? 'Lesson'}`}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}

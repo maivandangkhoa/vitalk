@@ -38,6 +38,12 @@
     "viewOnGoogleMaps": "Google Maps",
     "viewOnNaverMap": "네이버 지도"
   },
+  "contactEmail": {
+    "label": "확인 메일 주소",
+    "placeholder": "you@example.com",
+    "hint": "예약 확인과 수업 알림을 이 주소로 보내드립니다.",
+    "invalid": "올바른 이메일 주소를 입력해 주세요."
+  },
   "notes": {
     "label": "선생님에게 메모",
     "placeholder": "어떤 부분에 집중하고 싶으신가요? 특정 주제나 목표가 있나요?"

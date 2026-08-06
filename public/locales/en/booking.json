@@ -38,6 +38,12 @@
     "viewOnGoogleMaps": "Google Maps",
     "viewOnNaverMap": "Naver Map"
   },
+  "contactEmail": {
+    "label": "Email for confirmation",
+    "placeholder": "you@example.com",
+    "hint": "We send your booking confirmation and lesson reminders here.",
+    "invalid": "Please enter a valid email address."
+  },
   "notes": {
     "label": "Notes for teacher",
     "placeholder": "What would you like to focus on? Any specific topics or goals?"
