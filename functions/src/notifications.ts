@@ -98,6 +98,49 @@ async function sendPush(
   logger.info(`FCM sent: ${res.successCount}/${allTokens.length}`);
 }
 
+interface NewMessageInput {
+  conversationId: string;
+  recipientId: string;
+  recipientIsTeacher: boolean;
+  senderName: string;
+  preview: string;
+  /** True only when the recipient's unread counter went from zero. */
+  createNotificationDoc: boolean;
+  sendPushNotification: boolean;
+}
+
+/**
+ * One bell entry per unread burst, not per message — a chat would otherwise
+ * bury every other notification. `onChatMessageCreated` decides when a burst
+ * starts and how often to re-push.
+ */
+export async function notifyNewMessage(input: NewMessageInput) {
+  const title = `New message from ${input.senderName}`;
+  const body = input.preview;
+  // Teachers and admins answer from the admin shell; students from the public one.
+  const link = input.recipientIsTeacher
+    ? `/admin/messages/${input.conversationId}`
+    : `/messages/${input.conversationId}`;
+
+  if (input.createNotificationDoc) {
+    await admin.firestore().collection("notifications").add({
+      userId: input.recipientId,
+      type: "new_message",
+      conversationId: input.conversationId,
+      link,
+      title,
+      body,
+      meta: { senderName: input.senderName },
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+
+  if (input.sendPushNotification) {
+    await sendPush([input.recipientId], { title, body, link });
+  }
+}
+
 export async function notifyBookingCreated(
   bookingId: string,
   input: BookingCreatedInput

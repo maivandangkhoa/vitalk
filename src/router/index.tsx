@@ -16,6 +16,7 @@ const ReviewsPage = lazyWithRetry(() => import('@/pages/ReviewsPage'));
 const PolicyPage = lazyWithRetry(() => import('@/pages/PolicyPage'));
 const LoginPage = lazyWithRetry(() => import('@/pages/LoginPage'));
 const MyBookingsPage = lazyWithRetry(() => import('@/pages/MyBookingsPage'));
+const MessagesPage = lazyWithRetry(() => import('@/pages/MessagesPage'));
 const NotFoundPage = lazyWithRetry(() => import('@/pages/NotFoundPage'));
 const AdminSetupPage = lazyWithRetry(() => import('@/pages/AdminSetupPage'));
 const NaverCallbackPage = lazyWithRetry(() => import('@/pages/NaverCallbackPage'));
@@ -35,6 +36,7 @@ const AdminLocations = lazyWithRetry(() => import('@/pages/admin/AdminLocations'
 const AdminSettings = lazyWithRetry(() => import('@/pages/admin/AdminSettings'));
 const AdminTeachers = lazyWithRetry(() => import('@/pages/admin/AdminTeachers'));
 const AdminPolicy = lazyWithRetry(() => import('@/pages/admin/AdminPolicy'));
+const AdminMessages = lazyWithRetry(() => import('@/pages/admin/AdminMessages'));
 
 // Public teacher pages
 const TeachersListPage = lazyWithRetry(() => import('@/pages/TeachersListPage'));
@@ -101,6 +103,22 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/messages',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper><MessagesPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/messages/:conversationId',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper><MessagesPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/auth/naver/callback',
         element: <SuspenseWrapper><NaverCallbackPage /></SuspenseWrapper>,
       },
@@ -137,6 +155,14 @@ export const router = createBrowserRouter([
       {
         path: 'bookings',
         element: <SuspenseWrapper><AdminBookings /></SuspenseWrapper>,
+      },
+      {
+        path: 'messages',
+        element: <SuspenseWrapper><AdminMessages /></SuspenseWrapper>,
+      },
+      {
+        path: 'messages/:conversationId',
+        element: <SuspenseWrapper><AdminMessages /></SuspenseWrapper>,
       },
       {
         path: 'blog',

@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Calendar,
   BookOpen,
+  MessageCircle,
   PenSquare,
   Star,
   User,
@@ -26,6 +27,7 @@ const ADMIN_NAV = [
   { key: 'dashboard', path: '/admin', icon: LayoutDashboard, color: 'bg-indigo-50 text-indigo-500' },
   { key: 'availability', path: '/admin/availability', icon: Calendar, color: 'bg-purple-50 text-purple-500' },
   { key: 'bookings', path: '/admin/bookings', icon: BookOpen, color: 'bg-emerald-50 text-emerald-500' },
+  { key: 'messages', path: '/admin/messages', icon: MessageCircle, color: 'bg-blue-50 text-blue-500' },
   { key: 'blog', path: '/admin/blog', icon: PenSquare, color: 'bg-sky-50 text-sky-500' },
   { key: 'reviews', path: '/admin/reviews', icon: Star, color: 'bg-amber-50 text-amber-500' },
   { key: 'profile', path: '/admin/profile', icon: User, color: 'bg-rose-50 text-rose-500' },
@@ -37,7 +39,7 @@ const ADMIN_NAV = [
   { key: 'settings', path: '/admin/settings', icon: Settings, color: 'bg-zinc-100 text-zinc-500' },
 ] as const;
 
-const TEACHER_NAV_KEYS = ['dashboard', 'availability', 'bookings', 'reviews', 'profile'] as const;
+const TEACHER_NAV_KEYS = ['dashboard', 'availability', 'bookings', 'messages', 'reviews', 'profile'] as const;
 
 function SidebarNav({ items, onItemClick }: { items: typeof ADMIN_NAV[number][]; onItemClick?: () => void }) {
   const { t } = useTranslation('admin');

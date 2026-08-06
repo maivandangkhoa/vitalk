@@ -32,6 +32,16 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // Chat attachments. Storage rules cannot read Firestore, so participation
+    // is not checkable here — the guard is a random file name plus a signed-in
+    // reader. Do not put anything here that a leaked path would compromise.
+    match /chat-images/{conversationId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Default: deny all
     match /{allPaths=**} {
       allow read, write: if false;

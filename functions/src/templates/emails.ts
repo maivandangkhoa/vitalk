@@ -217,3 +217,34 @@ export function lessonReminderTeacher(data: BookingEmailData): { subject: string
     `, data.teacherName),
   };
 }
+
+// --- Chat ---
+
+/**
+ * Sent only when an unread message has sat unread past the sweep window — the
+ * push notification is the primary channel, this is the fallback for someone
+ * who never granted permission or is simply away.
+ */
+export function unreadMessagesEmail(data: {
+  senderName: string;
+  preview: string;
+  count: number;
+  link: string;
+}): { subject: string; html: string } {
+  const url = `https://havitalk.web.app${data.link.startsWith("/") ? data.link : `/${data.link}`}`;
+  const heading =
+    data.count > 1
+      ? `${data.count} unread messages from ${esc(data.senderName)}`
+      : `New message from ${esc(data.senderName)}`;
+
+  return {
+    subject: `${heading} - HaviTalk`,
+    html: baseLayout(`
+      <h2 style="margin:0 0 8px; font-size:20px;">${heading}</h2>
+      <div class="highlight">${esc(data.preview)}</div>
+      <div style="text-align:center; margin-top:24px;">
+        <a href="${safeUrl(url)}" class="btn">Reply on HaviTalk</a>
+      </div>
+    `),
+  };
+}

@@ -17,11 +17,13 @@ import type { AppNotification } from '@/types';
 const PAGE_SIZE = 30;
 
 export function useNotifications() {
-  const { user, role } = useAuthStore();
+  const { user } = useAuthStore();
   const [items, setItems] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const eligible = !!user && (role === 'admin' || role === 'teacher');
+  // Everyone signed in now has a feed — students receive chat notifications
+  // even though bookings only ever notify teachers and admins.
+  const eligible = !!user;
 
   useEffect(() => {
     if (!eligible || !user) {

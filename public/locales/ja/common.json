@@ -135,6 +135,9 @@
     "bookingCreated": {
       "title": "{{student}}さんからの新しい予約",
       "body": "{{date}} {{time}} {{lesson}}"
+    },
+    "newMessage": {
+      "title": "{{sender}} さんからの新着メッセージ"
     }
   },
   "install": {
@@ -155,5 +158,28 @@
     "title": "ポリシー",
     "subtitle": "HaviTalk の予約・お支払い・キャンセル・日程変更に関する規約を必ずお読みください。",
     "empty": "このページにはまだ内容がありません。"
+  },
+  "chat": {
+    "title": "メッセージ",
+    "monitorTitle": "すべての会話",
+    "emptyInbox": "まだ会話がありません",
+    "emptyThread": "まだメッセージがありません — 挨拶してみましょう！",
+    "noMessagesYet": "メッセージなし",
+    "selectConversation": "会話を選択してください",
+    "placeholder": "メッセージを入力…",
+    "send": "送信",
+    "back": "戻る",
+    "attachImage": "画像を添付",
+    "removeImage": "画像を削除",
+    "closeImage": "画像を閉じる",
+    "imageMessage": "📷 写真",
+    "imageOnly": "画像ファイルのみ添付できます",
+    "imageTooLarge": "画像は 5 MB 未満にしてください",
+    "sendFailed": "メッセージを送信できませんでした",
+    "openFailed": "会話を開けませんでした",
+    "loadOlder": "以前のメッセージを読み込む",
+    "readOnly": "閲覧のみ",
+    "throttled": "相手が読むまで、これ以上送信できません。",
+    "messageTeacher": "メッセージ"
   }
 }

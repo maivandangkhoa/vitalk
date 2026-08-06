@@ -135,6 +135,9 @@
     "bookingCreated": {
       "title": "来自 {{student}} 的新预约",
       "body": "{{date}} {{time}} {{lesson}}"
+    },
+    "newMessage": {
+      "title": "{{sender}} 发来新消息"
     }
   },
   "install": {
@@ -155,5 +158,28 @@
     "title": "政策",
     "subtitle": "请仔细阅读 HaviTalk 关于预约、付款、取消及改期的相关条款。",
     "empty": "此页面暂无内容。"
+  },
+  "chat": {
+    "title": "消息",
+    "monitorTitle": "全部会话",
+    "emptyInbox": "还没有会话",
+    "emptyThread": "还没有消息 — 打个招呼吧！",
+    "noMessagesYet": "暂无消息",
+    "selectConversation": "请选择一个会话",
+    "placeholder": "输入消息…",
+    "send": "发送",
+    "back": "返回",
+    "attachImage": "添加图片",
+    "removeImage": "移除图片",
+    "closeImage": "关闭图片",
+    "imageMessage": "📷 图片",
+    "imageOnly": "只能添加图片文件",
+    "imageTooLarge": "图片需小于 5 MB",
+    "sendFailed": "消息发送失败",
+    "openFailed": "无法打开会话",
+    "loadOlder": "加载更早的消息",
+    "readOnly": "只读",
+    "throttled": "请等对方读完消息后再发送。",
+    "messageTeacher": "发消息"
   }
 }

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AnimatedSection } from '@/components/shared/motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { MessageTeacherButton } from '@/components/chat/MessageTeacherButton';
 import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
 import { Star, MapPin, GraduationCap, Calendar, Loader2 } from 'lucide-react';
 import type { Language } from '@/types';
@@ -108,13 +109,16 @@ export default function TeacherProfilePage() {
                 )}
               </div>
             )}
-            <Button
-              size="lg"
-              className="mt-6 h-12 px-8 shadow-md hover:shadow-lg"
-              render={<Link to={`/book?teacherId=${teacher.id}`} />}
-            >
-              {t('bookLesson')}
-            </Button>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Button
+                size="lg"
+                className="h-12 px-8 shadow-md hover:shadow-lg"
+                render={<Link to={`/book?teacherId=${teacher.id}`} />}
+              >
+                {t('bookLesson')}
+              </Button>
+              <MessageTeacherButton teacher={teacher} size="lg" className="h-12 px-6" />
+            </div>
           </div>
         </AnimatedSection>
 

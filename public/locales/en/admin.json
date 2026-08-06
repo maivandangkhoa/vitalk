@@ -26,7 +26,8 @@
     "settings": "Settings",
     "migration": "Migration",
     "backToSite": "Back to site",
-    "policy": "Policy"
+    "policy": "Policy",
+    "messages": "Messages"
   },
   "profile": {
     "title": "Edit Profile",

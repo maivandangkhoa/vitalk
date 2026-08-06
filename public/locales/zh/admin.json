@@ -26,7 +26,8 @@
     "settings": "设置",
     "migration": "数据迁移",
     "backToSite": "返回网站",
-    "policy": "政策"
+    "policy": "政策",
+    "messages": "消息"
   },
   "profile": {
     "title": "编辑个人资料",

@@ -4,6 +4,7 @@ import { Menu, LogOut, Settings, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 import { NotificationBell } from '@/components/layout/NotificationBell';
+import { MessagesLink } from '@/components/layout/MessagesLink';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { signOut } from '@/lib/auth';
@@ -70,6 +71,8 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
+
+          {user && <MessagesLink />}
 
           {user && <NotificationBell />}
 
@@ -184,6 +187,13 @@ export function Header() {
                         {t('nav.admin')}
                       </Link>
                     )}
+                    <Link
+                      to={role === 'admin' || role === 'teacher' ? '/admin/messages' : '/messages'}
+                      onClick={() => setMobileNavOpen(false)}
+                      className="rounded-xl px-3 py-1.5 text-sm font-medium text-muted-foreground transition-all hover:bg-indigo-50 hover:text-indigo-600"
+                    >
+                      {t('chat.title')}
+                    </Link>
                     <Link
                       to="/my-bookings"
                       onClick={() => setMobileNavOpen(false)}

@@ -26,7 +26,8 @@
     "settings": "설정",
     "migration": "데이터 마이그레이션",
     "backToSite": "사이트로 돌아가기",
-    "policy": "정책"
+    "policy": "정책",
+    "messages": "메시지"
   },
   "profile": {
     "title": "프로필 수정",

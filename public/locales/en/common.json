@@ -135,6 +135,9 @@
     "bookingCreated": {
       "title": "New booking from {{student}}",
       "body": "{{lesson}} on {{date}} at {{time}}"
+    },
+    "newMessage": {
+      "title": "New message from {{sender}}"
     }
   },
   "install": {
@@ -155,5 +158,28 @@
     "title": "Policy",
     "subtitle": "Please read our terms on booking, payment, cancellations and rescheduling at HaviTalk.",
     "empty": "This page has no content yet."
+  },
+  "chat": {
+    "title": "Messages",
+    "monitorTitle": "All conversations",
+    "emptyInbox": "No conversations yet",
+    "emptyThread": "No messages yet — say hello!",
+    "noMessagesYet": "No messages yet",
+    "selectConversation": "Select a conversation to start reading",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "back": "Back",
+    "attachImage": "Attach an image",
+    "removeImage": "Remove image",
+    "closeImage": "Close image",
+    "imageMessage": "📷 Photo",
+    "imageOnly": "Only image files can be attached",
+    "imageTooLarge": "Image must be smaller than 5 MB",
+    "sendFailed": "Message could not be sent",
+    "openFailed": "Could not open the conversation",
+    "loadOlder": "Load older messages",
+    "readOnly": "Read-only",
+    "throttled": "Wait until they read your messages before sending more.",
+    "messageTeacher": "Message"
   }
 }

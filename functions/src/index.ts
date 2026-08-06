@@ -22,6 +22,9 @@ export { kakaoLogin } from "./kakaoAuth";
 // Email triggers (Firestore)
 export { onBookingCreated, onBookingUpdated } from "./bookingTriggers";
 
+// In-app chat
+export { onChatMessageCreated, sweepUnreadMessageEmails } from "./chatTriggers";
+
 // Scheduled tasks
 export { sendLessonReminders } from "./reminders";
 

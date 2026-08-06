@@ -95,7 +95,8 @@ export function NotificationBell() {
   const handleClick = async (n: AppNotification) => {
     if (!n.read) await markAsRead(n.id);
     setOpen(false);
-    navigate('/admin/bookings');
+    // Booking notifications predate `link` and always meant the bookings page.
+    navigate(n.link || '/admin/bookings');
   };
 
   return (
@@ -161,20 +162,26 @@ export function NotificationBell() {
                 >
                   <div className="flex w-full items-start justify-between gap-2">
                     <span className="text-sm font-medium">
-                      {t('notifications.bookingCreated.title', {
-                        student: n.meta.studentName ?? '',
-                      })}
+                      {n.type === 'new_message'
+                        ? t('notifications.newMessage.title', {
+                            sender: n.meta.senderName ?? '',
+                          })
+                        : t('notifications.bookingCreated.title', {
+                            student: n.meta.studentName ?? '',
+                          })}
                     </span>
                     <span className="shrink-0 text-[11px] text-muted-foreground">
                       {formatRelative(n.createdAt, lang)}
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {t('notifications.bookingCreated.body', {
-                      lesson: getLessonName(n, lang),
-                      date: n.meta.date ?? '',
-                      time: n.meta.startTime ?? '',
-                    })}
+                    {n.type === 'new_message'
+                      ? n.body
+                      : t('notifications.bookingCreated.body', {
+                          lesson: getLessonName(n, lang),
+                          date: n.meta.date ?? '',
+                          time: n.meta.startTime ?? '',
+                        })}
                   </span>
                 </button>
               ))

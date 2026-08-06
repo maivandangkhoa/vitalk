@@ -135,6 +135,9 @@
     "bookingCreated": {
       "title": "Đặt lịch mới từ {{student}}",
       "body": "{{lesson}} ngày {{date}} lúc {{time}}"
+    },
+    "newMessage": {
+      "title": "Tin nhắn mới từ {{sender}}"
     }
   },
   "install": {
@@ -155,5 +158,28 @@
     "title": "Chính sách",
     "subtitle": "Vui lòng đọc kỹ các điều khoản về đặt lịch, thanh toán, hủy và đổi lịch học tại HaviTalk.",
     "empty": "Trang này chưa có nội dung."
+  },
+  "chat": {
+    "title": "Tin nhắn",
+    "monitorTitle": "Tất cả hội thoại",
+    "emptyInbox": "Chưa có hội thoại nào",
+    "emptyThread": "Chưa có tin nhắn — gửi lời chào nhé!",
+    "noMessagesYet": "Chưa có tin nhắn",
+    "selectConversation": "Chọn một hội thoại để bắt đầu",
+    "placeholder": "Nhập tin nhắn…",
+    "send": "Gửi",
+    "back": "Quay lại",
+    "attachImage": "Đính kèm ảnh",
+    "removeImage": "Bỏ ảnh",
+    "closeImage": "Đóng ảnh",
+    "imageMessage": "📷 Hình ảnh",
+    "imageOnly": "Chỉ được đính kèm tệp ảnh",
+    "imageTooLarge": "Ảnh phải nhỏ hơn 5 MB",
+    "sendFailed": "Không gửi được tin nhắn",
+    "openFailed": "Không mở được hội thoại",
+    "loadOlder": "Xem tin cũ hơn",
+    "readOnly": "Chỉ xem",
+    "throttled": "Hãy đợi người nhận đọc tin trước khi gửi thêm.",
+    "messageTeacher": "Nhắn tin"
   }
 }
