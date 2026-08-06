@@ -1,6 +1,7 @@
 import {
   signInWithPopup,
   GoogleAuthProvider,
+  FacebookAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
@@ -13,9 +14,23 @@ import type { AppUser, Language, UserRole } from '@/types';
 
 const googleProvider = new GoogleAuthProvider();
 
+// public_profile only, deliberately. Meta grants it without App Review, while
+// the `email` scope needs Advanced Access — App Review plus Business
+// Verification. The booking form collects an address instead, so we skip all
+// of that; the cost is that a Facebook account can't be matched to an existing
+// Google one by email.
+const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope('public_profile');
+
 export async function signInWithGoogle() {
   const result = await signInWithPopup(auth, googleProvider);
   await ensureUserDoc(result.user, 'google');
+  return result.user;
+}
+
+export async function signInWithFacebook() {
+  const result = await signInWithPopup(auth, facebookProvider);
+  await ensureUserDoc(result.user, 'facebook');
   return result.user;
 }
 
@@ -61,7 +76,7 @@ export async function getUserRole(user: User): Promise<{ role: UserRole; teacher
 
 async function ensureUserDoc(
   user: User,
-  provider: 'google' | 'kakao' | 'naver' | 'email'
+  provider: AppUser['provider']
 ) {
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);

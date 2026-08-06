@@ -28,6 +28,7 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "loginWithGoogle": "Continue with Google",
+    "loginWithFacebook": "Continue with Facebook",
     "loginWithKakao": "Continue with Kakao",
     "loginWithNaver": "Continue with Naver",
     "loginWithEmail": "Login with Email",
@@ -45,7 +46,8 @@
       "invalidCredential": "Invalid email or password.",
       "tooManyRequests": "Too many attempts. Please try again later.",
       "network": "Network error. Please check your connection.",
-      "default": "Something went wrong. Please try again."
+      "default": "Something went wrong. Please try again.",
+      "accountExists": "An account already exists with this email using a different sign-in method. Please sign in with the method you used originally."
     },
     "showPassword": "Show password",
     "hidePassword": "Hide password"

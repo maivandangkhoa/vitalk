@@ -28,6 +28,7 @@
     "password": "密码",
     "confirmPassword": "确认密码",
     "loginWithGoogle": "使用 Google 继续",
+    "loginWithFacebook": "使用 Facebook 继续",
     "loginWithKakao": "使用 Kakao 继续",
     "loginWithNaver": "使用 Naver 继续",
     "loginWithEmail": "使用邮箱登录",
@@ -45,7 +46,8 @@
       "invalidCredential": "邮箱或密码不正确。",
       "tooManyRequests": "尝试次数过多，请稍后再试。",
       "network": "网络错误，请检查您的连接。",
-      "default": "发生错误，请重试。"
+      "default": "发生错误，请重试。",
+      "accountExists": "该邮箱已通过其他登录方式注册。请使用您最初使用的方式登录。"
     },
     "showPassword": "显示密码",
     "hidePassword": "隐藏密码"

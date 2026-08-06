@@ -28,6 +28,7 @@
     "password": "パスワード",
     "confirmPassword": "パスワード確認",
     "loginWithGoogle": "Googleで続ける",
+    "loginWithFacebook": "Facebookで続ける",
     "loginWithKakao": "Kakaoで続ける",
     "loginWithNaver": "Naverで続ける",
     "loginWithEmail": "メールでログイン",
@@ -45,7 +46,8 @@
       "invalidCredential": "メールアドレスまたはパスワードが正しくありません。",
       "tooManyRequests": "試行回数が多すぎます。しばらくしてから再試行してください。",
       "network": "ネットワークエラーです。接続を確認してください。",
-      "default": "エラーが発生しました。もう一度お試しください。"
+      "default": "エラーが発生しました。もう一度お試しください。",
+      "accountExists": "このメールアドレスは別のログイン方法で既に登録されています。最初にご利用の方法でログインしてください。"
     },
     "showPassword": "パスワードを表示",
     "hidePassword": "パスワードを非表示"

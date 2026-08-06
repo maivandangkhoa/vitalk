@@ -28,6 +28,7 @@
     "password": "Mật khẩu",
     "confirmPassword": "Xác nhận mật khẩu",
     "loginWithGoogle": "Tiếp tục với Google",
+    "loginWithFacebook": "Tiếp tục với Facebook",
     "loginWithKakao": "Tiếp tục với Kakao",
     "loginWithNaver": "Tiếp tục với Naver",
     "loginWithEmail": "Đăng nhập bằng email",
@@ -45,7 +46,8 @@
       "invalidCredential": "Email hoặc mật khẩu không đúng.",
       "tooManyRequests": "Quá nhiều lần thử. Vui lòng thử lại sau.",
       "network": "Lỗi mạng. Vui lòng kiểm tra kết nối.",
-      "default": "Đã xảy ra lỗi. Vui lòng thử lại."
+      "default": "Đã xảy ra lỗi. Vui lòng thử lại.",
+      "accountExists": "Email này đã được đăng ký bằng phương thức đăng nhập khác. Vui lòng đăng nhập bằng cách bạn đã dùng ban đầu."
     },
     "showPassword": "Hiện mật khẩu",
     "hidePassword": "Ẩn mật khẩu"

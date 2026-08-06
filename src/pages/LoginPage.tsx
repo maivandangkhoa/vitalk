@@ -5,13 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Eye, EyeOff } from 'lucide-react';
-import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '@/lib/auth';
+import { signInWithGoogle, signInWithFacebook, signInWithEmail, signUpWithEmail } from '@/lib/auth';
 import { toast } from 'sonner';
 import { AnimatedSection } from '@/components/shared/motion';
 
 // Naver hasn't approved our OAuth app yet, so the button stays hidden.
 // Flip this back to true once the review passes.
 const NAVER_LOGIN_ENABLED = false;
+
+// Facebook needs no App Review because we only ask for public_profile, but the
+// Meta app still has to exist and be wired into Firebase Auth first. Flip this
+// to true once the provider is enabled in the Firebase console with the App ID
+// and secret, and the Firebase OAuth redirect URI is listed in the Meta app.
+const FACEBOOK_LOGIN_ENABLED = false;
 
 function authErrorKey(err: unknown): string {
   const code = (err as { code?: string })?.code;
@@ -24,6 +30,7 @@ function authErrorKey(err: unknown): string {
     case 'auth/invalid-credential':
     case 'auth/invalid-login-credentials': return 'auth.errors.invalidCredential';
     case 'auth/too-many-requests': return 'auth.errors.tooManyRequests';
+    case 'auth/account-exists-with-different-credential': return 'auth.errors.accountExists';
     case 'auth/network-request-failed': return 'auth.errors.network';
     default: return 'auth.errors.default';
   }
@@ -63,10 +70,12 @@ export default function LoginPage() {
     return () => window.removeEventListener('message', handleOAuthMessage);
   }, [handleOAuthMessage]);
 
-  const handleGoogleLogin = async () => {
+  // Google and Facebook both go through a Firebase popup, so they only differ
+  // in which sign-in call runs and what an unexpected failure gets logged as.
+  const handlePopupLogin = async (signIn: () => Promise<unknown>, label: string) => {
     try {
       setLoading(true);
-      await signInWithGoogle();
+      await signIn();
       navigate(redirectTo);
     } catch (err) {
       const code = (err as { code?: string })?.code;
@@ -76,12 +85,15 @@ export default function LoginPage() {
       const key = authErrorKey(err);
       toast.error(t(key));
       if (key === 'auth.errors.default') {
-        console.error('Unexpected Google login error:', err);
+        console.error(`Unexpected ${label} login error:`, err);
       }
     } finally {
       setLoading(false);
     }
   };
+
+  const handleGoogleLogin = () => handlePopupLogin(signInWithGoogle, 'Google');
+  const handleFacebookLogin = () => handlePopupLogin(signInWithFacebook, 'Facebook');
 
   const handleKakaoLogin = () => {
     const clientId = import.meta.env.VITE_KAKAO_CLIENT_ID;
@@ -220,6 +232,23 @@ export default function LoginPage() {
               </svg>
               {t('auth.loginWithGoogle')}
             </Button>
+
+            {FACEBOOK_LOGIN_ENABLED && (
+            <Button
+              variant="outline"
+              className="h-12 w-full rounded-xl bg-[#1877F2] text-white hover:bg-[#166FE5]"
+              onClick={handleFacebookLogin}
+              disabled={loading}
+            >
+              <svg className="mr-2.5 h-4 w-4" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.412c0-3.025 1.792-4.696 4.533-4.696 1.313 0 2.686.236 2.686.236v2.965h-1.513c-1.491 0-1.956.93-1.956 1.887v2.269h3.328l-.532 3.489h-2.796V24C19.612 23.094 24 18.1 24 12.073z"
+                />
+              </svg>
+              {t('auth.loginWithFacebook')}
+            </Button>
+            )}
 
             <Button
               variant="outline"

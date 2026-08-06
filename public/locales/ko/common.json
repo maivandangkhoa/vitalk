@@ -28,6 +28,7 @@
     "password": "비밀번호",
     "confirmPassword": "비밀번호 확인",
     "loginWithGoogle": "Google로 계속하기",
+    "loginWithFacebook": "페이스북으로 계속하기",
     "loginWithKakao": "카카오로 계속하기",
     "loginWithNaver": "네이버로 계속하기",
     "loginWithEmail": "이메일로 로그인",
@@ -45,7 +46,8 @@
       "invalidCredential": "이메일 또는 비밀번호가 올바르지 않습니다.",
       "tooManyRequests": "시도 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요.",
       "network": "네트워크 오류입니다. 연결을 확인해 주세요.",
-      "default": "문제가 발생했습니다. 다시 시도해 주세요."
+      "default": "문제가 발생했습니다. 다시 시도해 주세요.",
+      "accountExists": "이 이메일은 다른 로그인 방식으로 이미 가입되어 있습니다. 처음 사용하신 방식으로 로그인해 주세요."
     },
     "showPassword": "비밀번호 표시",
     "hidePassword": "비밀번호 숨기기"
