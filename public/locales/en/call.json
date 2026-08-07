@@ -1,6 +1,7 @@
 {
   "meta": {
-    "title": "Lesson with {{name}}"
+    "title": "Lesson with {{name}}",
+    "titleAlert": "🔔 {{name}} is waiting"
   },
   "join": {
     "enter": "Join lesson",
@@ -47,9 +48,10 @@
   },
   "incoming": {
     "title": "{{name}} is waiting",
-    "body": "Start the lesson? Declining automatically in {{seconds}}s.",
+    "body": "They stay in the classroom until you start.",
     "accept": "Start lesson",
-    "decline": "Not now"
+    "later": "Not now",
+    "banner": "{{name}} is waiting in the classroom."
   },
   "gate": {
     "signedOut": {

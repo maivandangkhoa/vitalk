@@ -1,6 +1,7 @@
 {
   "meta": {
-    "title": "{{name}} 先生とのレッスン"
+    "title": "{{name}} 先生とのレッスン",
+    "titleAlert": "🔔 {{name}} さんが待っています"
   },
   "join": {
     "enter": "レッスンに参加",
@@ -47,9 +48,10 @@
   },
   "incoming": {
     "title": "{{name}} さんが待っています",
-    "body": "レッスンを開始しますか？{{seconds}} 秒後に自動で辞退します。",
+    "body": "開始するまで生徒は教室で待っています。",
     "accept": "レッスンを開始",
-    "decline": "今はしない"
+    "later": "今はしない",
+    "banner": "{{name}} さんが教室で待っています。"
   },
   "gate": {
     "signedOut": {

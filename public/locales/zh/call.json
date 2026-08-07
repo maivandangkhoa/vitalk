@@ -1,6 +1,7 @@
 {
   "meta": {
-    "title": "与 {{name}} 的课程"
+    "title": "与 {{name}} 的课程",
+    "titleAlert": "🔔 {{name}} 正在等待"
   },
   "join": {
     "enter": "进入课堂",
@@ -47,9 +48,10 @@
   },
   "incoming": {
     "title": "{{name}} 正在等待",
-    "body": "现在开始上课吗？{{seconds}} 秒后自动拒绝。",
+    "body": "在您开始之前，学生会一直在课堂中等待。",
     "accept": "开始上课",
-    "decline": "暂不"
+    "later": "暂不",
+    "banner": "{{name}} 正在课堂中等待。"
   },
   "gate": {
     "signedOut": {

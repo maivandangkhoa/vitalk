@@ -9,7 +9,9 @@ import type { Timestamp } from 'firebase/firestore';
  * - `connecting` an offer is on the wire, ICE is still negotiating
  * - `active`     media is flowing
  * - `ended`      somebody hung up
- * - `rejected`   the teacher declined, or the ring timed out
+ * - `rejected`   legacy. Nothing writes it since the prompt stopped
+ *                auto-declining; still read so rooms left in it hang up
+ *                cleanly.
  */
 export type CallStatus =
   | 'idle'
@@ -119,9 +121,6 @@ export const PRESENCE_STALE_MS = 60_000;
  * renegotiation on it. Most brief drops recover inside this window.
  */
 export const ICE_RECOVERY_GRACE_MS = 4_000;
-
-/** How long the teacher's incoming-call prompt rings before auto-declining. */
-export const RING_TIMEOUT_MS = 30_000;
 
 /**
  * How long a fresh dial waits for its answer before giving up.

@@ -8,6 +8,7 @@ import { useBooking } from '@/hooks/useBookings';
 import { useCall } from '@/hooks/useCall';
 import { useCallMedia } from '@/hooks/useCallMedia';
 import { useCallChat } from '@/hooks/useCallChat';
+import { useIncomingAlert } from '@/hooks/useIncomingAlert';
 import { roleOf } from '@/lib/webrtc';
 import { cn } from '@/lib/utils';
 import { callWindowState, formatCountdown, isCallableBooking, joinWindow } from '@/lib/callWindow';
@@ -123,7 +124,24 @@ export default function CallPage() {
 
   const peerName = role === 'teacher' ? booking?.studentName ?? '' : booking?.teacherName ?? '';
 
+  // Putting the prompt aside is a local decision: the student stays in the
+  // room, the teacher keeps their seat, and nothing is written. Re-arming on
+  // the way down is what stops one dismissal from silencing the next student
+  // who arrives.
+  const [promptDismissed, setPromptDismissed] = useState(false);
+  useEffect(() => {
+    if (!session.incoming) setPromptDismissed(false);
+  }, [session.incoming]);
+  const promptOpen = session.incoming && !promptDismissed;
+
+  // Not `alert`: that name is already the global, and shadowing it inside a
+  // component is a trap for whoever reaches for a quick debug call.
+  const incomingAlert = useIncomingAlert(promptOpen, t('incoming.title', { name: peerName }));
+
   const handleJoin = async () => {
+    // Before the first await, so it still counts as being inside the click: an
+    // AudioContext built any later has no gesture behind it and stays muted.
+    incomingAlert.unlock();
     setJoining(true);
     try {
       await session.join();
@@ -184,8 +202,29 @@ export default function CallPage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6">
       <Helmet>
-        <title>{t('meta.title', { name: peerName })}</title>
+        {/* Through Helmet rather than by writing `document.title`: it owns the
+            title here and would put its own back on the next render. */}
+        <title>
+          {incomingAlert.blink
+            ? t('meta.titleAlert', { name: peerName })
+            : t('meta.title', { name: peerName })}
+        </title>
       </Helmet>
+
+      {session.incoming && promptDismissed && (
+        <button
+          type="button"
+          onClick={() => setPromptDismissed(false)}
+          className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-left transition-colors hover:bg-indigo-100"
+        >
+          <span className="text-sm font-medium text-indigo-900">
+            {t('incoming.banner', { name: peerName })}
+          </span>
+          <span className="shrink-0 text-sm font-semibold text-indigo-600">
+            {t('incoming.accept')}
+          </span>
+        </button>
+      )}
 
       {inCall ? (
         <div
@@ -287,10 +326,10 @@ export default function CallPage() {
       )}
 
       <IncomingCallDialog
-        open={session.incoming}
+        open={promptOpen}
         studentName={peerName}
         onAccept={() => session.accept()}
-        onDecline={() => session.decline()}
+        onDismiss={() => setPromptDismissed(true)}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 {
   "meta": {
-    "title": "Buổi học với {{name}}"
+    "title": "Buổi học với {{name}}",
+    "titleAlert": "🔔 {{name}} đang chờ"
   },
   "join": {
     "enter": "Vào lớp",
@@ -47,9 +48,10 @@
   },
   "incoming": {
     "title": "{{name}} đang chờ",
-    "body": "Bắt đầu buổi học? Tự động từ chối sau {{seconds}} giây.",
+    "body": "Học sinh vẫn ở trong lớp cho tới khi bạn bắt đầu.",
     "accept": "Bắt đầu buổi học",
-    "decline": "Chưa vào"
+    "later": "Để sau",
+    "banner": "{{name}} đang chờ trong lớp."
   },
   "gate": {
     "signedOut": {

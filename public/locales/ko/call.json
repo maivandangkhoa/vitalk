@@ -1,6 +1,7 @@
 {
   "meta": {
-    "title": "{{name}} 선생님과의 수업"
+    "title": "{{name}} 선생님과의 수업",
+    "titleAlert": "🔔 {{name}} 님이 기다립니다"
   },
   "join": {
     "enter": "수업 참여",
@@ -47,9 +48,10 @@
   },
   "incoming": {
     "title": "{{name}} 님이 기다리고 있습니다",
-    "body": "수업을 시작할까요? {{seconds}}초 후 자동으로 거절됩니다.",
+    "body": "시작하실 때까지 학생은 강의실에서 기다립니다.",
     "accept": "수업 시작",
-    "decline": "나중에"
+    "later": "나중에",
+    "banner": "{{name}} 님이 강의실에서 기다리고 있습니다."
   },
   "gate": {
     "signedOut": {

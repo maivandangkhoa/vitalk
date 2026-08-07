@@ -11,7 +11,7 @@ import {
 } from '@/lib/webrtc';
 import { usePeerConnection } from './usePeerConnection';
 import { useCallNegotiation } from './useCallNegotiation';
-import { PRESENCE_HEARTBEAT_MS, RING_TIMEOUT_MS } from '@/types/call';
+import { PRESENCE_HEARTBEAT_MS } from '@/types/call';
 import type { Call, CallStatus, ConnectionRoute } from '@/types/call';
 import type { Booking } from '@/types';
 
@@ -36,7 +36,16 @@ export interface CallSession {
   peerPresent: boolean;
   /** This browser has a seat in the lobby. */
   joined: boolean;
-  /** The teacher is being asked to start the lesson. */
+  /**
+   * The teacher is being asked to start the lesson.
+   *
+   * Only ever for a student who arrived *after* the teacher did — walking in on
+   * one already waiting starts the lesson from `join` instead of asking twice.
+   *
+   * It has no timeout of its own: it stays true for exactly as long as that
+   * student is really waiting, and goes false once their heartbeat lapses.
+   * Putting the prompt aside is the page's business, not the room's.
+   */
   incoming: boolean;
   /** Media is flowing. False covers both "not yet" and "it broke". */
   connected: boolean;
@@ -48,7 +57,6 @@ export interface CallSession {
   join: () => Promise<void>;
   leave: () => Promise<void>;
   accept: () => Promise<void>;
-  decline: () => Promise<void>;
   /** Teacher only: throw away this attempt and dial a fresh one. */
   redial: () => Promise<void>;
   /** Student only: ask the teacher's side to dial again. */
@@ -72,8 +80,13 @@ export function useCall({
 }: UseCallInput): CallSession {
   const callId = booking?.id;
 
-  const ringTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const joinedRef = useRef(false);
+  /**
+   * Whether the other side was already waiting at the moment this browser
+   * joined. Read inside `join`, which runs long after the render that computed
+   * it, so a ref rather than the value itself.
+   */
+  const peerPresentRef = useRef(false);
   // Breaks the cycle: the peer connection needs to ask for a renegotiation,
   // but the function that performs one is built further down, out of pieces
   // this hook has not created yet.
@@ -104,7 +117,7 @@ export function useCall({
     peer,
     onError: setError,
   });
-  const { negotiatingRef, startCall, renegotiate, reset } = negotiation;
+  const { startCall, renegotiate, reset } = negotiation;
 
   useEffect(() => {
     renegotiateRef.current = () => void renegotiate();
@@ -166,7 +179,25 @@ export function useCall({
     await setPresence(booking.id, role, true);
     joinedRef.current = true;
     setJoined(true);
-  }, [booking, role, warmIceServers]);
+
+    // Walking into a classroom that already says someone is waiting *is* the
+    // decision the prompt asks for, one screen earlier. Asking again is a
+    // second confirmation of a click that was never ambiguous, so this starts
+    // the lesson outright.
+    //
+    // What is left for the prompt is the case it was always really for: a
+    // student who arrives *after* the teacher settled in. That trigger is
+    // remote, the teacher may not be looking at it, and consent for it has not
+    // been given yet.
+    //
+    // Safe before React has flushed `joined`: `startCall` gates on the role and
+    // the room id, never on the seat.
+    if (role === 'teacher' && peerPresentRef.current) {
+      await startCall().catch((err) =>
+        console.error('useCall: starting on arrival failed', err)
+      );
+    }
+  }, [booking, role, warmIceServers, startCall]);
 
   useEffect(() => {
     if (!callId || !role) return;
@@ -202,19 +233,6 @@ export function useCall({
       leave().catch(() => undefined);
     });
   }, [open, leave]);
-
-  const decline = useCallback(async () => {
-    if (ringTimeout.current) {
-      clearTimeout(ringTimeout.current);
-      ringTimeout.current = null;
-    }
-    joinedRef.current = false;
-    setJoined(false);
-    if (!callId || !role) return;
-    await endCallRoom(callId, role, 'rejected').catch((err) =>
-      console.error('useCall: declining failed', err)
-    );
-  }, [callId, role]);
 
   /**
    * The student's only repair.
@@ -259,6 +277,12 @@ export function useCall({
   const incoming =
     role === 'teacher' && joined && peerPresent && !peer.negotiating && !peer.connecting;
 
+  // Kept for `join`, which decides on the click whether there is anybody to
+  // start with and so cannot wait for the next render to tell it.
+  useEffect(() => {
+    peerPresentRef.current = peerPresent;
+  }, [peerPresent]);
+
   /**
    * The student asked to be dialled again, and this browser already holds a
    * connection — so the lesson is under way and this is a repair.
@@ -286,25 +310,18 @@ export function useCall({
     void startCall();
   }, [role, call?.status, joined, peer.negotiating, startCall]);
 
-  // Auto-decline once the prompt has rung long enough. The timer lives here so
-  // it starts and stops with the prompt itself.
-  useEffect(() => {
-    if (!incoming) return;
-    ringTimeout.current = setTimeout(() => {
-      ringTimeout.current = null;
-      // A dial that started while the prompt was still up must not be declined
-      // out from under itself. `negotiating` only turns on once the connection
-      // exists, which is several seconds after the teacher pressed accept.
-      if (negotiatingRef.current) return;
-      decline().catch(() => undefined);
-    }, RING_TIMEOUT_MS);
-    return () => {
-      if (ringTimeout.current) {
-        clearTimeout(ringTimeout.current);
-        ringTimeout.current = null;
-      }
-    };
-  }, [incoming, decline, negotiatingRef]);
+  // There is deliberately no timer on the prompt.
+  //
+  // It used to auto-decline after thirty seconds, which hung up on a teacher
+  // who had merely looked away — and it did so *silently*, since nothing here
+  // ever made a sound. Worse, the hang-up cleared the teacher's seat, so the
+  // student's lobby then claimed they had never arrived.
+  //
+  // Nothing is lost by dropping it. A student who really leaves stops
+  // heartbeating and `peerPresent` goes false on its own within
+  // `PRESENCE_STALE_MS`, which closes the prompt for the honest reason; and the
+  // lesson's own window is the upper bound on the whole room, hanging it up
+  // through the `open` effect above.
 
   // Releasing the seat on unmount is what stops a closed tab from ringing the
   // other side forever.
@@ -333,7 +350,6 @@ export function useCall({
     join,
     leave,
     accept: startCall,
-    decline,
     redial: startCall,
     requestRedial,
   };
