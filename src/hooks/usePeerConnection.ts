@@ -38,6 +38,17 @@ const SHARING_CAMERA_ENCODING = {
   maxFramerate: 15,
 } as const;
 
+/**
+ * Force every candidate through TURN, for verifying the relay works at all.
+ *
+ * Read per connection rather than once at module load, so it can be turned on
+ * by editing the address bar and re-dialling.
+ */
+function relayOnly(): boolean {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).get('ice') === 'relay';
+}
+
 async function setCameraEncoding(sender: RTCRtpSender, shrink: boolean) {
   try {
     const params = sender.getParameters();
@@ -180,7 +191,15 @@ export function usePeerConnection({
       if (!callId || !uid) return null;
 
       const iceServers = await fetchIceServers();
-      const pc = new RTCPeerConnection({ iceServers });
+      const pc = new RTCPeerConnection({
+        iceServers,
+        // Most pairs connect straight to each other, so a TURN server that is
+        // quietly broken looks perfectly healthy from the outside. `?ice=relay`
+        // on both sides forbids every direct route, which is the only way to
+        // prove the relay actually carries a lesson. Opt-in and per-tab: it
+        // makes calls slower, so it must never be the default.
+        ...(relayOnly() ? { iceTransportPolicy: 'relay' as const } : {}),
+      });
       pcRef.current = pc;
       candidateQueueRef.current = [];
       remoteDescSetRef.current = false;
