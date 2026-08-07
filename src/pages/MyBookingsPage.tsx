@@ -14,6 +14,7 @@ import {
   Star,
   CheckCircle2,
 } from 'lucide-react';
+import { JoinLessonButton } from '@/components/call/JoinLessonButton';
 import { useMyBookings } from '@/hooks/useBookings';
 import { useBookingReviewStatus } from '@/hooks/useReviews';
 import { useAuthStore } from '@/stores/authStore';
@@ -103,8 +104,9 @@ function BookingCard({ booking, isReviewed, onReviewSubmitted }: { booking: Book
             )}
           </div>
 
-          <div className="text-right text-sm">
+          <div className="flex flex-col items-end gap-2 text-right text-sm">
             <p className="font-mono font-semibold">{formatPrice(displayAmount, finalCurrency)}</p>
+            <JoinLessonButton booking={booking} />
             {booking.meetingLink && booking.status === 'confirmed' && (
               <a
                 href={booking.meetingLink}

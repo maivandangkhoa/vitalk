@@ -1,7 +1,18 @@
 import type { MultiLangText } from './common';
 
 export type BookingFormat = 'online' | 'offline';
-export type OnlinePlatform = 'teams' | 'google_meet' | 'zalo' | 'kakao_talk' | 'zoom';
+/**
+ * `havitalk` is the built-in classroom at `/call/{bookingId}` — no external
+ * account, no link to paste. The rest are handles the two of them arrange
+ * between themselves.
+ */
+export type OnlinePlatform =
+  | 'havitalk'
+  | 'teams'
+  | 'google_meet'
+  | 'zalo'
+  | 'kakao_talk'
+  | 'zoom';
 export type PaymentMethod = 'paypal' | 'toss' | 'bank_transfer';
 export type PaymentStatus = 'pending' | 'confirmed' | 'failed' | 'refunded';
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';

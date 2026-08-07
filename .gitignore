@@ -31,3 +31,8 @@ dist-ssr
 # Firebase
 .firebase/
 firebase-auth.json
+
+# TURN server — the live config holds the shared auth secret, and the certs are
+# copies of Caddy's private key. Only the .example is tracked.
+infrastructure/coturn/turnserver.conf
+infrastructure/coturn/certs/

@@ -11,7 +11,7 @@ i18n
   .init({
     fallbackLng: 'en',
     supportedLngs: ['en', 'vi', 'ko', 'zh', 'ja'],
-    ns: ['common', 'home', 'lessons', 'booking', 'blog', 'admin', 'teachers'],
+    ns: ['common', 'home', 'lessons', 'booking', 'blog', 'admin', 'teachers', 'call'],
     defaultNS: 'common',
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',

@@ -1,0 +1,29 @@
+# coturn — TURN relay for HaviTalk's video classroom (and, once pointed at it,
+# sysplat's calls too).
+#
+# Deployed to the "fechtin" VM (144.24.80.61, Oracle ap-chuncheon-1). It is a
+# separate stack from ./proxy: Caddy owns 443/TCP, coturn owns 3478 and
+# 5349 plus the UDP relay range, so the two never touch.
+services:
+  coturn:
+    image: coturn/coturn:latest
+    container_name: coturn
+    restart: always
+    # Host networking is not a shortcut — it is the only workable mode for TURN.
+    # Behind Docker's bridge, coturn would see 172.17.0.x and advertise that as
+    # its relay address (candidates nobody can reach), and publishing the relay
+    # port range would spawn one docker-proxy process per port.
+    network_mode: host
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+      # Certificates are copied out of Caddy's volume by sync-certs.sh rather
+      # than mounted from it: Caddy stores them root-only, and coturn drops
+      # privileges. A copy with its own ownership avoids that fight and also
+      # survives Caddy changing its internal layout.
+      - ./certs:/etc/coturn/certs:ro
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

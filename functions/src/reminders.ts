@@ -60,7 +60,13 @@ export const sendLessonReminders = onSchedule(
         currency: data.currency,
         paymentMethod: data.paymentMethod,
         bookingId: doc.id,
-        meetingLink: data.meetingLink || null,
+        // A HaviTalk lesson has no link to paste — its classroom is derived
+        // from the booking id, so the reminder can point straight at it.
+        meetingLink:
+          data.meetingLink ||
+          (data.platform === "havitalk"
+            ? `https://havitalk.web.app/call/${doc.id}`
+            : null),
       };
 
       // Remind student

@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "{{name}} 先生とのレッスン"
+  },
+  "join": {
+    "enter": "レッスンに参加",
+    "countdown": "{{countdown}} 後に開始"
+  },
+  "lobby": {
+    "title": "準備はよろしいですか？",
+    "peerWaiting": "{{name}} さんはすでに教室にいます。",
+    "peerAbsent": "{{name}} さんはまだ入室していません。",
+    "enter": "教室に入る",
+    "waiting": "先生を待っています…",
+    "camera": "カメラ",
+    "microphone": "マイク"
+  },
+  "stage": {
+    "connecting": "接続中…",
+    "reconnecting": "再接続しています…"
+  },
+  "controls": {
+    "muteMic": "マイクをオフ",
+    "unmuteMic": "マイクをオン",
+    "stopVideo": "カメラをオフ",
+    "startVideo": "カメラをオン",
+    "share": "画面を共有",
+    "stopShare": "共有を停止",
+    "leave": "退出"
+  },
+  "route": {
+    "direct": "直接接続",
+    "relay": "中継接続"
+  },
+  "incoming": {
+    "title": "{{name}} さんが待っています",
+    "body": "レッスンを開始しますか？{{seconds}} 秒後に自動で辞退します。",
+    "accept": "レッスンを開始",
+    "decline": "今はしない"
+  },
+  "gate": {
+    "signedOut": {
+      "title": "ログインしてください",
+      "body": "このレッスンを予約したアカウントでログインしてください。"
+    },
+    "notFound": {
+      "title": "レッスンが見つかりません",
+      "body": "存在しないか、あなたのレッスンではありません。"
+    },
+    "notCallable": {
+      "title": "このレッスンに教室はありません",
+      "body": "確定済みのオンラインレッスンにのみビデオ教室があります。"
+    },
+    "early": {
+      "title": "教室はまだ開いていません",
+      "body": "レッスンの10分前に開きます — あと {{countdown}}。"
+    },
+    "over": {
+      "title": "このレッスンは終了しました",
+      "body": "教室はレッスン終了の15分後に閉まります。"
+    }
+  },
+  "mediaError": {
+    "permission-denied": {
+      "title": "カメラとマイクがブロックされています",
+      "body": "ブラウザのアドレスバーで許可してから、ページを再読み込みしてください。"
+    },
+    "no-device": {
+      "title": "カメラまたはマイクが見つかりません",
+      "body": "カメラとマイクを接続してから、ページを再読み込みしてください。"
+    },
+    "unavailable": {
+      "title": "カメラを使用できません",
+      "body": "他のアプリが使用中の可能性があります。閉じてから再読み込みしてください。"
+    }
+  },
+  "errors": {
+    "generic": "通話で問題が発生しました。",
+    "joinFailed": "教室に入れませんでした。",
+    "connection-failed": "接続が切断されました。もう一度入室してください。",
+    "offer-failed": "レッスンを開始できませんでした。",
+    "answer-failed": "先生に接続できませんでした。",
+    "room-unavailable": "教室との接続が失われました。",
+    "shareFailed": "画面共有を開始できませんでした。"
+  }
+}

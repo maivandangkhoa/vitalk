@@ -1,0 +1,93 @@
+# coturn config for turn.fechtin.com — copy to turnserver.conf and fill in the
+# secret. The real file holds a credential, so it stays out of git.
+#
+#   cp turnserver.conf.example turnserver.conf
+#   openssl rand -hex 32          # paste into static-auth-secret
+#   chmod 600 turnserver.conf
+#   sudo chown 65534:65534 turnserver.conf   # the image runs as `nobody`
+#
+# That chown is not optional. coturn does not fail when it cannot read its
+# config — it logs a warning about a missing default certificate and starts with
+# built-in defaults, which look like a working server until the first call.
+
+# ── Identity ──────────────────────────────────────────────────────────────────
+realm=turn.fechtin.com
+server-name=turn.fechtin.com
+
+# The VM's public address is NAT'd onto a private VNIC address by Oracle, so
+# coturn cannot discover it. Without this line it advertises 10.0.0.177 as its
+# relay address and every relayed call fails — silently, which is the worst way
+# for this to break.
+external-ip=144.24.80.61/10.0.0.177
+
+# ── Credentials ───────────────────────────────────────────────────────────────
+# Time-limited credentials signed with a shared secret (RFC 5389 long-term auth,
+# coturn's "TURN REST API" scheme). The `getIceServers` Cloud Function mints
+#     username   = "<unix expiry>:<uid>"
+#     credential = base64(HMAC-SHA1(secret, username))
+# so nothing long-lived is ever shipped to a browser. A static user/password
+# baked into a frontend bundle becomes a public relay within a week.
+use-auth-secret
+static-auth-secret=REPLACE_ME_WITH_OPENSSL_RAND_HEX_32
+
+# ── Listeners ─────────────────────────────────────────────────────────────────
+# Pin to the real NIC. Left to itself, coturn discovers every address on the
+# host — and on this VM that means all eleven Docker bridge gateways
+# (172.17.0.1, 172.20.0.1, …). It would then listen on them *and* advertise them
+# as relay addresses, handing clients candidates that route nowhere.
+listening-ip=10.0.0.177
+relay-ip=10.0.0.177
+
+# 3478 = plain STUN/TURN over UDP and TCP.
+# 5349 = TURN over TLS/DTLS.
+# UDP 443 is reached by an iptables REDIRECT to 3478 (see setup-firewall.sh) —
+# Caddy holds only 443/TCP, so UDP 443 is free and passes many firewalls that
+# allow QUIC. TCP 443 is deliberately NOT taken: sharing it with Caddy would
+# mean an SNI-routing layer in front of eight other production services.
+listening-port=3478
+tls-listening-port=5349
+
+# Publicly trusted certificate, refreshed by sync-certs.sh from Caddy's ACME
+# store. `turns:` fails closed on an untrusted cert, so a self-signed one is not
+# an option here.
+cert=/etc/coturn/certs/turn.fechtin.com.crt
+pkey=/etc/coturn/certs/turn.fechtin.com.key
+
+# ── Relay port range ──────────────────────────────────────────────────────────
+# Deliberately narrow. coturn's default is 49152-65535, which is 16k ports to
+# enumerate in an Oracle Security List rule for no benefit: one allocation is
+# one port, and 240 concurrent relayed allocations is far beyond what a tutoring
+# schedule produces.
+min-port=49160
+max-port=49400
+
+# ── Hardening ─────────────────────────────────────────────────────────────────
+fingerprint
+no-cli
+no-tlsv1
+no-tlsv1_1
+no-multicast-peers
+
+# A TURN server will relay to any address it is asked to, which makes it an SSRF
+# gateway into whatever it can reach. This VM runs sixteen containers and a
+# Postgres — denying private ranges is what keeps the relay from becoming a way
+# in to them.
+denied-peer-ip=0.0.0.0-0.255.255.255
+denied-peer-ip=10.0.0.0-10.255.255.255
+denied-peer-ip=127.0.0.0-127.255.255.255
+denied-peer-ip=169.254.0.0-169.254.255.255
+denied-peer-ip=172.16.0.0-172.31.255.255
+denied-peer-ip=192.168.0.0-192.168.255.255
+denied-peer-ip=100.64.0.0-100.127.255.255
+denied-peer-ip=224.0.0.0-239.255.255.255
+denied-peer-ip=240.0.0.0-255.255.255.255
+
+# Per-user ceilings, so one client cannot exhaust the relay range or the uplink.
+user-quota=12
+total-quota=1200
+max-bps=2000000
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+# stdout, so `docker logs coturn` works and the json-file driver rotates it.
+log-file=stdout
+simple-log

@@ -17,6 +17,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { JoinLessonButton } from '@/components/call/JoinLessonButton';
 import {
   useAdminBookings,
   confirmBookingPayment,
@@ -134,6 +135,8 @@ function AdminBookingCard({
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2 sm:flex-col">
+            <JoinLessonButton booking={booking} />
+
             {booking.status === 'pending' && booking.paymentStatus === 'pending' && (
               <Button
                 size="sm"

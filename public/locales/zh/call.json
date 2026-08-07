@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "与 {{name}} 的课程"
+  },
+  "join": {
+    "enter": "进入课堂",
+    "countdown": "{{countdown}} 后开始"
+  },
+  "lobby": {
+    "title": "准备好了吗？",
+    "peerWaiting": "{{name}} 已在课堂中。",
+    "peerAbsent": "{{name}} 尚未进入课堂。",
+    "enter": "进入课堂",
+    "waiting": "正在等待老师…",
+    "camera": "摄像头",
+    "microphone": "麦克风"
+  },
+  "stage": {
+    "connecting": "正在连接…",
+    "reconnecting": "正在重新连接…"
+  },
+  "controls": {
+    "muteMic": "关闭麦克风",
+    "unmuteMic": "打开麦克风",
+    "stopVideo": "关闭摄像头",
+    "startVideo": "打开摄像头",
+    "share": "共享屏幕",
+    "stopShare": "停止共享",
+    "leave": "离开"
+  },
+  "route": {
+    "direct": "直接连接",
+    "relay": "中转连接"
+  },
+  "incoming": {
+    "title": "{{name}} 正在等待",
+    "body": "现在开始上课吗？{{seconds}} 秒后自动拒绝。",
+    "accept": "开始上课",
+    "decline": "暂不"
+  },
+  "gate": {
+    "signedOut": {
+      "title": "请先登录",
+      "body": "请使用预约本节课的账号登录。"
+    },
+    "notFound": {
+      "title": "找不到该课程",
+      "body": "课程不存在，或不属于您。"
+    },
+    "notCallable": {
+      "title": "本课程没有线上课堂",
+      "body": "只有已确认的线上课程才有视频课堂。"
+    },
+    "early": {
+      "title": "课堂尚未开放",
+      "body": "课堂在上课前 10 分钟开放 — 还有 {{countdown}}。"
+    },
+    "over": {
+      "title": "本节课已结束",
+      "body": "课堂在下课 15 分钟后关闭。"
+    }
+  },
+  "mediaError": {
+    "permission-denied": {
+      "title": "摄像头和麦克风被阻止",
+      "body": "请在浏览器地址栏允许权限，然后重新加载本页。"
+    },
+    "no-device": {
+      "title": "未找到摄像头或麦克风",
+      "body": "请连接摄像头和麦克风，然后重新加载本页。"
+    },
+    "unavailable": {
+      "title": "无法使用摄像头",
+      "body": "可能有其他应用正在占用。请关闭该应用后重新加载本页。"
+    }
+  },
+  "errors": {
+    "generic": "通话出现问题。",
+    "joinFailed": "无法进入课堂。",
+    "connection-failed": "连接已断开，请重新进入。",
+    "offer-failed": "无法开始上课。",
+    "answer-failed": "无法连接到老师。",
+    "room-unavailable": "与课堂失去联系。",
+    "shareFailed": "未能开始共享屏幕。"
+  }
+}

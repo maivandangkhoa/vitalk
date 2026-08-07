@@ -36,7 +36,9 @@
     "customLocationHint": "Enter the address or place name you'd like to meet at. The teacher will review before confirming.",
     "customLocationPlaceholder": "e.g. Starbucks Gangnam Station, 123 Gangnam-daero...",
     "viewOnGoogleMaps": "Google Maps",
-    "viewOnNaverMap": "Naver Map"
+    "viewOnNaverMap": "Naver Map",
+    "havitalk": "HaviTalk Video",
+    "havitalkHint": "Built in. A \"Join lesson\" button appears in My Bookings 10 minutes before the lesson — no app, no link to exchange."
   },
   "contactEmail": {
     "label": "Email for confirmation",

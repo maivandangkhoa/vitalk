@@ -25,8 +25,13 @@ export { onBookingCreated, onBookingUpdated } from "./bookingTriggers";
 // In-app chat
 export { onChatMessageCreated, sweepUnreadMessageEmails } from "./chatTriggers";
 
+// Video call (WebRTC)
+export { getIceServers } from "./ice";
+export { onCallWritten } from "./callTriggers";
+
 // Scheduled tasks
 export { sendLessonReminders } from "./reminders";
+export { cleanupOldCalls } from "./callCleanup";
 
 // Blog AI translation
 export { translateBlogPost } from "./translateBlog";
