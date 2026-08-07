@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  dtlsFingerprint,
   endCallRoom,
   ensureCallRoom,
   isPresent,
@@ -362,10 +363,23 @@ export function useCall({
         // An ICE restart arrives as a fresh offer on a live connection. Keeping
         // that connection is the whole point of a restart — tearing it down
         // would drop the tracks and turn a two-second blip into a re-dial.
-        // A connection that already failed cannot be repaired by pointing a
-        // new description at it — that attempt is over. Only a live one is
-        // worth keeping.
-        let pc = pcRef.current?.connectionState === 'failed' ? null : adopt(session);
+        //
+        // But only a restart may be adopted. A re-dial is a brand-new
+        // connection on the teacher's side, with a new DTLS fingerprint, and
+        // adopting that onto ours leaves two halves that can never complete
+        // their handshake — the exact stall that "Gọi lại" appeared to fix by
+        // waiting until the old connection had rotted to `failed`. The
+        // fingerprint is what tells the two apart.
+        const live = pcRef.current;
+        const offered = dtlsFingerprint(offer.sdp);
+        const sameConnection =
+          !!offered &&
+          !!live &&
+          live.connectionState !== 'failed' &&
+          live.connectionState !== 'closed' &&
+          !!live.currentRemoteDescription &&
+          offered === dtlsFingerprint(live.currentRemoteDescription.sdp);
+        let pc = sameConnection ? adopt(session) : null;
         if (!pc) {
           teardown();
           pc = await create(session);
@@ -414,6 +428,17 @@ export function useCall({
 
     (async () => {
       try {
+        // The mirror of the student's check. An answer whose fingerprint is not
+        // the one this connection already shook hands with comes from a student
+        // who rebuilt theirs — after a reload, or after coming back from a lost
+        // connection. It cannot be applied here; dial them again instead of
+        // sitting on a handshake that will never finish.
+        const previous = pc.currentRemoteDescription?.sdp;
+        if (previous && dtlsFingerprint(previous) !== dtlsFingerprint(answer.sdp)) {
+          void startCall();
+          return;
+        }
+
         await pc.setRemoteDescription(new RTCSessionDescription(answer));
         remoteDescSetRef.current = true;
         await drainCandidates();
@@ -435,6 +460,7 @@ export function useCall({
     call?.answer,
     call?.session,
     drainCandidates,
+    startCall,
     pcRef,
     sessionRef,
     remoteDescSetRef,

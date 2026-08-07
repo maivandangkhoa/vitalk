@@ -118,6 +118,23 @@ export async function publishOffer(
   });
 }
 
+/**
+ * The DTLS fingerprint out of an SDP — the identity of the peer's
+ * `RTCPeerConnection`.
+ *
+ * It is generated with the connection's certificate, so it survives an ICE
+ * restart and changes the moment the other side builds a new connection. That
+ * distinction matters: a restart must be adopted onto the live connection, but
+ * a description carrying a *different* fingerprint cannot be — DTLS is already
+ * established with the old one, and pointing the new description at it produces
+ * a handshake that never completes and a call that sits on "connecting".
+ */
+export function dtlsFingerprint(sdp: string | undefined | null): string | null {
+  if (!sdp) return null;
+  const match = sdp.match(/^a=fingerprint:\s*\S+\s+(\S+)/m);
+  return match ? match[1] : null;
+}
+
 export async function publishAnswer(
   callId: string,
   answer: SessionDescriptionPayload
