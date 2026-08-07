@@ -55,6 +55,23 @@ else
   echo "  added: udp/443 -> 3478"
 fi
 
+# coturn 4.17.0 sends every UDP reply with TTL=1, so the first router past this
+# VM decrements it to zero and drops it. The packet looks perfect in a tcpdump
+# taken on the VM — it simply never arrives anywhere — which is what made this
+# expensive to find. coturn exposes no option for it, so put the TTL back on the
+# way out. Matching on source port is enough: nothing else here uses these.
+echo "mangle POSTROUTING (coturn TTL):"
+add_ttl() {
+  if iptables -t mangle -C POSTROUTING "$@" -j TTL --ttl-set 64 2>/dev/null; then
+    echo "  already present: $*"
+  else
+    iptables -t mangle -A POSTROUTING "$@" -j TTL --ttl-set 64
+    echo "  added: $*"
+  fi
+}
+add_ttl -p udp -m multiport --sports 3478,5349,443
+add_ttl -p udp --sport "${MIN_PORT}:${MAX_PORT}"
+
 netfilter-persistent save >/dev/null 2>&1 || iptables-save > /etc/iptables/rules.v4
 echo "saved."
 echo
