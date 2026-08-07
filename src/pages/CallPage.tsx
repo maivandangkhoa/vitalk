@@ -46,21 +46,40 @@ export default function CallPage() {
   // not just the video element, otherwise the buttons disappear with it.
   const roomRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  // iOS Safari has no element fullscreen; hide the control rather than offer a
-  // button that throws.
-  const canFullscreen =
+  // iOS Safari has no element fullscreen. Rather than hide the control there —
+  // a phone is where the extra room matters most — fall back to covering the
+  // viewport with the classroom itself. The browser's own bars stay, everything
+  // of ours goes.
+  const hasFullscreenApi =
     typeof document !== 'undefined' &&
     typeof document.documentElement.requestFullscreen === 'function';
+  const overlay = fullscreen && !hasFullscreenApi;
 
   useEffect(() => {
     // Escape and the browser's own chrome exit fullscreen without telling us,
     // so the icon follows the document rather than our own click.
+    if (!hasFullscreenApi) return;
     const sync = () => setFullscreen(document.fullscreenElement === roomRef.current);
     document.addEventListener('fullscreenchange', sync);
     return () => document.removeEventListener('fullscreenchange', sync);
-  }, []);
+  }, [hasFullscreenApi]);
+
+  // The page behind a covering classroom must not scroll under it — on a phone
+  // that reads as the video sliding away under your thumb.
+  useEffect(() => {
+    if (!overlay) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [overlay]);
 
   const toggleFullscreen = () => {
+    if (!hasFullscreenApi) {
+      setFullscreen((on) => !on);
+      return;
+    }
     if (document.fullscreenElement) {
       void document.exitFullscreen().catch(() => {});
     } else {
@@ -170,7 +189,10 @@ export default function CallPage() {
           ref={roomRef}
           className={cn(
             'flex flex-col gap-4',
-            fullscreen && 'h-full bg-neutral-950 p-4'
+            fullscreen && 'h-full bg-neutral-950 p-4',
+            // `dvh`, not `vh`: on a phone the address bar comes and goes, and
+            // `vh` would push the control bar under it.
+            overlay && 'fixed inset-0 z-50 h-[100dvh] w-screen'
           )}
         >
           {/* Chat sits beside the video from `lg` up and underneath it below
@@ -198,7 +220,7 @@ export default function CallPage() {
                 camOn={media.camOn}
                 placeholder={t('stage.connecting')}
                 reconnectingLabel={session.reconnecting ? t('stage.reconnecting') : null}
-                onToggleFullscreen={canFullscreen ? toggleFullscreen : undefined}
+                onToggleFullscreen={toggleFullscreen}
               />
             </div>
 
@@ -226,7 +248,7 @@ export default function CallPage() {
             chatOpen={chatOpen}
             chatUnread={chat.unread}
             fullscreen={fullscreen}
-            onToggleFullscreen={canFullscreen ? toggleFullscreen : undefined}
+            onToggleFullscreen={toggleFullscreen}
             // Only the teacher offers, so only the teacher can re-dial — and
             // only while the media is not through, which is the one case where
             // there is anything to fix.
