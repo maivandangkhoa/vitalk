@@ -62,6 +62,8 @@ interface VideoStageProps {
   placeholder: string;
   /** Banner text while the connection is being repaired; null when it is fine. */
   reconnectingLabel: string | null;
+  /** Double-clicking the picture is what people try first for fullscreen. */
+  onToggleFullscreen?: () => void;
 }
 
 export function VideoStage({
@@ -74,6 +76,7 @@ export function VideoStage({
   camOn,
   placeholder,
   reconnectingLabel,
+  onToggleFullscreen,
 }: VideoStageProps) {
   // Whoever is sharing, the screen takes the big tile: it is the thing being
   // read. The faces move to thumbnails, which is also why the camera is sent at
@@ -81,7 +84,10 @@ export function VideoStage({
   const sharing = !!screenStream;
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl bg-neutral-900">
+    <div
+      className="relative h-full w-full overflow-hidden rounded-2xl bg-neutral-900"
+      onDoubleClick={onToggleFullscreen}
+    >
       {sharing ? (
         <VideoTile stream={screenStream} contain muted />
       ) : remoteStream ? (

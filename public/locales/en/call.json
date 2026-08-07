@@ -28,7 +28,9 @@
     "startVideo": "Turn camera on",
     "share": "Share screen",
     "stopShare": "Stop sharing",
-    "leave": "Leave"
+    "leave": "Leave",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen"
   },
   "chat": {
     "title": "Chat",
@@ -90,6 +92,7 @@
     "offer-failed": "Could not start the lesson.",
     "answer-failed": "Could not connect to your teacher.",
     "room-unavailable": "Lost contact with the classroom.",
-    "shareFailed": "Screen sharing was not started."
+    "shareFailed": "Screen sharing was not started.",
+    "fullscreenFailed": "Fullscreen is not available in this browser."
   }
 }

@@ -28,7 +28,9 @@
     "startVideo": "Bật camera",
     "share": "Chia sẻ màn hình",
     "stopShare": "Dừng chia sẻ",
-    "leave": "Rời lớp"
+    "leave": "Rời lớp",
+    "fullscreen": "Toàn màn hình",
+    "exitFullscreen": "Thoát toàn màn hình"
   },
   "chat": {
     "title": "Trò chuyện",
@@ -90,6 +92,7 @@
     "offer-failed": "Không bắt đầu được buổi học.",
     "answer-failed": "Không kết nối được với giáo viên.",
     "room-unavailable": "Mất liên lạc với lớp học.",
-    "shareFailed": "Chưa bắt đầu được chia sẻ màn hình."
+    "shareFailed": "Chưa bắt đầu được chia sẻ màn hình.",
+    "fullscreenFailed": "Trình duyệt này không hỗ trợ toàn màn hình."
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import { useCall } from '@/hooks/useCall';
 import { useCallMedia } from '@/hooks/useCallMedia';
 import { useCallChat } from '@/hooks/useCallChat';
 import { roleOf } from '@/lib/webrtc';
+import { cn } from '@/lib/utils';
 import { callWindowState, formatCountdown, isCallableBooking, joinWindow } from '@/lib/callWindow';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { CallLobby } from '@/components/call/CallLobby';
@@ -40,6 +41,34 @@ export default function CallPage() {
   // Shut by default: the video is what the lesson is for, and the unread badge
   // is enough to notice a message that does arrive.
   const [chatOpen, setChatOpen] = useState(false);
+
+  // Fullscreen covers the whole classroom — video, chat and the control bar —
+  // not just the video element, otherwise the buttons disappear with it.
+  const roomRef = useRef<HTMLDivElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  // iOS Safari has no element fullscreen; hide the control rather than offer a
+  // button that throws.
+  const canFullscreen =
+    typeof document !== 'undefined' &&
+    typeof document.documentElement.requestFullscreen === 'function';
+
+  useEffect(() => {
+    // Escape and the browser's own chrome exit fullscreen without telling us,
+    // so the icon follows the document rather than our own click.
+    const sync = () => setFullscreen(document.fullscreenElement === roomRef.current);
+    document.addEventListener('fullscreenchange', sync);
+    return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+    } else {
+      roomRef.current
+        ?.requestFullscreen()
+        .catch(() => toast.error(t('errors.fullscreenFailed')));
+    }
+  };
 
   // Drives the countdown, and re-opens the page by itself when the lesson's
   // start time arrives — nobody should have to reload to get in.
@@ -130,11 +159,22 @@ export default function CallPage() {
       </Helmet>
 
       {inCall ? (
-        <div className="flex flex-col gap-4">
+        <div
+          ref={roomRef}
+          className={cn(
+            'flex flex-col gap-4',
+            fullscreen && 'h-full bg-neutral-950 p-4'
+          )}
+        >
           {/* Chat sits beside the video from `lg` up and underneath it below
               that — a phone has no room for two columns. */}
-          <div className="flex flex-col gap-4 lg:flex-row">
-            <div className="h-[60vh] min-h-80 min-w-0 flex-1 md:h-[70vh]">
+          <div className={cn('flex flex-col gap-4 lg:flex-row', fullscreen && 'min-h-0 flex-1')}>
+            <div
+              className={cn(
+                'min-w-0 flex-1',
+                fullscreen ? 'min-h-0' : 'h-[60vh] min-h-80 md:h-[70vh]'
+              )}
+            >
               <VideoStage
                 localStream={media.stream}
                 remoteStream={session.remoteStream}
@@ -151,6 +191,7 @@ export default function CallPage() {
                 camOn={media.camOn}
                 placeholder={t('stage.connecting')}
                 reconnectingLabel={session.reconnecting ? t('stage.reconnecting') : null}
+                onToggleFullscreen={canFullscreen ? toggleFullscreen : undefined}
               />
             </div>
 
@@ -162,7 +203,10 @@ export default function CallPage() {
                 peerName={peerName}
                 onEnsureConversation={chat.ensure}
                 onClose={() => setChatOpen(false)}
-                className="h-[50vh] shrink-0 lg:h-[70vh] lg:w-80 xl:w-96"
+                className={cn(
+                  'shrink-0 lg:w-80 xl:w-96',
+                  fullscreen ? 'h-[35vh] lg:h-auto' : 'h-[50vh] lg:h-[70vh]'
+                )}
               />
             )}
           </div>
@@ -174,6 +218,8 @@ export default function CallPage() {
             route={session.route}
             chatOpen={chatOpen}
             chatUnread={chat.unread}
+            fullscreen={fullscreen}
+            onToggleFullscreen={canFullscreen ? toggleFullscreen : undefined}
             onToggleMic={media.toggleMic}
             onToggleCam={media.toggleCam}
             onToggleChat={() => setChatOpen((open) => !open)}

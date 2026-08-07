@@ -28,7 +28,9 @@
     "startVideo": "카메라 켜기",
     "share": "화면 공유",
     "stopShare": "공유 중지",
-    "leave": "나가기"
+    "leave": "나가기",
+    "fullscreen": "전체 화면",
+    "exitFullscreen": "전체 화면 종료"
   },
   "chat": {
     "title": "채팅",
@@ -90,6 +92,7 @@
     "offer-failed": "수업을 시작하지 못했습니다.",
     "answer-failed": "선생님과 연결하지 못했습니다.",
     "room-unavailable": "강의실과의 연결이 끊어졌습니다.",
-    "shareFailed": "화면 공유를 시작하지 못했습니다."
+    "shareFailed": "화면 공유를 시작하지 못했습니다.",
+    "fullscreenFailed": "이 브라우저에서는 전체 화면을 사용할 수 없습니다."
   }
 }

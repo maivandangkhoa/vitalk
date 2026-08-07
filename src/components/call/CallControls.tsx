@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import {
+  Maximize,
   Mic,
   MicOff,
   MessageSquare,
+  Minimize,
   MonitorUp,
   PhoneOff,
   Video,
@@ -21,6 +23,9 @@ interface CallControlsProps {
   chatOpen: boolean;
   /** Unread messages in the lesson thread; only meaningful while chat is shut. */
   chatUnread: number;
+  fullscreen: boolean;
+  /** Absent where the browser has no element fullscreen (iOS Safari). */
+  onToggleFullscreen?: () => void;
   onToggleMic: () => void;
   onToggleCam: () => void;
   onToggleShare: () => void;
@@ -54,6 +59,8 @@ export function CallControls({
   route,
   chatOpen,
   chatUnread,
+  fullscreen,
+  onToggleFullscreen,
   onToggleMic,
   onToggleCam,
   onToggleShare,
@@ -111,6 +118,18 @@ export function CallControls({
           </span>
         )}
       </Button>
+
+      {onToggleFullscreen && (
+        <Button
+          size="icon-lg"
+          variant="secondary"
+          onClick={onToggleFullscreen}
+          aria-label={fullscreen ? t('controls.exitFullscreen') : t('controls.fullscreen')}
+          title={fullscreen ? t('controls.exitFullscreen') : t('controls.fullscreen')}
+        >
+          {fullscreen ? <Minimize /> : <Maximize />}
+        </Button>
+      )}
 
       <Button size="lg" variant="destructive" onClick={onLeave}>
         <PhoneOff data-icon="inline-start" />

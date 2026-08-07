@@ -28,7 +28,9 @@
     "startVideo": "打开摄像头",
     "share": "共享屏幕",
     "stopShare": "停止共享",
-    "leave": "离开"
+    "leave": "离开",
+    "fullscreen": "全屏",
+    "exitFullscreen": "退出全屏"
   },
   "chat": {
     "title": "聊天",
@@ -90,6 +92,7 @@
     "offer-failed": "无法开始上课。",
     "answer-failed": "无法连接到老师。",
     "room-unavailable": "与课堂失去联系。",
-    "shareFailed": "未能开始共享屏幕。"
+    "shareFailed": "未能开始共享屏幕。",
+    "fullscreenFailed": "此浏览器不支持全屏。"
   }
 }

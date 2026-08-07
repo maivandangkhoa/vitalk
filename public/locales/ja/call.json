@@ -28,7 +28,9 @@
     "startVideo": "カメラをオン",
     "share": "画面を共有",
     "stopShare": "共有を停止",
-    "leave": "退出"
+    "leave": "退出",
+    "fullscreen": "全画面",
+    "exitFullscreen": "全画面を終了"
   },
   "chat": {
     "title": "チャット",
@@ -90,6 +92,7 @@
     "offer-failed": "レッスンを開始できませんでした。",
     "answer-failed": "先生に接続できませんでした。",
     "room-unavailable": "教室との接続が失われました。",
-    "shareFailed": "画面共有を開始できませんでした。"
+    "shareFailed": "画面共有を開始できませんでした。",
+    "fullscreenFailed": "このブラウザでは全画面を利用できません。"
   }
 }
