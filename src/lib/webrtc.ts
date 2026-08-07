@@ -207,19 +207,41 @@ export async function markCallActive(callId: string): Promise<void> {
   });
 }
 
-/** Hang up, and drop the SDP so the next attempt starts from a clean slate. */
+/**
+ * Hang up, and drop the SDP so the next attempt starts from a clean slate.
+ *
+ * Opens a generation of its own, which is the part that is easy to miss. The
+ * other side ignores a hang-up older than the generation it is currently
+ * dialling — that is what stops a *previous* call's `ended`, still sitting in
+ * the document, from tearing down the connection that replaced it. But a peer
+ * claims its generation before it publishes anything, so a hang-up that reused
+ * the document's number was read as stale by the very peer it was meant for,
+ * and then overwritten by that peer's own offer. Bumping the number here is
+ * what makes a hang-up outrank an unpublished claim.
+ *
+ * Transactional because the number has to be the document's, not this
+ * browser's: a snapshot a few hundred milliseconds behind would reuse a
+ * generation and land back in the same hole.
+ */
 export async function endCallRoom(
   callId: string,
   role: CallRole,
   status: Extract<CallStatus, 'ended' | 'rejected'> = 'ended'
 ): Promise<void> {
-  await updateDoc(callRef(callId), {
-    status,
-    offer: null,
-    answer: null,
-    [readyFieldFor(role)]: null,
-    endedAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  await runTransaction(db, async (tx) => {
+    const ref = callRef(callId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) return;
+    const session = (snap.data().session as number | undefined) ?? 0;
+    tx.update(ref, {
+      status,
+      offer: null,
+      answer: null,
+      session: session + 1,
+      [readyFieldFor(role)]: null,
+      endedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
   });
 }
 

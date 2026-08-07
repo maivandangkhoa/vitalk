@@ -308,11 +308,21 @@ export function useCallNegotiation({
           live.connectionState !== 'closed' &&
           !!live.currentRemoteDescription &&
           offered === dtlsFingerprint(live.currentRemoteDescription.sdp);
-        let pc = sameConnection ? adopt(session) : null;
-        if (pc) {
-          // The restart is this side's chance to pick up TURN credentials a
-          // cold start denied the original connection.
+        let pc: RTCPeerConnection | null = null;
+        if (sameConnection) {
+          // Before `adopt`, deliberately. `adopt` claims the generation
+          // synchronously, and this call can wait on a network round trip — so
+          // claiming first meant a re-run triggered by any snapshot (a
+          // heartbeat lands every ten seconds or so) found the generation
+          // already taken, returned early, and the restart offer was answered
+          // by nobody at all. The credentials only need the live connection,
+          // which is what `pcRef` still holds here.
           await repairIceServers();
+          // `live` is the connection this offer was judged against. If anything
+          // replaced it while we waited, adopting would apply the offer to a
+          // transport that never shook hands with its fingerprint.
+          if (cancelled || pcRef.current !== live) return;
+          pc = adopt(session);
         } else {
           teardown();
           pc = await create(session);

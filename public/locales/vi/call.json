@@ -91,6 +91,7 @@
     "generic": "Cuộc gọi gặp sự cố.",
     "joinFailed": "Không vào được lớp học.",
     "connection-failed": "Mất kết nối. Hãy thử vào lại.",
+    "ice-unavailable": "Chưa kết nối được máy chủ trung chuyển. Hãy thử lại sau giây lát.",
     "offer-failed": "Không bắt đầu được buổi học.",
     "answer-failed": "Không kết nối được với giáo viên.",
     "no-answer": "Phía bên kia không trả lời. Hãy thử gọi lại.",

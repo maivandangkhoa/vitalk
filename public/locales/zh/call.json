@@ -91,6 +91,7 @@
     "generic": "通话出现问题。",
     "joinFailed": "无法进入课堂。",
     "connection-failed": "连接已断开，请重新进入。",
+    "ice-unavailable": "暂时无法连接中转服务器，请稍后再试。",
     "offer-failed": "无法开始上课。",
     "answer-failed": "无法连接到老师。",
     "no-answer": "对方没有应答，请重新拨号。",

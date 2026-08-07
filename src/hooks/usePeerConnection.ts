@@ -206,14 +206,25 @@ export function usePeerConnection({
       // the connection exists is what keeps it from being leaked.
       if (createTokenRef.current !== token) return null;
 
+      // Most pairs connect straight to each other, so a TURN server that is
+      // quietly broken looks perfectly healthy from the outside. `?ice=relay`
+      // on both sides forbids every direct route, which is the only way to
+      // prove the relay actually carries a lesson. Opt-in and per-tab: it makes
+      // calls slower, so it must never be the default.
+      const forceRelay = relayOnly();
+      if (forceRelay && degraded) {
+        // Relay-only with no relay to reach gathers nothing whatsoever. Saying
+        // so is the whole point: silently building this connection produces the
+        // exact symptom the flag exists to diagnose, and would have had someone
+        // debugging coturn again for a credential fetch that simply failed.
+        console.error('usePeerConnection: ?ice=relay, but no TURN credentials');
+        onFatalError('ice-unavailable');
+        return null;
+      }
+
       const pc = new RTCPeerConnection({
         iceServers,
-        // Most pairs connect straight to each other, so a TURN server that is
-        // quietly broken looks perfectly healthy from the outside. `?ice=relay`
-        // on both sides forbids every direct route, which is the only way to
-        // prove the relay actually carries a lesson. Opt-in and per-tab: it
-        // makes calls slower, so it must never be the default.
-        ...(relayOnly() ? { iceTransportPolicy: 'relay' as const } : {}),
+        ...(forceRelay ? { iceTransportPolicy: 'relay' as const } : {}),
       });
       degradedIceRef.current = degraded;
       pcRef.current = pc;
@@ -428,6 +439,17 @@ export function usePeerConnection({
     return () => {
       pcRef.current?.close();
       pcRef.current = null;
+      // The same invalidation `teardown` does. Closing what exists is not
+      // enough: a `create` still waiting on its credentials would resolve after
+      // this and hand a live connection to a component that is gone, left
+      // gathering candidates and writing them to Firestore with nothing able to
+      // close it.
+      //
+      // The lint rule below guards against reading a *DOM* ref that React has
+      // already detached. This one is a counter, and its value at cleanup time
+      // is precisely what has to be invalidated.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      createTokenRef.current++;
     };
   }, []);
 

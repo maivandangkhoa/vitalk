@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
+import { relayOnly } from '@/lib/callDebug';
 import type { IceServersResponse } from '@/types/call';
 
 /** Re-fetch a little before the credentials actually lapse. */
@@ -84,12 +85,19 @@ export function useIceServers(bookingId: string | undefined) {
         inFlight.current = pending;
       }
 
-      const data = await Promise.race([
-        inFlight.current,
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('ice-timeout')), FETCH_TIMEOUT_MS)
-        ),
-      ]);
+      // `?ice=relay` forbids every direct route, so a connection built without
+      // TURN gathers no candidates at all — the timeout that protects ordinary
+      // calls would turn the one flag we have for testing the relay into a
+      // guaranteed failure that looks exactly like a broken relay. There, the
+      // cold start is worth waiting out.
+      const data = relayOnly()
+        ? await inFlight.current
+        : await Promise.race([
+            inFlight.current,
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('ice-timeout')), FETCH_TIMEOUT_MS)
+            ),
+          ]);
       return { iceServers: data.iceServers, degraded: false };
     } catch (err) {
       // A call over STUN alone still works for most pairs, so a failure here

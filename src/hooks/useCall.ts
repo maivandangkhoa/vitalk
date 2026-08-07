@@ -251,13 +251,40 @@ export function useCall({
   // teacher came back to a room that could never be rung again. What this
   // browser holds is the honest answer: no connection of our own means no
   // lesson in progress, whatever the document still claims.
-  //
-  // The one thing that outranks that: a student explicitly asking to be dialled
-  // again. Their side knows the call is dead even while ours still believes it
-  // holds a working connection.
-  const redialRequested = role === 'teacher' && call?.status === 'ringing';
+  // `connecting` as well as `negotiating`: a dial spends its first seconds
+  // waiting on the TURN credentials, and for that stretch there is no
+  // connection yet to say the teacher is busy — so the prompt reappeared on top
+  // of the dial it had just started, which on a repair the teacher never asked
+  // for is a dialog arriving out of nowhere.
   const incoming =
-    role === 'teacher' && joined && peerPresent && (!peer.negotiating || !!redialRequested);
+    role === 'teacher' && joined && peerPresent && !peer.negotiating && !peer.connecting;
+
+  /**
+   * The student asked to be dialled again, and this browser already holds a
+   * connection — so the lesson is under way and this is a repair.
+   *
+   * It dials rather than raising the prompt. Routing a repair through the
+   * prompt looked tidy and was dangerous: the prompt owns a thirty-second
+   * auto-decline, so a request the teacher did not happen to be looking at
+   * *hung up a working lesson* and took their lobby seat with it. Dismissing
+   * the dialog did the same thing instantly.
+   *
+   * With no connection of our own the request is indistinguishable from "please
+   * begin" — which is the teacher's to accept, not ours to assume — and
+   * `incoming` above already covers that case, since a student who is present
+   * rings the prompt regardless of what the status says.
+   */
+  const redialHandledRef = useRef(false);
+  useEffect(() => {
+    if (role !== 'teacher' || call?.status !== 'ringing') {
+      // The episode is over; arm for the next one.
+      redialHandledRef.current = false;
+      return;
+    }
+    if (!joined || !peer.negotiating || redialHandledRef.current) return;
+    redialHandledRef.current = true;
+    void startCall();
+  }, [role, call?.status, joined, peer.negotiating, startCall]);
 
   // Auto-decline once the prompt has rung long enough. The timer lives here so
   // it starts and stops with the prompt itself.

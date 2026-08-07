@@ -91,6 +91,7 @@
     "generic": "Something went wrong with the call.",
     "joinFailed": "Could not enter the classroom.",
     "connection-failed": "The connection dropped. Try entering again.",
+    "ice-unavailable": "The relay is not reachable right now. Try again in a moment.",
     "offer-failed": "Could not start the lesson.",
     "answer-failed": "Could not connect to your teacher.",
     "no-answer": "No answer from the other side. Try dialling again.",
