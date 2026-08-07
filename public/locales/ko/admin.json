@@ -178,6 +178,12 @@
     "confirmed": "확정",
     "completed": "완료",
     "cancelled": "취소",
+    "payment": {
+      "pending": "미결제",
+      "confirmed": "결제 완료",
+      "failed": "결제 실패",
+      "refunded": "환불 완료"
+    },
     "confirmPayment": "결제 확인",
     "cancelBooking": "예약 취소",
     "addMeetingLink": "회의 링크 추가",

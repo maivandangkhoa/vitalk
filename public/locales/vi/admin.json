@@ -178,6 +178,12 @@
     "confirmed": "Đã xác nhận",
     "completed": "Hoàn thành",
     "cancelled": "Đã hủy",
+    "payment": {
+      "pending": "Chờ thanh toán",
+      "confirmed": "Đã thanh toán",
+      "failed": "Thanh toán lỗi",
+      "refunded": "Đã hoàn tiền"
+    },
     "confirmPayment": "Xác nhận thanh toán",
     "cancelBooking": "Hủy đặt lịch",
     "addMeetingLink": "Thêm link họp",

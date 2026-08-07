@@ -178,6 +178,12 @@
     "confirmed": "Confirmed",
     "completed": "Completed",
     "cancelled": "Cancelled",
+    "payment": {
+      "pending": "Unpaid",
+      "confirmed": "Paid",
+      "failed": "Payment failed",
+      "refunded": "Refunded"
+    },
     "confirmPayment": "Confirm Payment",
     "cancelBooking": "Cancel Booking",
     "addMeetingLink": "Add Meeting Link",

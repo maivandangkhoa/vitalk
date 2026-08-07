@@ -178,6 +178,12 @@
     "confirmed": "已确认",
     "completed": "已完成",
     "cancelled": "已取消",
+    "payment": {
+      "pending": "待付款",
+      "confirmed": "已付款",
+      "failed": "付款失败",
+      "refunded": "已退款"
+    },
     "confirmPayment": "确认付款",
     "cancelBooking": "取消预约",
     "addMeetingLink": "添加会议链接",
