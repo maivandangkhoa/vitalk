@@ -93,6 +93,8 @@ export interface PeerConnection {
   reconnecting: boolean;
   iceTrouble: IceTrouble;
 
+  /** Fetch and cache the TURN credentials ahead of needing them. */
+  warmIceServers: () => void;
   create: (session: number) => Promise<RTCPeerConnection | null>;
   teardown: () => void;
   /** Adopt the live connection for a new generation — an ICE restart. */
@@ -189,6 +191,19 @@ export function usePeerConnection({
     setIceTrouble(null);
     setReconnecting(false);
   }, []);
+
+  /**
+   * Ask for the TURN credentials before anyone dials.
+   *
+   * `getIceServers` is a Cloud Run function with no traffic between lessons, so
+   * the first call of the day pays a cold start — and it sat directly in front
+   * of building the connection, on both sides in turn. Fetching it while people
+   * are still in the lobby takes it off the path entirely; `useIceServers`
+   * caches for as long as the credentials last.
+   */
+  const warmIceServers = useCallback(() => {
+    fetchIceServers().catch(() => undefined);
+  }, [fetchIceServers]);
 
   const create = useCallback(
     async (session: number) => {
@@ -464,6 +479,7 @@ export function usePeerConnection({
     connecting,
     reconnecting,
     iceTrouble,
+    warmIceServers,
     create,
     teardown,
     adopt,

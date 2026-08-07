@@ -113,6 +113,7 @@ export function useCall({
     acceptCandidate,
     drainCandidates,
     reconcileRemoteMedia,
+    warmIceServers,
     setConnecting,
     setReconnecting,
   } = peer;
@@ -157,11 +158,14 @@ export function useCall({
 
   const join = useCallback(async () => {
     if (!booking || !role) return;
+    // Started here, not awaited: the credentials are wanted a few seconds from
+    // now, when someone dials, and the lobby is free time to spend on them.
+    warmIceServers();
     await ensureCallRoom(booking);
     await setPresence(booking.id, role, true);
     joinedRef.current = true;
     setJoined(true);
-  }, [booking, role]);
+  }, [booking, role, warmIceServers]);
 
   useEffect(() => {
     if (!callId || !role) return;
