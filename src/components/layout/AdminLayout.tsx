@@ -118,10 +118,17 @@ export function AdminLayout() {
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
               <div className="flex h-16 items-center border-b border-zinc-100 px-4">
-                <span className="text-lg font-bold">
+                {/* A link, exactly as in the desktop sidebar: the logo is where
+                    everyone goes to leave the admin area, and on the phone this
+                    drawer is the only place it appears. */}
+                <Link
+                  to="/"
+                  className="text-lg font-bold"
+                  onClick={() => setMobileOpen(false)}
+                >
                   Havi<span className="text-indigo-500">Talk</span>
                   <span className="ml-2 text-xs text-muted-foreground">Admin</span>
-                </span>
+                </Link>
               </div>
               <div className="py-4">
                 <SidebarNav items={navItems} onItemClick={() => setMobileOpen(false)} />
