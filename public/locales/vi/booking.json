@@ -36,7 +36,9 @@
     "customLocationHint": "Nhập địa chỉ hoặc tên quán bạn muốn gặp. Giáo viên sẽ xem xét trước khi xác nhận.",
     "customLocationPlaceholder": "VD: Starbucks Gangnam, 123 Gangnam-daero...",
     "viewOnGoogleMaps": "Google Maps",
-    "viewOnNaverMap": "Naver Map"
+    "viewOnNaverMap": "Naver Map",
+    "havitalk": "HaviTalk Video",
+    "havitalkHint": "Có sẵn trong ứng dụng. Nút \"Vào lớp\" sẽ hiện ở mục Buổi học của tôi trước giờ học 10 phút — không cần cài app hay trao đổi link."
   },
   "contactEmail": {
     "label": "Email nhận xác nhận",

@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "Buổi học với {{name}}"
+  },
+  "join": {
+    "enter": "Vào lớp",
+    "countdown": "Bắt đầu sau {{countdown}}"
+  },
+  "lobby": {
+    "title": "Sẵn sàng chưa?",
+    "peerWaiting": "{{name}} đã ở trong lớp.",
+    "peerAbsent": "{{name}} chưa vào lớp.",
+    "enter": "Vào lớp học",
+    "waiting": "Đang chờ giáo viên…",
+    "camera": "Camera",
+    "microphone": "Micro"
+  },
+  "stage": {
+    "connecting": "Đang kết nối…",
+    "reconnecting": "Đang kết nối lại…"
+  },
+  "controls": {
+    "muteMic": "Tắt micro",
+    "unmuteMic": "Bật micro",
+    "stopVideo": "Tắt camera",
+    "startVideo": "Bật camera",
+    "share": "Chia sẻ màn hình",
+    "stopShare": "Dừng chia sẻ",
+    "leave": "Rời lớp"
+  },
+  "route": {
+    "direct": "Kết nối trực tiếp",
+    "relay": "Kết nối qua máy chủ trung chuyển"
+  },
+  "incoming": {
+    "title": "{{name}} đang chờ",
+    "body": "Bắt đầu buổi học? Tự động từ chối sau {{seconds}} giây.",
+    "accept": "Bắt đầu buổi học",
+    "decline": "Chưa vào"
+  },
+  "gate": {
+    "signedOut": {
+      "title": "Vui lòng đăng nhập",
+      "body": "Đăng nhập bằng tài khoản đã đặt buổi học này."
+    },
+    "notFound": {
+      "title": "Không tìm thấy buổi học",
+      "body": "Buổi học không tồn tại, hoặc không thuộc về bạn."
+    },
+    "notCallable": {
+      "title": "Buổi học này không có lớp trực tuyến",
+      "body": "Chỉ buổi học online đã xác nhận mới có lớp video."
+    },
+    "early": {
+      "title": "Lớp học chưa mở",
+      "body": "Lớp mở trước giờ học 10 phút — còn {{countdown}}."
+    },
+    "over": {
+      "title": "Buổi học đã kết thúc",
+      "body": "Lớp đóng sau khi buổi học kết thúc 15 phút."
+    }
+  },
+  "mediaError": {
+    "permission-denied": {
+      "title": "Camera và micro bị chặn",
+      "body": "Hãy cho phép truy cập ở thanh địa chỉ của trình duyệt rồi tải lại trang."
+    },
+    "no-device": {
+      "title": "Không tìm thấy camera hoặc micro",
+      "body": "Hãy kết nối camera và micro rồi tải lại trang."
+    },
+    "unavailable": {
+      "title": "Không dùng được camera",
+      "body": "Có thể ứng dụng khác đang dùng. Hãy đóng ứng dụng đó rồi tải lại trang."
+    }
+  },
+  "errors": {
+    "generic": "Cuộc gọi gặp sự cố.",
+    "joinFailed": "Không vào được lớp học.",
+    "connection-failed": "Mất kết nối. Hãy thử vào lại.",
+    "offer-failed": "Không bắt đầu được buổi học.",
+    "answer-failed": "Không kết nối được với giáo viên.",
+    "room-unavailable": "Mất liên lạc với lớp học.",
+    "shareFailed": "Chưa bắt đầu được chia sẻ màn hình."
+  }
+}

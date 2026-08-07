@@ -1,0 +1,23 @@
+# Add this block to /home/ubuntu/proxy/Caddyfile on the fechtin VM, then
+# `docker exec caddy caddy reload --config /etc/caddy/Caddyfile`.
+#
+# Caddy does not proxy TURN and never will — TURN is not HTTP. The only job of
+# this block is to make Caddy obtain and renew a publicly trusted certificate
+# for turn.fechtin.com, which sync-certs.sh then hands to coturn. `turns:` fails
+# closed against an untrusted certificate, so this is not optional.
+#
+# Prerequisite: turn.fechtin.com must be a **grey-cloud** (DNS-only) A record
+# pointing at 144.24.80.61. Cloudflare cannot proxy TURN, and the HTTP-01
+# challenge has to reach this VM's port 80 directly. The VM's address is already
+# public via luna.fechtin.com and origin-vm.fechtin.com, so this exposes nothing
+# new — unlike the sysplat VM, which does hide behind Cloudflare.
+
+turn.fechtin.com {
+	tls {
+		issuer acme
+	}
+
+	# Nothing is served here. A bare 404 keeps the block honest about that,
+	# while still giving ACME the HTTP-01 endpoint it needs.
+	respond "turn.fechtin.com is a TURN relay, not a web service" 404
+}

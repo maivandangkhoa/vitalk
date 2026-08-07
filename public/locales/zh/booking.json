@@ -36,7 +36,9 @@
     "customLocationHint": "请输入您希望的地点地址或名称。老师确认后会予以同意。",
     "customLocationPlaceholder": "例如：星巴克江南站店，首尔江南区...",
     "viewOnGoogleMaps": "Google 地图",
-    "viewOnNaverMap": "Naver 地图"
+    "viewOnNaverMap": "Naver 地图",
+    "havitalk": "HaviTalk 视频",
+    "havitalkHint": "应用内置。上课前 10 分钟，“我的预约”中会出现“进入课堂”按钮 — 无需安装应用或交换链接。"
   },
   "contactEmail": {
     "label": "接收确认的邮箱",

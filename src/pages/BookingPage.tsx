@@ -59,6 +59,7 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 
 const PLATFORM_MAP: Record<string, OnlinePlatform> = {
+  havitalk: 'havitalk',
   teams: 'teams',
   googleMeet: 'google_meet',
   zalo: 'zalo',
@@ -66,7 +67,8 @@ const PLATFORM_MAP: Record<string, OnlinePlatform> = {
 };
 
 // UI key → TeacherProfile.contactIds field. Lets us look up the right
-// handle once the user picks a platform.
+// handle once the user picks a platform. HaviTalk's own classroom has no
+// handle to exchange, which is the point of it.
 const PLATFORM_CONTACT_KEY = {
   teams: 'teams',
   googleMeet: 'googleMeet',
@@ -74,7 +76,9 @@ const PLATFORM_CONTACT_KEY = {
   kakaoTalk: 'kakaoTalk',
 } as const;
 
-const PLATFORM_OPTIONS = ['teams', 'googleMeet', 'zalo', 'kakaoTalk'] as const;
+// HaviTalk first, and the default: it is the only one that needs nothing set up
+// on either side.
+const PLATFORM_OPTIONS = ['havitalk', 'teams', 'googleMeet', 'zalo', 'kakaoTalk'] as const;
 
 export default function BookingPage() {
   const { t, i18n } = useTranslation('booking');
@@ -96,7 +100,7 @@ export default function BookingPage() {
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
   const [lessonFormat, setLessonFormat] = useState<'online' | 'offline'>('online');
-  const [platform, setPlatform] = useState<typeof PLATFORM_OPTIONS[number]>('teams');
+  const [platform, setPlatform] = useState<typeof PLATFORM_OPTIONS[number]>('havitalk');
   const [selectedLocationId, setSelectedLocationId] = useState('');
   const [customLocationAddress, setCustomLocationAddress] = useState('');
   // null until the user types or a draft is restored, so the field can fall
@@ -684,7 +688,11 @@ export default function BookingPage() {
             </div>
 
             {lessonFormat === 'online' && (() => {
-              const contactId = selectedTeacher?.contactIds?.[PLATFORM_CONTACT_KEY[platform]];
+              const contactKey =
+                platform === 'havitalk' ? null : PLATFORM_CONTACT_KEY[platform];
+              const contactId = contactKey
+                ? selectedTeacher?.contactIds?.[contactKey]
+                : undefined;
               const qrUrl =
                 platform === 'zalo'
                   ? selectedTeacher?.contactIds?.zaloQrUrl
@@ -707,7 +715,9 @@ export default function BookingPage() {
                     ))}
                   </div>
                   <div className="mt-3 flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3 text-sm sm:flex-row sm:items-center">
-                    {contactId || qrUrl ? (
+                    {platform === 'havitalk' ? (
+                      <span className="text-indigo-900">{t('format.havitalkHint')}</span>
+                    ) : contactId || qrUrl ? (
                       <>
                         <div className="min-w-0 flex-1">
                           {contactId && (

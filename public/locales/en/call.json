@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "Lesson with {{name}}"
+  },
+  "join": {
+    "enter": "Join lesson",
+    "countdown": "Starts in {{countdown}}"
+  },
+  "lobby": {
+    "title": "Ready to start?",
+    "peerWaiting": "{{name}} is already in the classroom.",
+    "peerAbsent": "{{name}} has not joined yet.",
+    "enter": "Enter classroom",
+    "waiting": "Waiting for your teacher…",
+    "camera": "Camera",
+    "microphone": "Microphone"
+  },
+  "stage": {
+    "connecting": "Connecting…",
+    "reconnecting": "Reconnecting…"
+  },
+  "controls": {
+    "muteMic": "Mute microphone",
+    "unmuteMic": "Unmute microphone",
+    "stopVideo": "Turn camera off",
+    "startVideo": "Turn camera on",
+    "share": "Share screen",
+    "stopShare": "Stop sharing",
+    "leave": "Leave"
+  },
+  "route": {
+    "direct": "Direct connection",
+    "relay": "Relayed connection"
+  },
+  "incoming": {
+    "title": "{{name}} is waiting",
+    "body": "Start the lesson? Declining automatically in {{seconds}}s.",
+    "accept": "Start lesson",
+    "decline": "Not now"
+  },
+  "gate": {
+    "signedOut": {
+      "title": "Please sign in",
+      "body": "Sign in with the account that booked this lesson."
+    },
+    "notFound": {
+      "title": "Lesson not found",
+      "body": "This lesson does not exist, or it is not yours."
+    },
+    "notCallable": {
+      "title": "No classroom for this lesson",
+      "body": "Only confirmed online lessons have a video classroom."
+    },
+    "early": {
+      "title": "The classroom is not open yet",
+      "body": "It opens 10 minutes before the lesson — in {{countdown}}."
+    },
+    "over": {
+      "title": "This lesson has ended",
+      "body": "The classroom closes 15 minutes after the lesson ends."
+    }
+  },
+  "mediaError": {
+    "permission-denied": {
+      "title": "Camera and microphone blocked",
+      "body": "Allow access in your browser's address bar, then reload this page."
+    },
+    "no-device": {
+      "title": "No camera or microphone found",
+      "body": "Connect a camera and a microphone, then reload this page."
+    },
+    "unavailable": {
+      "title": "Camera unavailable",
+      "body": "Another app may be using it. Close it and reload this page."
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong with the call.",
+    "joinFailed": "Could not enter the classroom.",
+    "connection-failed": "The connection dropped. Try entering again.",
+    "offer-failed": "Could not start the lesson.",
+    "answer-failed": "Could not connect to your teacher.",
+    "room-unavailable": "Lost contact with the classroom.",
+    "shareFailed": "Screen sharing was not started."
+  }
+}

@@ -141,6 +141,25 @@ export async function notifyNewMessage(input: NewMessageInput) {
   }
 }
 
+interface CallWaitingInput {
+  bookingId: string;
+  recipientId: string;
+  waiterName: string;
+}
+
+/**
+ * "The other person is in the classroom." Push only — no bell entry, because a
+ * lesson that already started makes the notification worthless five minutes
+ * later, and an unread bell badge for it would just be litter.
+ */
+export async function notifyCallWaiting(input: CallWaitingInput) {
+  await sendPush([input.recipientId], {
+    title: `${input.waiterName} is waiting in the classroom`,
+    body: "Join the video lesson now.",
+    link: `/call/${input.bookingId}`,
+  });
+}
+
 export async function notifyBookingCreated(
   bookingId: string,
   input: BookingCreatedInput

@@ -17,6 +17,7 @@ const PolicyPage = lazyWithRetry(() => import('@/pages/PolicyPage'));
 const LoginPage = lazyWithRetry(() => import('@/pages/LoginPage'));
 const MyBookingsPage = lazyWithRetry(() => import('@/pages/MyBookingsPage'));
 const MessagesPage = lazyWithRetry(() => import('@/pages/MessagesPage'));
+const CallPage = lazyWithRetry(() => import('@/pages/CallPage'));
 const NotFoundPage = lazyWithRetry(() => import('@/pages/NotFoundPage'));
 const AdminSetupPage = lazyWithRetry(() => import('@/pages/AdminSetupPage'));
 const NaverCallbackPage = lazyWithRetry(() => import('@/pages/NaverCallbackPage'));
@@ -115,6 +116,17 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <SuspenseWrapper><MessagesPage /></SuspenseWrapper>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        // The classroom is the same URL for both sides — teachers reach it from
+        // the admin shell, students from their bookings, and the page decides
+        // which role you are from the booking itself.
+        path: '/call/:bookingId',
+        element: (
+          <ProtectedRoute>
+            <SuspenseWrapper><CallPage /></SuspenseWrapper>
           </ProtectedRoute>
         ),
       },

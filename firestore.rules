@@ -225,6 +225,83 @@ service cloud.firestore {
       }
     }
 
+    // Video calls - WebRTC signaling for a lesson, at `calls/{bookingId}`.
+    // One booking is one room, so the document id *is* the authorization: both
+    // the peer check and the room's identity come from the booking itself and
+    // cannot drift apart. Admins read for support but are never peers.
+    match /calls/{callId} {
+      function booking() {
+        return get(/databases/$(database)/documents/bookings/$(callId)).data;
+      }
+
+      function isPeerOf(b) {
+        return isAuthenticated()
+          && (request.auth.uid == b.teacherId || request.auth.uid == b.studentId);
+      }
+
+      // On an existing room the peers are already written down, so this costs
+      // no extra read — only create has to consult the booking.
+      function isPeer() {
+        return isAuthenticated() && request.auth.uid in resource.data.participants;
+      }
+
+      allow read: if isAdmin() || isPeer();
+
+      // A room may only be opened for a confirmed booking, by one of its two
+      // people, with the signaling slots empty.
+      allow create: if isPeerOf(booking())
+        && callId == request.resource.data.bookingId
+        && booking().status in ['confirmed', 'completed']
+        && request.resource.data.teacherId == booking().teacherId
+        && request.resource.data.studentId == booking().studentId
+        && request.resource.data.participants == [booking().teacherId, booking().studentId]
+        && request.resource.data.offer == null
+        && request.resource.data.answer == null
+        && request.resource.data.session is int;
+
+      // Signaling only. `participants`, `teacherId`, `studentId` and
+      // `bookingId` are fixed at create time — nobody can rewrite who is in the
+      // room, which is what keeps the read rule meaningful.
+      allow update: if isPeer()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+             'status', 'session', 'offer', 'answer',
+             'teacherReadyAt', 'studentReadyAt', 'route',
+             'startedAt', 'endedAt', 'updatedAt'
+           ])
+        // Only the teacher offers and only the student answers. Fixing the
+        // roles here is what makes SDP glare impossible.
+        && (request.resource.data.offer == resource.data.offer
+            || request.auth.uid == resource.data.teacherId)
+        && (request.resource.data.answer == resource.data.answer
+            || request.auth.uid == resource.data.studentId)
+        // A peer may only claim its own presence.
+        && (request.resource.data.teacherReadyAt == resource.data.teacherReadyAt
+            || request.auth.uid == resource.data.teacherId)
+        && (request.resource.data.studentReadyAt == resource.data.studentReadyAt
+            || request.auth.uid == resource.data.studentId);
+
+      allow delete: if false;
+
+      match /candidates/{candidateId} {
+        function peers() {
+          return get(/databases/$(database)/documents/calls/$(callId)).data.participants;
+        }
+
+        allow read: if isAuthenticated() && request.auth.uid in peers();
+
+        // Your own candidates, tagged with the generation you are on. Nobody
+        // can inject a candidate attributed to the other side.
+        allow create: if isAuthenticated()
+          && request.auth.uid in peers()
+          && request.resource.data.from == request.auth.uid
+          && request.resource.data.session is int;
+
+        // Candidates are facts about one attempt; they are never edited, and
+        // the daily cleanup job is what removes them.
+        allow update, delete: if false;
+      }
+    }
+
     // Notifications - users read/update own (mark-as-read), Cloud Functions write
     match /notifications/{notificationId} {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;

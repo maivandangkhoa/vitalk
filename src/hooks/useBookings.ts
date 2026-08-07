@@ -195,6 +195,54 @@ export function useCreateBooking() {
   return { createBooking, loading };
 }
 
+/**
+ * A single booking, for pages addressed by booking id — the video classroom
+ * being the one that needs it. Read once: a lesson's time and participants do
+ * not change while someone is sitting in its room.
+ */
+export function useBooking(bookingId: string | undefined) {
+  const [booking, setBooking] = useState<Booking | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!bookingId) {
+      setBooking(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setNotFound(false);
+
+    getDoc(doc(db, 'bookings', bookingId))
+      .then((snap) => {
+        if (cancelled) return;
+        if (!snap.exists()) {
+          setNotFound(true);
+          setBooking(null);
+          return;
+        }
+        setBooking({ id: snap.id, ...snap.data() } as Booking);
+      })
+      .catch(() => {
+        // The rules refuse a booking that is not yours, which reads the same as
+        // one that does not exist — and should, so ids cannot be probed.
+        if (!cancelled) setNotFound(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingId]);
+
+  return { booking, loading, notFound };
+}
+
 export async function updateBookingStatus(
   bookingId: string,
   status: BookingStatus

@@ -7,3 +7,4 @@ export * from './blog';
 export * from './notification';
 export * from './payment';
 export * from './chat';
+export * from './call';
