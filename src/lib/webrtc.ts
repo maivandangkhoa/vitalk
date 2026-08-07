@@ -237,7 +237,13 @@ export function watchRemoteCandidates(
  * How the media actually got through — direct, via a reflexive address, or
  * relayed through TURN.
  *
- * Worth the twenty lines: the share of calls that end up on `relay` is the
+ * Both ends of the chosen pair count, not just ours. A relay sits between two
+ * peers, so one side can reach it from a plain reflexive address while the
+ * other's own candidate *is* the relay — and reading only the local one had the
+ * teacher showing amber while the student showed green for the very same media.
+ * The route is a property of the path, so it is the more expensive of the two.
+ *
+ * Worth the thirty lines: the share of calls that end up on `relay` is the
  * number that decides whether relay bandwidth ever costs anything, and it is
  * pure guesswork until it is measured on real users' networks.
  */
@@ -245,7 +251,10 @@ export async function getConnectionRoute(pc: RTCPeerConnection): Promise<Connect
   try {
     const stats = await pc.getStats();
     const candidates = new Map<string, { candidateType?: string }>();
-    const pairs = new Map<string, { localCandidateId?: string }>();
+    const pairs = new Map<
+      string,
+      { localCandidateId?: string; remoteCandidateId?: string }
+    >();
     let selectedPairId: string | null = null;
     let nominatedPairId: string | null = null;
     let succeededPairId: string | null = null;
@@ -258,23 +267,35 @@ export async function getConnectionRoute(pc: RTCPeerConnection): Promise<Connect
         selectedPairId = report.selectedCandidatePairId as string;
       }
       if (report.type === 'candidate-pair') {
-        pairs.set(report.id, report as { localCandidateId?: string });
+        pairs.set(
+          report.id,
+          report as { localCandidateId?: string; remoteCandidateId?: string }
+        );
         if (report.state === 'succeeded') {
           succeededPairId ??= report.id;
           if (report.nominated) nominatedPairId = report.id;
         }
       }
-      if (report.type === 'local-candidate') {
+      if (report.type === 'local-candidate' || report.type === 'remote-candidate') {
         candidates.set(report.id, report as { candidateType?: string });
       }
     });
 
     const pairId = selectedPairId ?? nominatedPairId ?? succeededPairId;
-    if (!pairId) return 'unknown';
-    const localId = pairs.get(pairId)?.localCandidateId;
-    const type = localId ? candidates.get(localId)?.candidateType : undefined;
-    if (type === 'relay' || type === 'host' || type === 'srflx') return type;
-    return 'unknown';
+    const pair = pairId ? pairs.get(pairId) : undefined;
+    if (!pair) return 'unknown';
+
+    const ends = [pair.localCandidateId, pair.remoteCandidateId]
+      .map((id) => (id ? candidates.get(id)?.candidateType : undefined))
+      .filter((type): type is ConnectionRoute =>
+        type === 'relay' || type === 'srflx' || type === 'host'
+      );
+    if (!ends.length) return 'unknown';
+    // Whichever end travels furthest describes the path: one relay leg makes the
+    // whole call relayed, whatever the other end is.
+    if (ends.includes('relay')) return 'relay';
+    if (ends.includes('srflx')) return 'srflx';
+    return 'host';
   } catch {
     return 'unknown';
   }
