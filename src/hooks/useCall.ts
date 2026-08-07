@@ -24,6 +24,8 @@ interface UseCallInput {
   booking: Booking | null;
   uid: string | undefined;
   role: CallRole | null;
+  /** The lesson's window is open. Once it closes, the room hangs itself up. */
+  open?: boolean;
   localStream: MediaStream | null;
   /** Additive screen share. Teacher only — sending it needs a fresh offer. */
   screenStream?: MediaStream | null;
@@ -69,6 +71,7 @@ export function useCall({
   booking,
   uid,
   role,
+  open = true,
   localStream,
   screenStream = null,
 }: UseCallInput): CallSession {
@@ -181,6 +184,19 @@ export function useCall({
       console.error('useCall: ending the room failed', err)
     );
   }, [callId, role, teardown]);
+
+  // The lesson ran out of time. The page swaps the classroom for a notice but
+  // keeps this hook mounted, so nothing here would otherwise stop: the peer
+  // connection stayed up, media kept flowing, and the heartbeat kept claiming a
+  // seat in a room that had closed.
+  useEffect(() => {
+    if (open || !joinedRef.current) return;
+    // Off the render pass: hanging up sets state, and doing that inside the
+    // effect body is what makes a render cascade.
+    queueMicrotask(() => {
+      leave().catch(() => undefined);
+    });
+  }, [open, leave]);
 
   // ── Negotiation ────────────────────────────────────────────────────────────
 

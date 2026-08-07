@@ -93,6 +93,7 @@ export default function CallPage() {
     booking,
     uid: user?.uid,
     role,
+    open: roomOpen,
     localStream: media.stream,
     screenStream: media.screenStream,
   });

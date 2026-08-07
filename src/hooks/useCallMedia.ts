@@ -131,10 +131,14 @@ export function useCallMedia(
 
     acquire();
 
+    // Releasing on `enabled` going false, not only on unmount: the lesson's
+    // window closing swaps the classroom for a notice while this hook stays
+    // mounted, and without this the camera light stayed on behind it.
     return () => {
       cancelled = true;
+      stop();
     };
-  }, [enabled]);
+  }, [enabled, stop]);
 
   // The camera light staying on after the user navigates away is the kind of
   // bug people remember, so release on unmount and on a hard page exit.
