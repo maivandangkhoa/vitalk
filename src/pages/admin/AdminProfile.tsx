@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Loader2, Upload, Users2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -225,17 +226,10 @@ export default function AdminProfile() {
         <Card>
           <CardContent className="space-y-4 pt-6">
             <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />{t('profile.bio')}</h3>
-            {LANGS.map((lang) => (
-              <div key={lang}>
-                <label className="mb-1 block text-sm font-medium">{LANG_LABELS[lang]}</label>
-                <textarea
-                  value={bio[lang]}
-                  onChange={(e) => setBio((prev) => ({ ...prev, [lang]: e.target.value }))}
-                  rows={3}
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                />
-              </div>
-            ))}
+            <MultiLangTextarea
+              value={bio}
+              onChange={(lang, text) => setBio((prev) => ({ ...prev, [lang]: text }))}
+            />
           </CardContent>
         </Card>
 
@@ -299,21 +293,43 @@ export default function AdminProfile() {
         <Card>
           <CardContent className="space-y-4 pt-6">
             <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />{t('profile.teachingStyle')}</h3>
-            {LANGS.map((lang) => (
-              <div key={lang}>
-                <label className="mb-1 block text-sm font-medium">{LANG_LABELS[lang]}</label>
-                <textarea
-                  value={teachingStyle[lang]}
-                  onChange={(e) => setTeachingStyle((prev) => ({ ...prev, [lang]: e.target.value }))}
-                  rows={3}
-                  className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                />
-              </div>
-            ))}
+            <MultiLangTextarea
+              value={teachingStyle}
+              onChange={(lang, text) => setTeachingStyle((prev) => ({ ...prev, [lang]: text }))}
+            />
           </CardContent>
         </Card>
       </div>
     </div>
+  );
+}
+
+function MultiLangTextarea({ value, onChange }: {
+  value: Record<Language, string>;
+  onChange: (lang: Language, text: string) => void;
+}) {
+  const [active, setActive] = useState<Language>('en');
+  return (
+    <Tabs value={active} onValueChange={(v) => setActive(v as Language)}>
+      <TabsList>
+        {LANGS.map((lang) => (
+          <TabsTrigger key={lang} value={lang}>
+            {LANG_LABELS[lang]}
+            {value[lang]?.trim() && <span className="ml-1 text-xs text-emerald-500">*</span>}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      {LANGS.map((lang) => (
+        <TabsContent key={lang} value={lang} className="mt-3">
+          <textarea
+            value={value[lang]}
+            onChange={(e) => onChange(lang, e.target.value)}
+            rows={12}
+            className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+          />
+        </TabsContent>
+      ))}
+    </Tabs>
   );
 }
 
