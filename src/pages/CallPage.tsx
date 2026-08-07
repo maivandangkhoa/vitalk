@@ -56,8 +56,17 @@ export default function CallPage() {
 
   // Camera and microphone are only acquired once the room is genuinely open, so
   // an early arrival does not light up a webcam for ten minutes.
-  const media = useCallMedia(roomOpen);
-  const session = useCall({ booking, uid: user?.uid, role, localStream: media.stream });
+  // Only the teacher shares additively. That is not a product preference: the
+  // second video needs a renegotiation, and the rules let only the teacher
+  // write `offer`. The student keeps the replacement share, which needs none.
+  const media = useCallMedia(roomOpen, { additiveShare: role === 'teacher' });
+  const session = useCall({
+    booking,
+    uid: user?.uid,
+    role,
+    localStream: media.stream,
+    screenStream: media.screenStream,
+  });
   const chat = useCallChat(booking, user);
 
   const peerName = role === 'teacher' ? booking?.studentName ?? '' : booking?.teacherName ?? '';
@@ -129,6 +138,14 @@ export default function CallPage() {
               <VideoStage
                 localStream={media.stream}
                 remoteStream={session.remoteStream}
+                // Whichever exists: the teacher sees the screen they are
+                // sending, the student the one arriving.
+                screenStream={media.screenStream ?? session.remoteScreenStream}
+                screenLabel={
+                  media.screenStream
+                    ? t('stage.yourScreen')
+                    : t('stage.peerScreen', { name: peerName })
+                }
                 peerName={peerName}
                 micOn={media.micOn}
                 camOn={media.camOn}

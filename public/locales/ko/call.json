@@ -17,7 +17,9 @@
   },
   "stage": {
     "connecting": "연결 중…",
-    "reconnecting": "다시 연결하는 중…"
+    "reconnecting": "다시 연결하는 중…",
+    "yourScreen": "내 화면",
+    "peerScreen": "{{name}} 님의 화면"
   },
   "controls": {
     "muteMic": "마이크 끄기",

@@ -17,7 +17,9 @@
   },
   "stage": {
     "connecting": "Connecting…",
-    "reconnecting": "Reconnecting…"
+    "reconnecting": "Reconnecting…",
+    "yourScreen": "Your screen",
+    "peerScreen": "{{name}}’s screen"
   },
   "controls": {
     "muteMic": "Mute microphone",

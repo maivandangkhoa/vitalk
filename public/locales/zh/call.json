@@ -17,7 +17,9 @@
   },
   "stage": {
     "connecting": "正在连接…",
-    "reconnecting": "正在重新连接…"
+    "reconnecting": "正在重新连接…",
+    "yourScreen": "你的屏幕",
+    "peerScreen": "{{name}} 的屏幕"
   },
   "controls": {
     "muteMic": "关闭麦克风",

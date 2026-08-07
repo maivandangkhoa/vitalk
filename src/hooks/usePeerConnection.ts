@@ -16,7 +16,46 @@ interface UsePeerConnectionInput {
   uid: string | undefined;
   role: CallRole | null;
   localStream: MediaStream | null;
+  /** Additive screen share, teacher only. Null when not sharing. */
+  screenStream?: MediaStream | null;
+  /**
+   * Called when adding or dropping the screen track has left the connection
+   * needing a fresh offer. Only the side allowed to offer should act on it.
+   */
+  onNegotiationNeeded?: () => void;
   onFatalError: (code: string) => void;
+}
+
+/**
+ * How far the camera is scaled down while a screen is being shared. The screen
+ * is what people are reading; the face becomes a thumbnail, the way it does in
+ * every other conferencing tool. Without this the two videos compete for one
+ * bandwidth estimate and the *screen* is what turns to mush.
+ */
+const SHARING_CAMERA_ENCODING = {
+  scaleResolutionDownBy: 4,
+  maxBitrate: 150_000,
+  maxFramerate: 15,
+} as const;
+
+async function setCameraEncoding(sender: RTCRtpSender, shrink: boolean) {
+  try {
+    const params = sender.getParameters();
+    // A sender that has not negotiated yet has no encodings to configure.
+    if (!params.encodings?.length) return;
+    const encoding = params.encodings[0];
+    if (shrink) {
+      Object.assign(encoding, SHARING_CAMERA_ENCODING);
+    } else {
+      encoding.scaleResolutionDownBy = 1;
+      delete encoding.maxBitrate;
+      delete encoding.maxFramerate;
+    }
+    await sender.setParameters(params);
+  } catch (err) {
+    // Quality tuning is not worth failing a call over.
+    console.error('usePeerConnection: setParameters failed', err);
+  }
 }
 
 export interface PeerConnection {
@@ -29,6 +68,8 @@ export interface PeerConnection {
   candidateQueueRef: React.RefObject<RTCIceCandidateInit[]>;
 
   remoteStream: MediaStream | null;
+  /** The other side's screen, when they are sharing it additively. */
+  remoteScreenStream: MediaStream | null;
   route: ConnectionRoute;
   negotiating: boolean;
   connecting: boolean;
@@ -59,6 +100,8 @@ export function usePeerConnection({
   uid,
   role,
   localStream,
+  screenStream = null,
+  onNegotiationNeeded,
   onFatalError,
 }: UsePeerConnectionInput): PeerConnection {
   const fetchIceServers = useIceServers(callId);
@@ -68,8 +111,19 @@ export function usePeerConnection({
   const remoteDescSetRef = useRef(false);
   const candidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  /** Identity of the inbound camera/mic stream, so a later one reads as screen. */
+  const primaryStreamIdRef = useRef<string | null>(null);
+  // Which sender carries what. Looking senders up by `track.kind` breaks the
+  // moment there are two video senders — both would resolve to the same track.
+  const sendersRef = useRef<{
+    audio: RTCRtpSender | null;
+    camera: RTCRtpSender | null;
+    screen: RTCRtpSender | null;
+  }>({ audio: null, camera: null, screen: null });
 
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [remoteScreenStream, setRemoteScreenStream] = useState<MediaStream | null>(null);
   const [route, setRoute] = useState<ConnectionRoute>('unknown');
   const [negotiating, setNegotiating] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -83,6 +137,10 @@ export function usePeerConnection({
     localStreamRef.current = localStream;
   }, [localStream]);
 
+  useEffect(() => {
+    screenStreamRef.current = screenStream;
+  }, [screenStream]);
+
   const teardown = useCallback(() => {
     // Close the connection only. The tracks belong to `useCallMedia` and still
     // feed the local preview — stopping them here would kill the camera the
@@ -92,7 +150,10 @@ export function usePeerConnection({
     candidateQueueRef.current = [];
     remoteDescSetRef.current = false;
     sessionRef.current = -1;
+    sendersRef.current = { audio: null, camera: null, screen: null };
+    primaryStreamIdRef.current = null;
     setRemoteStream(null);
+    setRemoteScreenStream(null);
     setRoute('unknown');
     setConnecting(false);
     setNegotiating(false);
@@ -110,14 +171,51 @@ export function usePeerConnection({
       candidateQueueRef.current = [];
       remoteDescSetRef.current = false;
       sessionRef.current = session;
+      primaryStreamIdRef.current = null;
       setNegotiating(true);
 
-      localStreamRef.current?.getTracks().forEach((track) => {
-        pc.addTrack(track, localStreamRef.current as MediaStream);
-      });
+      const senders = { audio: null, camera: null, screen: null } as {
+        audio: RTCRtpSender | null;
+        camera: RTCRtpSender | null;
+        screen: RTCRtpSender | null;
+      };
+      const local = localStreamRef.current;
+      if (local) {
+        for (const track of local.getTracks()) {
+          const sender = pc.addTrack(track, local);
+          if (track.kind === 'audio') senders.audio = sender;
+          else senders.camera = sender;
+        }
+      }
+      // A re-dial while the screen is already up must carry it into the new
+      // connection, or the share silently disappears on reconnect.
+      const screen = screenStreamRef.current;
+      const screenTrack = screen?.getVideoTracks()[0];
+      if (screen && screenTrack) {
+        senders.screen = pc.addTrack(screenTrack, screen);
+        if (senders.camera) void setCameraEncoding(senders.camera, true);
+      }
+      sendersRef.current = senders;
 
+      // Two inbound video streams are told apart by identity: the first one
+      // seen is the camera and microphone, a later, different one is the
+      // screen. Order holds because the sending side adds the screen last.
       pc.ontrack = (event) => {
-        if (event.streams[0]) setRemoteStream(event.streams[0]);
+        const incoming = event.streams[0];
+        if (!incoming) return;
+
+        if (!primaryStreamIdRef.current || primaryStreamIdRef.current === incoming.id) {
+          primaryStreamIdRef.current = incoming.id;
+          setRemoteStream(incoming);
+          return;
+        }
+
+        // A second, different stream is the screen. Drop it again when it ends,
+        // so the layout does not keep showing a frozen frame.
+        setRemoteScreenStream(incoming);
+        event.track.addEventListener('ended', () =>
+          setRemoteScreenStream((shown) => (shown?.id === incoming.id ? null : shown))
+        );
       };
 
       pc.onicecandidate = (event) => {
@@ -212,17 +310,44 @@ export function usePeerConnection({
   useEffect(() => {
     const pc = pcRef.current;
     if (!pc || !localStream) return;
-    for (const sender of pc.getSenders()) {
-      const kind = sender.track?.kind;
-      if (!kind) continue;
-      const next = localStream.getTracks().find((t) => t.kind === kind);
-      if (next && next !== sender.track) {
-        sender.replaceTrack(next).catch((err) =>
-          console.error('usePeerConnection: replaceTrack failed', err)
-        );
-      }
-    }
+    // Addressed through the remembered senders rather than by kind: with a
+    // screen share running there are two video senders, and matching on kind
+    // would hand both of them the camera track.
+    const swap = (sender: RTCRtpSender | null, next: MediaStreamTrack | undefined) => {
+      if (!sender || !next || next === sender.track) return;
+      sender.replaceTrack(next).catch((err) =>
+        console.error('usePeerConnection: replaceTrack failed', err)
+      );
+    };
+    swap(sendersRef.current.audio, localStream.getAudioTracks()[0]);
+    swap(sendersRef.current.camera, localStream.getVideoTracks()[0]);
   }, [trackSignature, localStream]);
+
+  /**
+   * Add or drop the screen as a second outgoing video. Both need a fresh offer,
+   * which is why this is only ever wired up for the side allowed to offer.
+   */
+  useEffect(() => {
+    const pc = pcRef.current;
+    if (!pc || pc.connectionState === 'closed') return;
+
+    const senders = sendersRef.current;
+    const screenTrack = screenStream?.getVideoTracks()[0];
+
+    if (screenStream && screenTrack && !senders.screen) {
+      senders.screen = pc.addTrack(screenTrack, screenStream);
+      if (senders.camera) void setCameraEncoding(senders.camera, true);
+      onNegotiationNeeded?.();
+      return;
+    }
+
+    if (!screenStream && senders.screen) {
+      pc.removeTrack(senders.screen);
+      senders.screen = null;
+      if (senders.camera) void setCameraEncoding(senders.camera, false);
+      onNegotiationNeeded?.();
+    }
+  }, [screenStream, onNegotiationNeeded]);
 
   useEffect(() => {
     return () => {
@@ -237,6 +362,7 @@ export function usePeerConnection({
     remoteDescSetRef,
     candidateQueueRef,
     remoteStream,
+    remoteScreenStream,
     route,
     negotiating,
     connecting,

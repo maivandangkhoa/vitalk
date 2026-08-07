@@ -6,6 +6,11 @@ interface VideoTileProps {
   stream: MediaStream | null;
   muted?: boolean;
   mirrored?: boolean;
+  /**
+   * A shared screen must never be cropped — the toolbar or the line being
+   * pointed at is usually right at the edge.
+   */
+  contain?: boolean;
   className?: string;
 }
 
@@ -13,7 +18,7 @@ interface VideoTileProps {
  * `srcObject` is a property, not an attribute, so React cannot set it from JSX
  * — every video element in the app needs this effect.
  */
-function VideoTile({ stream, muted, mirrored, className }: VideoTileProps) {
+function VideoTile({ stream, muted, mirrored, contain, className }: VideoTileProps) {
   const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -30,7 +35,12 @@ function VideoTile({ stream, muted, mirrored, className }: VideoTileProps) {
       // player the moment it starts, which ends the lesson layout.
       playsInline
       muted={muted}
-      className={cn('h-full w-full object-cover', mirrored && 'scale-x-[-1]', className)}
+      className={cn(
+        'h-full w-full',
+        contain ? 'object-contain' : 'object-cover',
+        mirrored && 'scale-x-[-1]',
+        className
+      )}
     />
   );
 }
@@ -38,6 +48,13 @@ function VideoTile({ stream, muted, mirrored, className }: VideoTileProps) {
 interface VideoStageProps {
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
+  /**
+   * A screen being shared as a second video — either the one this browser is
+   * sending, or the one arriving from the other side.
+   */
+  screenStream?: MediaStream | null;
+  /** Caption for the screen tile, e.g. "Nam's screen". */
+  screenLabel?: string;
   peerName: string;
   micOn: boolean;
   camOn: boolean;
@@ -50,15 +67,24 @@ interface VideoStageProps {
 export function VideoStage({
   localStream,
   remoteStream,
+  screenStream = null,
+  screenLabel,
   peerName,
   micOn,
   camOn,
   placeholder,
   reconnectingLabel,
 }: VideoStageProps) {
+  // Whoever is sharing, the screen takes the big tile: it is the thing being
+  // read. The faces move to thumbnails, which is also why the camera is sent at
+  // a fraction of its usual bitrate while this is on.
+  const sharing = !!screenStream;
+
   return (
     <div className="relative h-full w-full overflow-hidden rounded-2xl bg-neutral-900">
-      {remoteStream ? (
+      {sharing ? (
+        <VideoTile stream={screenStream} contain muted />
+      ) : remoteStream ? (
         <VideoTile stream={remoteStream} />
       ) : (
         <div className="flex h-full w-full items-center justify-center px-6 text-center">
@@ -66,9 +92,9 @@ export function VideoStage({
         </div>
       )}
 
-      {remoteStream && (
+      {(remoteStream || sharing) && (
         <div className="absolute top-3 left-3 rounded-lg bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
-          {peerName}
+          {sharing ? screenLabel : peerName}
         </div>
       )}
 
@@ -80,21 +106,35 @@ export function VideoStage({
         </div>
       )}
 
-      {/* Own preview, mirrored the way a mirror would show it — an unmirrored
-          self-view reads as wrong to almost everyone. */}
-      <div className="absolute right-3 bottom-3 h-28 w-20 overflow-hidden rounded-xl border border-white/10 bg-neutral-800 shadow-lg sm:h-36 sm:w-52">
-        {camOn && localStream ? (
-          <VideoTile stream={localStream} muted mirrored />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <VideoOff className="size-5 text-neutral-500" />
+      <div className="absolute right-3 bottom-3 flex items-end gap-2">
+        {/* While a screen is up the other person's face moves down here beside
+            the self-view. This tile is deliberately not muted: the remote audio
+            rides on this stream, and the big tile is only pixels. */}
+        {sharing && remoteStream && (
+          <div className="relative h-28 w-20 overflow-hidden rounded-xl border border-white/10 bg-neutral-800 shadow-lg sm:h-36 sm:w-52">
+            <VideoTile stream={remoteStream} />
+            <div className="absolute bottom-1 left-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-white">
+              {peerName}
+            </div>
           </div>
         )}
-        {!micOn && (
-          <div className="absolute top-1.5 left-1.5 rounded-md bg-black/60 p-1">
-            <MicOff className="size-3 text-white" />
-          </div>
-        )}
+
+        {/* Own preview, mirrored the way a mirror would show it — an unmirrored
+            self-view reads as wrong to almost everyone. */}
+        <div className="relative h-28 w-20 overflow-hidden rounded-xl border border-white/10 bg-neutral-800 shadow-lg sm:h-36 sm:w-52">
+          {camOn && localStream ? (
+            <VideoTile stream={localStream} muted mirrored />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <VideoOff className="size-5 text-neutral-500" />
+            </div>
+          )}
+          {!micOn && (
+            <div className="absolute top-1.5 left-1.5 rounded-md bg-black/60 p-1">
+              <MicOff className="size-3 text-white" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

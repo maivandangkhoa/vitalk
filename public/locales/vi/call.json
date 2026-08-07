@@ -17,7 +17,9 @@
   },
   "stage": {
     "connecting": "Đang kết nối…",
-    "reconnecting": "Đang kết nối lại…"
+    "reconnecting": "Đang kết nối lại…",
+    "yourScreen": "Màn hình của bạn",
+    "peerScreen": "Màn hình của {{name}}"
   },
   "controls": {
     "muteMic": "Tắt micro",

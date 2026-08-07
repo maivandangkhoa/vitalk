@@ -24,12 +24,16 @@ interface UseCallInput {
   uid: string | undefined;
   role: CallRole | null;
   localStream: MediaStream | null;
+  /** Additive screen share. Teacher only — sending it needs a fresh offer. */
+  screenStream?: MediaStream | null;
 }
 
 export interface CallSession {
   call: Call | null;
   status: CallStatus;
   remoteStream: MediaStream | null;
+  /** The other side's screen, when they are sharing it as a second video. */
+  remoteScreenStream: MediaStream | null;
   /** The other side is in the lobby right now (fresh heartbeat). */
   peerPresent: boolean;
   /** This browser has a seat in the lobby. */
@@ -56,18 +60,41 @@ export interface CallSession {
  * bookkeeping it would otherwise take. `usePeerConnection` owns the browser API;
  * what is left here is who says what to whom, and when.
  */
-export function useCall({ booking, uid, role, localStream }: UseCallInput): CallSession {
+export function useCall({
+  booking,
+  uid,
+  role,
+  localStream,
+  screenStream = null,
+}: UseCallInput): CallSession {
   const callId = booking?.id;
 
   const ringTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const joinedRef = useRef(false);
+  /** An offer is out and its answer has not come back yet. */
+  const negotiatingRef = useRef(false);
+  /** A track change arrived mid-negotiation and still needs an offer. */
+  const pendingNegotiationRef = useRef(false);
+  // Breaks the cycle: the peer connection needs to ask for a renegotiation,
+  // but the function that performs one is defined further down, from pieces
+  // this hook returns.
+  const renegotiateRef = useRef<() => void>(() => {});
 
   const [call, setCall] = useState<Call | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);
 
   const onFatalError = useCallback((code: string) => setError(code), []);
-  const peer = usePeerConnection({ callId, uid, role, localStream, onFatalError });
+  const onNegotiationNeeded = useCallback(() => renegotiateRef.current(), []);
+  const peer = usePeerConnection({
+    callId,
+    uid,
+    role,
+    localStream,
+    screenStream,
+    onNegotiationNeeded,
+    onFatalError,
+  });
   const {
     pcRef,
     sessionRef,
@@ -93,6 +120,8 @@ export function useCall({ booking, uid, role, localStream }: UseCallInput): Call
         // effect keeps the reaction in the subscription that observed it.
         if (next && (next.status === 'ended' || next.status === 'rejected')) {
           if (pcRef.current) teardown();
+          negotiatingRef.current = false;
+          pendingNegotiationRef.current = false;
         }
       },
       (err) => {
@@ -137,6 +166,8 @@ export function useCall({ booking, uid, role, localStream }: UseCallInput): Call
   const leave = useCallback(async () => {
     joinedRef.current = false;
     setJoined(false);
+    negotiatingRef.current = false;
+    pendingNegotiationRef.current = false;
     teardown();
     if (!callId || !role) return;
     await endCallRoom(callId, role, 'ended').catch(() => undefined);
@@ -151,6 +182,7 @@ export function useCall({ booking, uid, role, localStream }: UseCallInput): Call
       ringTimeout.current = null;
     }
     setConnecting(true);
+    negotiatingRef.current = true;
     try {
       const session = currentSession + 1;
       const pc = await create(session);
@@ -162,6 +194,7 @@ export function useCall({ booking, uid, role, localStream }: UseCallInput): Call
       console.error('useCall: offer failed', err);
       setError('offer-failed');
       setConnecting(false);
+      negotiatingRef.current = false;
     }
   }, [callId, role, currentSession, create, setConnecting]);
 
@@ -189,6 +222,9 @@ export function useCall({ booking, uid, role, localStream }: UseCallInput): Call
     const session = currentSession + 1;
     const pc = adopt(session);
     if (!pc) return;
+    // Repairing the network outranks a pending track change, so this one does
+    // not wait its turn — but it still claims the slot so nothing overlaps it.
+    negotiatingRef.current = true;
     setReconnecting(true);
     try {
       const offer = await pc.createOffer({ iceRestart: true });
@@ -198,8 +234,48 @@ export function useCall({ booking, uid, role, localStream }: UseCallInput): Call
       console.error('useCall: ICE restart failed', err);
       setError('connection-failed');
       setReconnecting(false);
+      negotiatingRef.current = false;
     }
   }, [callId, role, currentSession, adopt, setReconnecting]);
+
+  /**
+   * Re-offer on the live connection after the set of outgoing tracks changed —
+   * the teacher starting or stopping a screen share.
+   *
+   * Only the teacher runs this, which is the whole reason it is safe: the rules
+   * let only the teacher write `offer`, so there is still exactly one offerer
+   * and no glare to resolve. A change that lands while an offer is already out
+   * waits rather than racing it.
+   */
+  const renegotiate = useCallback(async () => {
+    if (!callId || role !== 'teacher') return;
+    if (!pcRef.current) return;
+    if (negotiatingRef.current) {
+      pendingNegotiationRef.current = true;
+      return;
+    }
+
+    // The live connection's generation is the truthful one; the document may
+    // not have caught up with the offer that was just published.
+    const session = Math.max(currentSession, sessionRef.current) + 1;
+    const pc = adopt(session);
+    if (!pc) return;
+
+    negotiatingRef.current = true;
+    try {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await publishOffer(callId, session, { type: 'offer', sdp: offer.sdp ?? '' });
+    } catch (err) {
+      console.error('useCall: renegotiation failed', err);
+      negotiatingRef.current = false;
+      setError('offer-failed');
+    }
+  }, [callId, role, currentSession, adopt, pcRef, sessionRef]);
+
+  useEffect(() => {
+    renegotiateRef.current = () => void renegotiate();
+  }, [renegotiate]);
 
   // A `disconnected` ICE state very often heals on its own within a couple of
   // seconds, so wait before spending a renegotiation on it. `failed` never
@@ -308,9 +384,17 @@ export function useCall({ booking, uid, role, localStream }: UseCallInput): Call
         await pc.setRemoteDescription(new RTCSessionDescription(answer));
         remoteDescSetRef.current = true;
         await drainCandidates();
+        negotiatingRef.current = false;
+        // A share that was toggled while this offer was in flight gets its own
+        // offer now, in order rather than on top.
+        if (pendingNegotiationRef.current) {
+          pendingNegotiationRef.current = false;
+          renegotiateRef.current();
+        }
       } catch (err) {
         console.error('useCall: applying answer failed', err);
         setError('answer-failed');
+        negotiatingRef.current = false;
       }
     })();
   }, [
@@ -338,6 +422,7 @@ export function useCall({ booking, uid, role, localStream }: UseCallInput): Call
     call,
     status: call?.status ?? 'idle',
     remoteStream: peer.remoteStream,
+    remoteScreenStream: peer.remoteScreenStream,
     peerPresent,
     joined,
     incoming,

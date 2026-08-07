@@ -7,6 +7,11 @@ export interface MediaDeviceOption {
 
 export interface CallMedia {
   stream: MediaStream | null;
+  /**
+   * The screen, as a stream of its own. Only ever set in additive mode — in
+   * replacement mode the screen track lives inside `stream` instead.
+   */
+  screenStream: MediaStream | null;
   error: string | null;
   micOn: boolean;
   camOn: boolean;
@@ -17,10 +22,27 @@ export interface CallMedia {
   toggleCam: () => void;
   switchCamera: (deviceId: string) => Promise<void>;
   switchMicrophone: (deviceId: string) => Promise<void>;
-  /** Swap the outgoing video track for the screen, or back to the camera. */
+  /**
+   * Start or stop sharing the screen. What that means depends on the mode:
+   * additive puts the screen alongside the camera, replacement swaps it in.
+   */
   toggleScreenShare: () => Promise<void>;
   stop: () => void;
 }
+
+export interface CallMediaOptions {
+  /**
+   * Send the screen *in addition to* the camera instead of in place of it.
+   * Costs a renegotiation, so it is only given to the side allowed to offer —
+   * see the role rules on `calls/{callId}`.
+   */
+  additiveShare?: boolean;
+}
+
+/** Documents are mostly still; capping the rate saves a lot of bitrate. */
+const SCREEN_CONSTRAINTS: MediaStreamConstraints = {
+  video: { frameRate: { max: 15 } },
+};
 
 const CONSTRAINTS: MediaStreamConstraints = {
   audio: { echoCancellation: true, noiseSuppression: true },
@@ -36,9 +58,14 @@ const CONSTRAINTS: MediaStreamConstraints = {
  * handing out a new stream would blank the preview and force a renegotiation
  * for what the user experiences as flipping a switch.
  */
-export function useCallMedia(enabled: boolean): CallMedia {
+export function useCallMedia(
+  enabled: boolean,
+  { additiveShare = false }: CallMediaOptions = {}
+): CallMedia {
   const streamRef = useRef<MediaStream | null>(null);
   const cameraTrackRef = useRef<MediaStreamTrack | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [micOn, setMicOn] = useState(true);
@@ -50,9 +77,12 @@ export function useCallMedia(enabled: boolean): CallMedia {
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     cameraTrackRef.current?.stop();
+    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     cameraTrackRef.current = null;
+    screenStreamRef.current = null;
     setStream(null);
+    setScreenStream(null);
     setSharing(false);
   }, []);
 
@@ -112,6 +142,7 @@ export function useCallMedia(enabled: boolean): CallMedia {
     const release = () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
       cameraTrackRef.current?.stop();
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
     window.addEventListener('pagehide', release);
     return () => {
@@ -177,9 +208,37 @@ export function useCallMedia(enabled: boolean): CallMedia {
     [switchDevice]
   );
 
+  const stopScreen = useCallback(() => {
+    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+    screenStreamRef.current = null;
+    setScreenStream(null);
+    setSharing(false);
+  }, []);
+
   const toggleScreenShare = useCallback(async () => {
     const media = streamRef.current;
     if (!media) return;
+
+    // Additive: the screen becomes a second outgoing video, the camera keeps
+    // running untouched. Costs a renegotiation, which the peer connection asks
+    // for once it sees the new stream.
+    if (additiveShare) {
+      if (sharing) {
+        stopScreen();
+        return;
+      }
+      const display = await navigator.mediaDevices.getDisplayMedia(SCREEN_CONSTRAINTS);
+      const screenTrack = display.getVideoTracks()[0];
+      // Shared screens are usually text: tell the encoder to spend its budget
+      // on sharpness rather than on frame rate.
+      screenTrack.contentHint = 'detail';
+      screenStreamRef.current = display;
+      setScreenStream(display);
+      setSharing(true);
+      // "Stop sharing" from the browser's own bar bypasses our button entirely.
+      screenTrack.addEventListener('ended', stopScreen);
+      return;
+    }
 
     if (sharing) {
       const camera = cameraTrackRef.current;
@@ -218,10 +277,11 @@ export function useCallMedia(enabled: boolean): CallMedia {
       setStream(current);
       setSharing(false);
     });
-  }, [sharing, camOn, replaceTrack]);
+  }, [additiveShare, sharing, camOn, replaceTrack, stopScreen]);
 
   return {
     stream,
+    screenStream,
     error,
     micOn,
     camOn,
