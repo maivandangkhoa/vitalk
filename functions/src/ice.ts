@@ -13,6 +13,26 @@ const STUN_FALLBACK = [
 ];
 
 /**
+ * How far either side of the lesson's calendar day a credential may be minted.
+ *
+ * Deliberately coarse: the booking stores a wall-clock date plus the timezone
+ * it was written in, and pulling a timezone library into functions to narrow
+ * this to the hour buys very little. A day of slack on each side covers every
+ * offset on earth and a lesson that runs long, while still refusing the case
+ * this exists for — a signed-in student minting four hours of relay bandwidth
+ * off a booking three months out.
+ */
+const BOOKING_DAY_MS = 24 * 60 * 60 * 1000;
+
+function withinLessonDays(date: unknown): boolean {
+  if (typeof date !== "string") return false;
+  const day = Date.parse(`${date}T00:00:00Z`);
+  if (Number.isNaN(day)) return false;
+  const now = Date.now();
+  return now > day - BOOKING_DAY_MS && now < day + 2 * BOOKING_DAY_MS;
+}
+
+/**
  * Time-limited TURN credentials, coturn's `use-auth-secret` scheme:
  *
  *   username   = "<unix expiry>:<uid>"
@@ -73,6 +93,12 @@ export const getIceServers = onCall(
     }
     if (booking.status !== "confirmed" && booking.status !== "completed") {
       throw new HttpsError("failed-precondition", "Lesson is not confirmed");
+    }
+    // Relay bandwidth is the one thing here that costs real money, so a
+    // credential is tied to a lesson that is actually happening — not to any
+    // confirmed booking in the calendar.
+    if (!withinLessonDays(booking.date)) {
+      throw new HttpsError("failed-precondition", "Lesson is not happening now");
     }
 
     const urls = (process.env.TURN_URLS || "")
