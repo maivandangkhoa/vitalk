@@ -132,3 +132,19 @@
     @apply font-sans scroll-smooth;
     }
 }
+
+/*
+ * iOS Safari zooms the whole page in whenever you focus a form control whose
+ * text is under 16px, and never zooms back out. Rather than chase every
+ * `text-sm` input in the app — or disable pinch zoom site-wide, which locks out
+ * anyone who needs to magnify — we floor the font size on touch devices only.
+ * Deliberately unlayered: Tailwind's utilities live in @layer, so an unlayered
+ * rule wins the cascade over `text-sm` without needing !important.
+ */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
