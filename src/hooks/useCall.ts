@@ -174,7 +174,11 @@ export function useCall({
     pendingNegotiationRef.current = false;
     teardown();
     if (!callId || !role) return;
-    await endCallRoom(callId, role, 'ended').catch(() => undefined);
+    // Logged, not swallowed: a hang-up that is refused leaves the room looking
+    // occupied to everyone, and silence here is what made that invisible.
+    await endCallRoom(callId, role, 'ended').catch((err) =>
+      console.error('useCall: ending the room failed', err)
+    );
   }, [callId, role, teardown]);
 
   // ── Negotiation ────────────────────────────────────────────────────────────
@@ -210,7 +214,10 @@ export function useCall({
     } catch (err) {
       console.error('useCall: offer failed', err);
       setError('offer-failed');
-      setConnecting(false);
+      // Drop the half-built connection. Keeping it would leave this browser
+      // looking busy — which is what the ring prompt reads — so a dial that
+      // failed once could never be attempted again without a reload.
+      teardown();
       negotiatingRef.current = false;
     }
   }, [callId, role, currentSession, create, teardown, setConnecting, pcRef, sessionRef]);
@@ -223,7 +230,9 @@ export function useCall({
     joinedRef.current = false;
     setJoined(false);
     if (!callId || !role) return;
-    await endCallRoom(callId, role, 'rejected').catch(() => undefined);
+    await endCallRoom(callId, role, 'rejected').catch((err) =>
+      console.error('useCall: declining failed', err)
+    );
   }, [callId, role]);
 
   /**

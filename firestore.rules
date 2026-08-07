@@ -276,12 +276,21 @@ service cloud.firestore {
              'teacherReadyAt', 'studentReadyAt', 'route',
              'startedAt', 'endedAt', 'updatedAt'
            ])
-        // Only the teacher offers and only the student answers. Fixing the
-        // roles here is what makes SDP glare impossible.
+        // Only the teacher *sets* an offer and only the student *sets* an
+        // answer. Fixing the roles here is what makes SDP glare impossible.
+        //
+        // Clearing either one is allowed to both, and has to be: hanging up
+        // wipes both fields, and a re-dial publishes a new offer with the old
+        // answer nulled. Without these clauses the teacher could never offer
+        // twice — the second attempt was denied for touching `answer`, which
+        // left rooms stuck mid-call with no way back in. Nulling cannot cause
+        // glare; only putting an SDP *in* can.
         && (request.resource.data.offer == resource.data.offer
-            || request.auth.uid == resource.data.teacherId)
+            || request.auth.uid == resource.data.teacherId
+            || request.resource.data.offer == null)
         && (request.resource.data.answer == resource.data.answer
-            || request.auth.uid == resource.data.studentId)
+            || request.auth.uid == resource.data.studentId
+            || request.resource.data.answer == null)
         // A peer may only claim its own presence.
         && (request.resource.data.teacherReadyAt == resource.data.teacherReadyAt
             || request.auth.uid == resource.data.teacherId)
