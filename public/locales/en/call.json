@@ -42,7 +42,8 @@
   },
   "route": {
     "direct": "Direct connection",
-    "relay": "Relayed connection"
+    "relay": "Relayed connection",
+    "unknown": "Checking the connection"
   },
   "incoming": {
     "title": "{{name}} is waiting",

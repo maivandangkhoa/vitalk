@@ -42,7 +42,8 @@
   },
   "route": {
     "direct": "直接接続",
-    "relay": "中継接続"
+    "relay": "中継接続",
+    "unknown": "接続経路を確認中"
   },
   "incoming": {
     "title": "{{name}} さんが待っています",

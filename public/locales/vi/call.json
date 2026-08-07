@@ -42,7 +42,8 @@
   },
   "route": {
     "direct": "Kết nối trực tiếp",
-    "relay": "Kết nối qua máy chủ trung chuyển"
+    "relay": "Kết nối qua máy chủ trung chuyển",
+    "unknown": "Đang xác định đường kết nối"
   },
   "incoming": {
     "title": "{{name}} đang chờ",

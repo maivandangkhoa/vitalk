@@ -38,25 +38,26 @@ interface CallControlsProps {
 
 function RouteBadge({ route }: { route: ConnectionRoute }) {
   const { t } = useTranslation('call');
-  if (route === 'unknown') return null;
-  // Relayed calls take a longer path and are the ones that feel laggy — worth
-  // signalling, but as a dot rather than a sentence: which way the packets go
-  // is not something a student can act on, and the words read as an error to
-  // people who do not know what a relay is. The wording stays in the tooltip
-  // and the label, where anyone who wants the detail can find it.
-  const relayed = route === 'relay';
-  const label = relayed ? t('route.relay') : t('route.direct');
+  // Which way the packets travel is not something a student can act on, and
+  // spelled out it reads like an error to anyone who does not know what a relay
+  // is. A dot carries it; the sentence stays in the tooltip and the label.
+  // Green is direct, amber is relayed — a longer path, and the one that feels
+  // laggy. Grey is the honest third state: ICE has not settled yet, which is
+  // worth showing rather than leaving a gap that appears once the call starts.
+  const tone = {
+    host: 'bg-emerald-500 ring-emerald-500/15',
+    srflx: 'bg-emerald-500 ring-emerald-500/15',
+    relay: 'bg-amber-500 ring-amber-500/15',
+    unknown: 'bg-zinc-400 ring-zinc-400/15',
+  }[route];
+  const label = t(`route.${route === 'relay' || route === 'unknown' ? route : 'direct'}`);
+
   return (
     <span
       role="img"
       aria-label={label}
       title={label}
-      className={cn(
-        'size-2.5 shrink-0 rounded-full',
-        relayed
-          ? 'bg-amber-500 ring-4 ring-amber-500/15'
-          : 'bg-emerald-500 ring-4 ring-emerald-500/15'
-      )}
+      className={cn('size-2.5 shrink-0 rounded-full ring-4', tone)}
     />
   );
 }

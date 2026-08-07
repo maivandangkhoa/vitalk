@@ -42,7 +42,8 @@
   },
   "route": {
     "direct": "직접 연결",
-    "relay": "중계 연결"
+    "relay": "중계 연결",
+    "unknown": "연결 경로 확인 중"
   },
   "incoming": {
     "title": "{{name}} 님이 기다리고 있습니다",
