@@ -11,7 +11,7 @@
     "peerWaiting": "{{name}} 님이 이미 강의실에 있습니다.",
     "peerAbsent": "{{name}} 님이 아직 입장하지 않았습니다.",
     "enter": "강의실 입장",
-    "waiting": "선생님을 기다리는 중…",
+    "waiting": "{{name}}님을 기다리는 중…",
     "camera": "카메라",
     "microphone": "마이크"
   },
@@ -30,7 +30,8 @@
     "stopShare": "공유 중지",
     "leave": "나가기",
     "fullscreen": "전체 화면",
-    "exitFullscreen": "전체 화면 종료"
+    "exitFullscreen": "전체 화면 종료",
+    "redial": "다시 걸기"
   },
   "chat": {
     "title": "채팅",

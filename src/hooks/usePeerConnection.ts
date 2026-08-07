@@ -71,6 +71,8 @@ export interface PeerConnection {
   /** The other side's screen, when they are sharing it additively. */
   remoteScreenStream: MediaStream | null;
   route: ConnectionRoute;
+  /** Media is actually flowing on this connection right now. */
+  connected: boolean;
   negotiating: boolean;
   connecting: boolean;
   reconnecting: boolean;
@@ -125,6 +127,7 @@ export function usePeerConnection({
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [remoteScreenStream, setRemoteScreenStream] = useState<MediaStream | null>(null);
   const [route, setRoute] = useState<ConnectionRoute>('unknown');
+  const [connected, setConnected] = useState(false);
   const [negotiating, setNegotiating] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
@@ -155,6 +158,7 @@ export function usePeerConnection({
     setRemoteStream(null);
     setRemoteScreenStream(null);
     setRoute('unknown');
+    setConnected(false);
     setConnecting(false);
     setNegotiating(false);
     setIceTrouble(null);
@@ -172,6 +176,7 @@ export function usePeerConnection({
       remoteDescSetRef.current = false;
       sessionRef.current = session;
       primaryStreamIdRef.current = null;
+      setConnected(false);
       setNegotiating(true);
 
       const senders = { audio: null, camera: null, screen: null } as {
@@ -235,6 +240,10 @@ export function usePeerConnection({
       };
 
       pc.onconnectionstatechange = () => {
+        // A connection that has already been replaced still fires its last
+        // events; letting them through would report the dead attempt's state.
+        if (pcRef.current !== pc) return;
+        setConnected(pc.connectionState === 'connected');
         if (pc.connectionState === 'connected') {
           setConnecting(false);
           setReconnecting(false);
@@ -364,6 +373,7 @@ export function usePeerConnection({
     remoteStream,
     remoteScreenStream,
     route,
+    connected,
     negotiating,
     connecting,
     reconnecting,

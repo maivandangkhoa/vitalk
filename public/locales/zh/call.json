@@ -11,7 +11,7 @@
     "peerWaiting": "{{name}} 已在课堂中。",
     "peerAbsent": "{{name}} 尚未进入课堂。",
     "enter": "进入课堂",
-    "waiting": "正在等待老师…",
+    "waiting": "正在等待 {{name}}…",
     "camera": "摄像头",
     "microphone": "麦克风"
   },
@@ -30,7 +30,8 @@
     "stopShare": "停止共享",
     "leave": "离开",
     "fullscreen": "全屏",
-    "exitFullscreen": "退出全屏"
+    "exitFullscreen": "退出全屏",
+    "redial": "重新拨号"
   },
   "chat": {
     "title": "聊天",

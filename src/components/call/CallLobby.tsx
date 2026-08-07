@@ -122,7 +122,9 @@ export function CallLobby({
           onClick={onJoin}
         >
           {joining && <Loader2 className="animate-spin" data-icon="inline-start" />}
-          {joined ? t('lobby.waiting') : t('lobby.enter')}
+          {/* Named rather than roled: "waiting for the teacher" was shown to
+              the teacher too, who is in fact waiting for their student. */}
+          {joined ? t('lobby.waiting', { name: peerName }) : t('lobby.enter')}
         </Button>
       </div>
     </div>

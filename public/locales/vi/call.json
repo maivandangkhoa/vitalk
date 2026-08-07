@@ -11,7 +11,7 @@
     "peerWaiting": "{{name}} đã ở trong lớp.",
     "peerAbsent": "{{name}} chưa vào lớp.",
     "enter": "Vào lớp học",
-    "waiting": "Đang chờ giáo viên…",
+    "waiting": "Đang chờ {{name}}…",
     "camera": "Camera",
     "microphone": "Micro"
   },
@@ -30,7 +30,8 @@
     "stopShare": "Dừng chia sẻ",
     "leave": "Rời lớp",
     "fullscreen": "Toàn màn hình",
-    "exitFullscreen": "Thoát toàn màn hình"
+    "exitFullscreen": "Thoát toàn màn hình",
+    "redial": "Gọi lại"
   },
   "chat": {
     "title": "Trò chuyện",

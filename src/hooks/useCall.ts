@@ -40,6 +40,8 @@ export interface CallSession {
   joined: boolean;
   /** The teacher is being asked to start the lesson. */
   incoming: boolean;
+  /** Media is flowing. False covers both "not yet" and "it broke". */
+  connected: boolean;
   route: ConnectionRoute;
   connecting: boolean;
   /** The connection dropped and is being repaired in place. */
@@ -49,6 +51,8 @@ export interface CallSession {
   leave: () => Promise<void>;
   accept: () => Promise<void>;
   decline: () => Promise<void>;
+  /** Teacher only: throw away this attempt and dial a fresh one. */
+  redial: () => Promise<void>;
 }
 
 /**
@@ -175,16 +179,29 @@ export function useCall({
 
   // ── Negotiation ────────────────────────────────────────────────────────────
 
-  const accept = useCallback(async () => {
+  /**
+   * Opens a brand-new generation and offers on it — the teacher answering the
+   * prompt, and the teacher re-dialling a connection that died.
+   *
+   * Both are the same act, so they are the same code. The existing connection
+   * is torn down first: a re-dial that left it open would leak a peer
+   * connection and keep its dead candidates arriving.
+   */
+  const startCall = useCallback(async () => {
     if (!callId || role !== 'teacher') return;
     if (ringTimeout.current) {
       clearTimeout(ringTimeout.current);
       ringTimeout.current = null;
     }
+    if (pcRef.current) teardown();
+    pendingNegotiationRef.current = false;
     setConnecting(true);
     negotiatingRef.current = true;
     try {
-      const session = currentSession + 1;
+      // Ahead of both what the document says and what this browser last used:
+      // a re-dial after a reload must not reuse a generation whose candidates
+      // are still in the collection.
+      const session = Math.max(currentSession, sessionRef.current) + 1;
       const pc = await create(session);
       if (!pc) return;
       const offer = await pc.createOffer();
@@ -196,7 +213,7 @@ export function useCall({
       setConnecting(false);
       negotiatingRef.current = false;
     }
-  }, [callId, role, currentSession, create, setConnecting]);
+  }, [callId, role, currentSession, create, teardown, setConnecting, pcRef, sessionRef]);
 
   const decline = useCallback(async () => {
     if (ringTimeout.current) {
@@ -297,10 +314,13 @@ export function useCall({
   // scheduled lesson works: both show up, and the teacher opens the door.
   const peerReadyAt = role === 'teacher' ? call?.studentReadyAt : call?.teacherReadyAt;
   const peerPresent = isPresent(peerReadyAt ?? null);
-  const idle =
-    call?.status === 'idle' || call?.status === 'ended' || call?.status === 'rejected';
-  const incoming =
-    role === 'teacher' && joined && peerPresent && idle && !peer.negotiating;
+  // Deliberately *not* gated on the room's status. Nothing resets that status
+  // when a tab dies without hanging up — a killed browser or a locked phone
+  // leaves it on `connecting` forever — and gating on it meant the teacher
+  // came back to a room that could never be rung again. What this browser
+  // holds is the honest answer: no connection of our own means no lesson in
+  // progress, whatever the document still claims.
+  const incoming = role === 'teacher' && joined && peerPresent && !peer.negotiating;
 
   // Auto-decline once the prompt has rung long enough. The timer lives here so
   // it starts and stops with the prompt itself.
@@ -333,7 +353,10 @@ export function useCall({
         // An ICE restart arrives as a fresh offer on a live connection. Keeping
         // that connection is the whole point of a restart — tearing it down
         // would drop the tracks and turn a two-second blip into a re-dial.
-        let pc = adopt(session);
+        // A connection that already failed cannot be repaired by pointing a
+        // new description at it — that attempt is over. Only a live one is
+        // worth keeping.
+        let pc = pcRef.current?.connectionState === 'failed' ? null : adopt(session);
         if (!pc) {
           teardown();
           pc = await create(session);
@@ -369,6 +392,7 @@ export function useCall({
     setConnecting,
     sessionRef,
     remoteDescSetRef,
+    pcRef,
   ]);
 
   // Teacher side: the answer completes the handshake.
@@ -426,13 +450,15 @@ export function useCall({
     peerPresent,
     joined,
     incoming,
+    connected: peer.connected,
     route: peer.route,
     connecting: peer.connecting,
     reconnecting: peer.reconnecting,
     error,
     join,
     leave,
-    accept,
+    accept: startCall,
     decline,
+    redial: startCall,
   };
 }

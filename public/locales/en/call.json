@@ -11,7 +11,7 @@
     "peerWaiting": "{{name}} is already in the classroom.",
     "peerAbsent": "{{name}} has not joined yet.",
     "enter": "Enter classroom",
-    "waiting": "Waiting for your teacher…",
+    "waiting": "Waiting for {{name}}…",
     "camera": "Camera",
     "microphone": "Microphone"
   },
@@ -30,7 +30,8 @@
     "stopShare": "Stop sharing",
     "leave": "Leave",
     "fullscreen": "Fullscreen",
-    "exitFullscreen": "Exit fullscreen"
+    "exitFullscreen": "Exit fullscreen",
+    "redial": "Redial"
   },
   "chat": {
     "title": "Chat",

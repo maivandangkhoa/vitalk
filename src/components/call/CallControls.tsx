@@ -7,6 +7,7 @@ import {
   Minimize,
   MonitorUp,
   PhoneOff,
+  RefreshCw,
   Video,
   VideoOff,
 } from 'lucide-react';
@@ -26,6 +27,8 @@ interface CallControlsProps {
   fullscreen: boolean;
   /** Absent where the browser has no element fullscreen (iOS Safari). */
   onToggleFullscreen?: () => void;
+  /** Teacher only, and only while the media is not through. */
+  onRedial?: () => void;
   onToggleMic: () => void;
   onToggleCam: () => void;
   onToggleShare: () => void;
@@ -61,6 +64,7 @@ export function CallControls({
   chatUnread,
   fullscreen,
   onToggleFullscreen,
+  onRedial,
   onToggleMic,
   onToggleCam,
   onToggleShare,
@@ -128,6 +132,16 @@ export function CallControls({
           title={fullscreen ? t('controls.exitFullscreen') : t('controls.fullscreen')}
         >
           {fullscreen ? <Minimize /> : <Maximize />}
+        </Button>
+      )}
+
+      {/* The way out of a handshake that never completed: a fresh generation
+          costs one round trip and is the only repair the teacher can make
+          without both sides reloading. */}
+      {onRedial && (
+        <Button size="lg" variant="secondary" onClick={onRedial}>
+          <RefreshCw data-icon="inline-start" />
+          {t('controls.redial')}
         </Button>
       )}
 

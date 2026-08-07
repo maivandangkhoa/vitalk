@@ -150,7 +150,13 @@ export default function CallPage() {
     );
   }
 
-  const inCall = !!session.remoteStream || session.status === 'active';
+  // Read off this browser's own connection, never the room's status: that
+  // status survives a tab that died without hanging up, and trusting it put
+  // people into a classroom whose call had been dead for hours. The teacher's
+  // side has nothing to show until the answer comes back either, so dialling
+  // counts as being in the lesson — otherwise they wait out the whole
+  // handshake on a lobby screen.
+  const inCall = !!session.remoteStream || session.connecting || session.connected;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6">
@@ -220,6 +226,14 @@ export default function CallPage() {
             chatUnread={chat.unread}
             fullscreen={fullscreen}
             onToggleFullscreen={canFullscreen ? toggleFullscreen : undefined}
+            // Only the teacher offers, so only the teacher can re-dial — and
+            // only while the media is not through, which is the one case where
+            // there is anything to fix.
+            onRedial={
+              role === 'teacher' && !session.connected && !session.reconnecting
+                ? () => void session.redial()
+                : undefined
+            }
             onToggleMic={media.toggleMic}
             onToggleCam={media.toggleCam}
             onToggleChat={() => setChatOpen((open) => !open)}
