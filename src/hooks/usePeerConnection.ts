@@ -114,8 +114,15 @@ export function usePeerConnection({
   const candidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
-  /** Identity of the inbound camera/mic stream, so a later one reads as screen. */
+  /** Identity of the inbound camera/mic stream — used to notice it was replaced. */
   const primaryStreamIdRef = useRef<string | null>(null);
+  /**
+   * The m-line the other side's camera arrives on. That, not the stream's
+   * identity, is what separates camera from screen: a peer who reloads and
+   * dials again sends the same camera on the same m-line under a brand new
+   * stream id, and identity alone read that as a second screen.
+   */
+  const cameraMidRef = useRef<string | null>(null);
   // Which sender carries what. Looking senders up by `track.kind` breaks the
   // moment there are two video senders — both would resolve to the same track.
   const sendersRef = useRef<{
@@ -155,6 +162,7 @@ export function usePeerConnection({
     sessionRef.current = -1;
     sendersRef.current = { audio: null, camera: null, screen: null };
     primaryStreamIdRef.current = null;
+    cameraMidRef.current = null;
     setRemoteStream(null);
     setRemoteScreenStream(null);
     setRoute('unknown');
@@ -176,6 +184,7 @@ export function usePeerConnection({
       remoteDescSetRef.current = false;
       sessionRef.current = session;
       primaryStreamIdRef.current = null;
+      cameraMidRef.current = null;
       setConnected(false);
       setNegotiating(true);
 
@@ -202,25 +211,39 @@ export function usePeerConnection({
       }
       sendersRef.current = senders;
 
-      // Two inbound video streams are told apart by identity: the first one
-      // seen is the camera and microphone, a later, different one is the
-      // screen. Order holds because the sending side adds the screen last.
+      // Two inbound videos are told apart by the m-line they arrive on: the
+      // first video transceiver is the camera, any later one is a screen. The
+      // m-line survives renegotiation and re-dialling, whereas the stream's id
+      // does not — a peer who reconnects sends the same camera under a new
+      // stream id, and treating that as a screen left their dead tile on
+      // screen next to the live one.
       pc.ontrack = (event) => {
         const incoming = event.streams[0];
         if (!incoming) return;
+        const mid = event.transceiver.mid ?? null;
 
-        if (!primaryStreamIdRef.current || primaryStreamIdRef.current === incoming.id) {
-          primaryStreamIdRef.current = incoming.id;
-          setRemoteStream(incoming);
-          return;
+        if (event.track.kind === 'video') {
+          if (cameraMidRef.current === null) cameraMidRef.current = mid;
+
+          if (mid !== cameraMidRef.current) {
+            // Drop the screen again when it ends, so the layout does not keep
+            // showing a frozen frame.
+            setRemoteScreenStream(incoming);
+            event.track.addEventListener('ended', () =>
+              setRemoteScreenStream((shown) => (shown?.id === incoming.id ? null : shown))
+            );
+            return;
+          }
         }
 
-        // A second, different stream is the screen. Drop it again when it ends,
-        // so the layout does not keep showing a frozen frame.
-        setRemoteScreenStream(incoming);
-        event.track.addEventListener('ended', () =>
-          setRemoteScreenStream((shown) => (shown?.id === incoming.id ? null : shown))
-        );
+        // Camera or microphone: the primary stream. A different id here means
+        // the other side rebuilt their media, so whatever screen was showing
+        // belonged to a connection that no longer exists.
+        if (primaryStreamIdRef.current && primaryStreamIdRef.current !== incoming.id) {
+          setRemoteScreenStream(null);
+        }
+        primaryStreamIdRef.current = incoming.id;
+        setRemoteStream(incoming);
       };
 
       pc.onicecandidate = (event) => {
