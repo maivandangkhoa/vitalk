@@ -28,6 +28,13 @@
     "stopShare": "Dừng chia sẻ",
     "leave": "Rời lớp"
   },
+  "chat": {
+    "title": "Trò chuyện",
+    "with": "với {{name}}",
+    "open": "Mở khung chat",
+    "close": "Đóng khung chat",
+    "placeholder": "Nhắn tin trong giờ học…"
+  },
   "route": {
     "direct": "Kết nối trực tiếp",
     "relay": "Kết nối qua máy chủ trung chuyển"

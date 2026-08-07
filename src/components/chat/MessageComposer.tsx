@@ -13,9 +13,21 @@ interface Props {
   senderId: string;
   /** Set while the sender is throttled — the rules would reject the write. */
   blocked?: boolean;
+  /**
+   * Awaited before the first write. Lets a caller create the conversation only
+   * once someone actually types, instead of on merely opening the panel.
+   */
+  onBeforeSend?: () => Promise<void>;
+  placeholder?: string;
 }
 
-export function MessageComposer({ conversationId, senderId, blocked = false }: Props) {
+export function MessageComposer({
+  conversationId,
+  senderId,
+  blocked = false,
+  onBeforeSend,
+  placeholder,
+}: Props) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [image, setImage] = useState<File | null>(null);
@@ -52,6 +64,7 @@ export function MessageComposer({ conversationId, senderId, blocked = false }: P
 
     setSending(true);
     try {
+      await onBeforeSend?.();
       if (image) {
         await sendImageMessage(conversationId, senderId, image, text);
         clearImage();
@@ -121,7 +134,7 @@ export function MessageComposer({ conversationId, senderId, blocked = false }: P
           rows={1}
           value={text}
           maxLength={MAX_MESSAGE_LENGTH}
-          placeholder={t('chat.placeholder')}
+          placeholder={placeholder ?? t('chat.placeholder')}
           onChange={(e) => {
             setText(e.target.value);
             autoGrow(e.target);

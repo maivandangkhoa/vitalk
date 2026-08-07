@@ -28,6 +28,13 @@
     "stopShare": "Stop sharing",
     "leave": "Leave"
   },
+  "chat": {
+    "title": "Chat",
+    "with": "with {{name}}",
+    "open": "Open chat",
+    "close": "Close chat",
+    "placeholder": "Message during the lesson…"
+  },
   "route": {
     "direct": "Direct connection",
     "relay": "Relayed connection"

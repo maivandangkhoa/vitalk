@@ -28,6 +28,13 @@
     "stopShare": "停止共享",
     "leave": "离开"
   },
+  "chat": {
+    "title": "聊天",
+    "with": "与 {{name}}",
+    "open": "打开聊天",
+    "close": "关闭聊天",
+    "placeholder": "课堂中发消息…"
+  },
   "route": {
     "direct": "直接连接",
     "relay": "中转连接"

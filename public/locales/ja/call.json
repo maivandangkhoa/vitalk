@@ -28,6 +28,13 @@
     "stopShare": "共有を停止",
     "leave": "退出"
   },
+  "chat": {
+    "title": "チャット",
+    "with": "{{name}} さんと",
+    "open": "チャットを開く",
+    "close": "チャットを閉じる",
+    "placeholder": "レッスン中にメッセージ…"
+  },
   "route": {
     "direct": "直接接続",
     "relay": "中継接続"

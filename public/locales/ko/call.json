@@ -28,6 +28,13 @@
     "stopShare": "공유 중지",
     "leave": "나가기"
   },
+  "chat": {
+    "title": "채팅",
+    "with": "{{name}} 님과",
+    "open": "채팅 열기",
+    "close": "채팅 닫기",
+    "placeholder": "수업 중 메시지 보내기…"
+  },
   "route": {
     "direct": "직접 연결",
     "relay": "중계 연결"

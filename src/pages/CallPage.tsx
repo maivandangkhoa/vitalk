@@ -7,10 +7,12 @@ import { useAuthStore } from '@/stores/authStore';
 import { useBooking } from '@/hooks/useBookings';
 import { useCall } from '@/hooks/useCall';
 import { useCallMedia } from '@/hooks/useCallMedia';
+import { useCallChat } from '@/hooks/useCallChat';
 import { roleOf } from '@/lib/webrtc';
 import { callWindowState, formatCountdown, isCallableBooking, joinWindow } from '@/lib/callWindow';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { CallLobby } from '@/components/call/CallLobby';
+import { CallChatPanel } from '@/components/call/CallChatPanel';
 import { CallControls } from '@/components/call/CallControls';
 import { IncomingCallDialog } from '@/components/call/IncomingCallDialog';
 import { VideoStage } from '@/components/call/VideoStage';
@@ -35,6 +37,9 @@ export default function CallPage() {
   const role = booking && user ? roleOf(booking, user.uid) : null;
   const [now, setNow] = useState(() => new Date());
   const [joining, setJoining] = useState(false);
+  // Shut by default: the video is what the lesson is for, and the unread badge
+  // is enough to notice a message that does arrive.
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Drives the countdown, and re-opens the page by itself when the lesson's
   // start time arrives — nobody should have to reload to get in.
@@ -53,6 +58,7 @@ export default function CallPage() {
   // an early arrival does not light up a webcam for ten minutes.
   const media = useCallMedia(roomOpen);
   const session = useCall({ booking, uid: user?.uid, role, localStream: media.stream });
+  const chat = useCallChat(booking, user);
 
   const peerName = role === 'teacher' ? booking?.studentName ?? '' : booking?.teacherName ?? '';
 
@@ -116,16 +122,32 @@ export default function CallPage() {
 
       {inCall ? (
         <div className="flex flex-col gap-4">
-          <div className="h-[60vh] min-h-80 md:h-[70vh]">
-            <VideoStage
-              localStream={media.stream}
-              remoteStream={session.remoteStream}
-              peerName={peerName}
-              micOn={media.micOn}
-              camOn={media.camOn}
-              placeholder={t('stage.connecting')}
-              reconnectingLabel={session.reconnecting ? t('stage.reconnecting') : null}
-            />
+          {/* Chat sits beside the video from `lg` up and underneath it below
+              that — a phone has no room for two columns. */}
+          <div className="flex flex-col gap-4 lg:flex-row">
+            <div className="h-[60vh] min-h-80 min-w-0 flex-1 md:h-[70vh]">
+              <VideoStage
+                localStream={media.stream}
+                remoteStream={session.remoteStream}
+                peerName={peerName}
+                micOn={media.micOn}
+                camOn={media.camOn}
+                placeholder={t('stage.connecting')}
+                reconnectingLabel={session.reconnecting ? t('stage.reconnecting') : null}
+              />
+            </div>
+
+            {chatOpen && chat.conversationId && (
+              <CallChatPanel
+                conversationId={chat.conversationId}
+                conversation={chat.conversation}
+                viewerUid={user.uid}
+                peerName={peerName}
+                onEnsureConversation={chat.ensure}
+                onClose={() => setChatOpen(false)}
+                className="h-[50vh] shrink-0 lg:h-[70vh] lg:w-80 xl:w-96"
+              />
+            )}
           </div>
           <CallControls
             micOn={media.micOn}
@@ -133,8 +155,11 @@ export default function CallPage() {
             sharing={media.sharing}
             canShare={typeof navigator.mediaDevices?.getDisplayMedia === 'function'}
             route={session.route}
+            chatOpen={chatOpen}
+            chatUnread={chat.unread}
             onToggleMic={media.toggleMic}
             onToggleCam={media.toggleCam}
+            onToggleChat={() => setChatOpen((open) => !open)}
             onToggleShare={() =>
               media
                 .toggleScreenShare()

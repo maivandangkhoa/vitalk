@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Mic,
   MicOff,
+  MessageSquare,
   MonitorUp,
   PhoneOff,
   Video,
@@ -17,9 +18,13 @@ interface CallControlsProps {
   sharing: boolean;
   canShare: boolean;
   route: ConnectionRoute;
+  chatOpen: boolean;
+  /** Unread messages in the lesson thread; only meaningful while chat is shut. */
+  chatUnread: number;
   onToggleMic: () => void;
   onToggleCam: () => void;
   onToggleShare: () => void;
+  onToggleChat: () => void;
   onLeave: () => void;
 }
 
@@ -47,9 +52,12 @@ export function CallControls({
   sharing,
   canShare,
   route,
+  chatOpen,
+  chatUnread,
   onToggleMic,
   onToggleCam,
   onToggleShare,
+  onToggleChat,
   onLeave,
 }: CallControlsProps) {
   const { t } = useTranslation('call');
@@ -87,6 +95,22 @@ export function CallControls({
           <MonitorUp />
         </Button>
       )}
+
+      <Button
+        size="icon-lg"
+        variant={chatOpen ? 'default' : 'secondary'}
+        onClick={onToggleChat}
+        aria-label={chatOpen ? t('chat.close') : t('chat.open')}
+        title={chatOpen ? t('chat.close') : t('chat.open')}
+        className="relative"
+      >
+        <MessageSquare />
+        {!chatOpen && chatUnread > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[0.65rem] font-semibold text-white">
+            {chatUnread > 9 ? '9+' : chatUnread}
+          </span>
+        )}
+      </Button>
 
       <Button size="lg" variant="destructive" onClick={onLeave}>
         <PhoneOff data-icon="inline-start" />
