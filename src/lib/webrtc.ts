@@ -244,20 +244,35 @@ export function watchRemoteCandidates(
 export async function getConnectionRoute(pc: RTCPeerConnection): Promise<ConnectionRoute> {
   try {
     const stats = await pc.getStats();
-    let pairId: string | null = null;
     const candidates = new Map<string, { candidateType?: string }>();
+    const pairs = new Map<string, { localCandidateId?: string }>();
+    let selectedPairId: string | null = null;
+    let nominatedPairId: string | null = null;
+    let succeededPairId: string | null = null;
 
     stats.forEach((report) => {
-      if (report.type === 'candidate-pair' && report.state === 'succeeded' && report.nominated) {
-        pairId = report.localCandidateId;
+      if (report.type === 'transport' && report.selectedCandidatePairId) {
+        // The transport names its own pair, which is the answer browsers agree
+        // on. `nominated` alone is set a beat later, and reading it too early
+        // is what left one side of a relayed call reporting nothing at all.
+        selectedPairId = report.selectedCandidatePairId as string;
+      }
+      if (report.type === 'candidate-pair') {
+        pairs.set(report.id, report as { localCandidateId?: string });
+        if (report.state === 'succeeded') {
+          succeededPairId ??= report.id;
+          if (report.nominated) nominatedPairId = report.id;
+        }
       }
       if (report.type === 'local-candidate') {
         candidates.set(report.id, report as { candidateType?: string });
       }
     });
 
+    const pairId = selectedPairId ?? nominatedPairId ?? succeededPairId;
     if (!pairId) return 'unknown';
-    const type = candidates.get(pairId)?.candidateType;
+    const localId = pairs.get(pairId)?.localCandidateId;
+    const type = localId ? candidates.get(localId)?.candidateType : undefined;
     if (type === 'relay' || type === 'host' || type === 'srflx') return type;
     return 'unknown';
   } catch {

@@ -38,6 +38,10 @@ const SHARING_CAMERA_ENCODING = {
   maxFramerate: 15,
 } as const;
 
+/** How long to keep asking the stats which route won, before giving up. */
+const ROUTE_READ_ATTEMPTS = 10;
+const ROUTE_READ_INTERVAL_MS = 1_000;
+
 /**
  * Force every candidate through TURN, for verifying the relay works at all.
  *
@@ -292,13 +296,27 @@ export function usePeerConnection({
           setConnecting(false);
           setReconnecting(false);
           markCallActive(callId).catch(() => undefined);
-          getConnectionRoute(pc).then((next) => {
+          // Stats trail the connection: at the instant this fires, the pair
+          // that won is often not marked yet, and reading once left one side of
+          // a relayed call showing nothing while the other showed the relay.
+          // Ask again until it answers, then stop.
+          let attempts = 0;
+          const readRoute = async () => {
+            if (pcRef.current !== pc || pc.connectionState !== 'connected') return;
+            const next = await getConnectionRoute(pc);
+            if (next === 'unknown') {
+              if (++attempts < ROUTE_READ_ATTEMPTS) {
+                setTimeout(() => void readRoute(), ROUTE_READ_INTERVAL_MS);
+              }
+              return;
+            }
             setRoute(next);
             // Written down, not just displayed: the share of lessons that end
             // up relayed is what decides whether TURN bandwidth ever costs
             // anything, and it cannot be guessed from here.
             recordRoute(callId, next).catch(() => undefined);
-          });
+          };
+          void readRoute();
         }
         if (pc.connectionState === 'failed') {
           setConnecting(false);
