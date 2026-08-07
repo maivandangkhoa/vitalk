@@ -167,7 +167,15 @@ service cloud.firestore {
           : participants()[0];
       }
 
-      allow read: if isAdmin() || isParticipant();
+      // The id *is* the pair, so the two people named in it are known even when
+      // the document does not exist yet. That case matters: the first "Message"
+      // click reads the thread before creating it, and `resource` is null then —
+      // going through `participants()` would error and deny the read.
+      function isNamedInId() {
+        return isAuthenticated() && request.auth.uid in conversationId.split('_');
+      }
+
+      allow read: if isAdmin() || (resource == null ? isNamedInId() : isParticipant());
 
       // A new conversation starts empty: no messages, both counters at zero.
       // Only the two named people may open it, and the teacher side must be a
