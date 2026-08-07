@@ -180,6 +180,8 @@
     "loadOlder": "加载更早的消息",
     "readOnly": "只读",
     "throttled": "请等对方读完消息后再发送。",
-    "messageTeacher": "发消息"
+    "messageTeacher": "发消息",
+    "roleStudent": "学生",
+    "roleTeacher": "老师"
   }
 }

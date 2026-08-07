@@ -180,6 +180,8 @@
     "loadOlder": "Xem tin cũ hơn",
     "readOnly": "Chỉ xem",
     "throttled": "Hãy đợi người nhận đọc tin trước khi gửi thêm.",
-    "messageTeacher": "Nhắn tin"
+    "messageTeacher": "Nhắn tin",
+    "roleStudent": "Học viên",
+    "roleTeacher": "Giáo viên"
   }
 }

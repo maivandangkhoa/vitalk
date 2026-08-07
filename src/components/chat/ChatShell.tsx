@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ConversationList } from './ConversationList';
 import { MessageThread } from './MessageThread';
@@ -62,6 +62,13 @@ export function ChatShell({ basePath, monitor = false }: Props) {
           <h1 className="text-sm font-semibold">
             {monitor ? t('chat.monitorTitle') : t('chat.title')}
           </h1>
+          {/* Explains the arrow in every row once, instead of repeating the
+              two role words on rows that are already tight. */}
+          {monitor && (
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {t('chat.roleStudent')} → {t('chat.roleTeacher')}
+            </p>
+          )}
         </div>
         <ConversationList
           items={items}
@@ -89,22 +96,40 @@ export function ChatShell({ basePath, monitor = false }: Props) {
               >
                 <ArrowLeft className="h-5 w-5 text-muted-foreground" />
               </button>
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={other?.photo} alt={other?.name} />
-                <AvatarFallback>
-                  {(other?.name || '?').charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
-                  {monitor ? `${active.studentName} · ${active.teacherName}` : other?.name}
-                </p>
-                {/* An admin who also teaches is a participant in their own
-                    threads, so read-only follows participation, not role. */}
-                {!isParticipant && (
-                  <p className="text-[11px] text-muted-foreground">{t('chat.readOnly')}</p>
-                )}
-              </div>
+              {monitor ? (
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <Party
+                    name={active.studentName}
+                    photo={active.studentPhoto}
+                    role={t('chat.roleStudent')}
+                  />
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <Party
+                    name={active.teacherName}
+                    photo={active.teacherPhoto}
+                    role={t('chat.roleTeacher')}
+                  />
+                </div>
+              ) : (
+                <>
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={other?.photo} alt={other?.name} />
+                    <AvatarFallback>
+                      {(other?.name || '?').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{other?.name}</p>
+                  </div>
+                </>
+              )}
+              {/* An admin who also teaches is a participant in their own
+                  threads, so read-only follows participation, not role. */}
+              {!isParticipant && (
+                <span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-muted-foreground">
+                  {t('chat.readOnly')}
+                </span>
+              )}
             </header>
 
             <div className="min-h-0 flex-1 overflow-y-auto bg-zinc-50/60">
@@ -113,7 +138,17 @@ export function ChatShell({ basePath, monitor = false }: Props) {
                 loading={loadingMessages}
                 hasMore={hasMore}
                 onLoadMore={loadMore}
-                viewerUid={user.uid}
+                // A monitor is neither party, so the teacher takes the right
+                // side and every bubble carries a name.
+                ownUid={monitor ? active.teacherId : user.uid}
+                senderNames={
+                  monitor
+                    ? {
+                        [active.studentId]: active.studentName,
+                        [active.teacherId]: active.teacherName,
+                      }
+                    : undefined
+                }
               />
             </div>
 
@@ -131,6 +166,22 @@ export function ChatShell({ basePath, monitor = false }: Props) {
           </>
         )}
       </section>
+    </div>
+  );
+}
+
+/** One side of a monitored conversation: face, name, and which role it is. */
+function Party({ name, photo, role }: { name: string; photo?: string; role: string }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <Avatar className="h-9 w-9 shrink-0">
+        <AvatarImage src={photo} alt={name} />
+        <AvatarFallback>{(name || '?').charAt(0).toUpperCase()}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">{name}</p>
+        <p className="truncate text-[11px] text-muted-foreground">{role}</p>
+      </div>
     </div>
   );
 }

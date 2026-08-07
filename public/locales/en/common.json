@@ -180,6 +180,8 @@
     "loadOlder": "Load older messages",
     "readOnly": "Read-only",
     "throttled": "Wait until they read your messages before sending more.",
-    "messageTeacher": "Message"
+    "messageTeacher": "Message",
+    "roleStudent": "Student",
+    "roleTeacher": "Teacher"
   }
 }

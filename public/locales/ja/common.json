@@ -180,6 +180,8 @@
     "loadOlder": "以前のメッセージを読み込む",
     "readOnly": "閲覧のみ",
     "throttled": "相手が読むまで、これ以上送信できません。",
-    "messageTeacher": "メッセージ"
+    "messageTeacher": "メッセージ",
+    "roleStudent": "生徒",
+    "roleTeacher": "講師"
   }
 }

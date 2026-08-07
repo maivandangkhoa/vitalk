@@ -180,6 +180,8 @@
     "loadOlder": "이전 메시지 보기",
     "readOnly": "읽기 전용",
     "throttled": "상대방이 메시지를 읽을 때까지 기다려 주세요.",
-    "messageTeacher": "메시지 보내기"
+    "messageTeacher": "메시지 보내기",
+    "roleStudent": "학생",
+    "roleTeacher": "선생님"
   }
 }

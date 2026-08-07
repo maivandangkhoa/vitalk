@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ArrowRight } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { counterpartOf, unreadFor } from '@/lib/chat';
@@ -54,14 +55,19 @@ export function ConversationList({
       {items.map((convo) => {
         const other = counterpartOf(convo, viewerUid);
         const unread = showBothSides ? 0 : unreadFor(convo, viewerUid);
-        const title = showBothSides
-          ? `${convo.studentName} · ${convo.teacherName}`
-          : other.name;
-        const preview = convo.lastMessage
+        const body = convo.lastMessage
           ? convo.lastMessage.type === 'image' && !convo.lastMessage.text
             ? t('chat.imageMessage')
             : convo.lastMessage.text
           : t('chat.noMessagesYet');
+        // A monitor is in neither side, so the preview has to name its sender.
+        const sender =
+          showBothSides && convo.lastMessage
+            ? convo.lastMessage.senderId === convo.studentId
+              ? convo.studentName
+              : convo.teacherName
+            : '';
+        const preview = sender ? `${sender}: ${body}` : body;
 
         return (
           <li key={convo.id}>
@@ -72,13 +78,38 @@ export function ConversationList({
                 selectedId === convo.id ? 'bg-indigo-50/60' : ''
               }`}
             >
-              <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={other.photo} alt={other.name} />
-                <AvatarFallback>{(title || '?').charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
+              {showBothSides ? (
+                <div className="relative h-10 w-10 shrink-0">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={convo.studentPhoto} alt={convo.studentName} />
+                    <AvatarFallback>
+                      {(convo.studentName || '?').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Avatar className="absolute bottom-0 right-0 h-6 w-6 ring-2 ring-white">
+                    <AvatarImage src={convo.teacherPhoto} alt={convo.teacherName} />
+                    <AvatarFallback className="text-[10px]">
+                      {(convo.teacherName || '?').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              ) : (
+                <Avatar className="h-10 w-10 shrink-0">
+                  <AvatarImage src={other.photo} alt={other.name} />
+                  <AvatarFallback>{(other.name || '?').charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="truncate text-sm font-medium">{title}</span>
+                  {showBothSides ? (
+                    <span className="flex min-w-0 items-center gap-1 text-sm font-medium">
+                      <span className="truncate">{convo.studentName}</span>
+                      <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{convo.teacherName}</span>
+                    </span>
+                  ) : (
+                    <span className="truncate text-sm font-medium">{other.name}</span>
+                  )}
                   <span className="shrink-0 text-[11px] text-muted-foreground">
                     {formatChatTime(convo.lastMessage?.createdAt ?? convo.updatedAt, i18n.language)}
                   </span>

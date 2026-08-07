@@ -11,7 +11,11 @@ interface Props {
   loading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
-  viewerUid: string;
+  /** Whose messages sit on the right. The viewer, or in the admin monitor the
+   *  teacher — an admin is in neither side, so alignment follows the roles. */
+  ownUid: string;
+  /** Monitor view: uid → display name, so every bubble says who is talking. */
+  senderNames?: Record<string, string>;
 }
 
 export function MessageThread({
@@ -19,7 +23,8 @@ export function MessageThread({
   loading,
   hasMore,
   onLoadMore,
-  viewerUid,
+  ownUid,
+  senderNames,
 }: Props) {
   const { t, i18n } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -65,7 +70,12 @@ export function MessageThread({
               )}
               <MessageBubble
                 message={message}
-                own={message.senderId === viewerUid}
+                own={message.senderId === ownUid}
+                senderLabel={
+                  senderNames && (startsDay[i] || messages[i - 1]?.senderId !== message.senderId)
+                    ? senderNames[message.senderId]
+                    : undefined
+                }
                 onOpenImage={setLightbox}
               />
             </Fragment>

@@ -5,14 +5,21 @@ import type { ChatMessage } from '@/types';
 interface Props {
   message: ChatMessage;
   own: boolean;
+  /** Monitor view: who sent this. Only set on the first bubble of a run. */
+  senderLabel?: string;
   onOpenImage: (url: string) => void;
 }
 
-export function MessageBubble({ message, own, onOpenImage }: Props) {
+export function MessageBubble({ message, own, senderLabel, onOpenImage }: Props) {
   const { i18n } = useTranslation();
 
   return (
-    <div className={`flex ${own ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex flex-col ${own ? 'items-end' : 'items-start'}`}>
+      {senderLabel && (
+        <span className="mb-0.5 max-w-[78%] truncate px-1 text-[11px] font-medium text-muted-foreground">
+          {senderLabel}
+        </span>
+      )}
       <div
         className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
           own

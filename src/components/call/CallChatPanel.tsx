@@ -73,7 +73,7 @@ export function CallChatPanel({
           loading={loading}
           hasMore={hasMore}
           onLoadMore={loadMore}
-          viewerUid={viewerUid}
+          ownUid={viewerUid}
         />
       </div>
 
