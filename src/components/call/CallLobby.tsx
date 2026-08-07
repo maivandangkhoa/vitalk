@@ -147,8 +147,12 @@ function DevicePicker({ label, options, onChange }: DevicePickerProps) {
           );
         }}
       >
-        <SelectTrigger>
-          <SelectValue />
+        <SelectTrigger className="w-full">
+          {/* Base UI renders the raw value unless told otherwise — without this
+              the trigger shows the deviceId hash instead of the device name. */}
+          <SelectValue>
+            {(value) => options.find((o) => o.deviceId === value)?.label ?? ''}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
