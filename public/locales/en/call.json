@@ -93,6 +93,7 @@
     "connection-failed": "The connection dropped. Try entering again.",
     "offer-failed": "Could not start the lesson.",
     "answer-failed": "Could not connect to your teacher.",
+    "no-answer": "No answer from the other side. Try dialling again.",
     "room-unavailable": "Lost contact with the classroom.",
     "shareFailed": "Screen sharing was not started.",
     "fullscreenFailed": "Fullscreen is not available in this browser."

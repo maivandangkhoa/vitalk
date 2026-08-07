@@ -40,10 +40,17 @@ export function callWindowState(booking: Booking, now: Date = new Date()): CallW
 /**
  * Can this lesson be joined at all? Cancelled and unpaid lessons have no
  * classroom — the rules refuse to open a room for them either.
+ *
+ * The platform check belongs here rather than only on the button: a lesson
+ * booked for Zoom has its link somewhere else, and opening HaviTalk's own
+ * classroom for it puts the two people in a room the other is not coming to.
+ * The button and the page have to agree, or `/call/:id` typed by hand
+ * contradicts the UI that led there.
  */
 export function isCallableBooking(booking: Booking): boolean {
   return (
     booking.format === 'online' &&
+    booking.platform === 'havitalk' &&
     (booking.status === 'confirmed' || booking.status === 'completed')
   );
 }

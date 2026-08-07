@@ -43,10 +43,21 @@ export function readyFieldFor(role: CallRole) {
  * Firestore has no `onDisconnect`, so a closed tab leaves its presence behind.
  * The heartbeat's age is the only trustworthy answer — a flag alone would ring
  * the teacher's phone for a student who left twenty minutes ago.
+ *
+ * Aged against *our own* heartbeat rather than this machine's clock whenever
+ * there is one. Both stamps are written by the server, so the comparison holds
+ * however wrong the local clock is — and a laptop an hour fast used to mean the
+ * teacher was never rung at all, with nothing on screen to explain it. Our own
+ * beat is at most `PRESENCE_HEARTBEAT_MS` old, so this reads staleness a little
+ * late rather than never.
  */
-export function isPresent(readyAt: Call['teacherReadyAt']): boolean {
+export function isPresent(
+  readyAt: Call['teacherReadyAt'],
+  ourReadyAt?: Call['teacherReadyAt']
+): boolean {
   if (!readyAt) return false;
-  return Date.now() - readyAt.toMillis() < PRESENCE_STALE_MS;
+  const now = ourReadyAt ? ourReadyAt.toMillis() : Date.now();
+  return now - readyAt.toMillis() < PRESENCE_STALE_MS;
 }
 
 /**
@@ -95,6 +106,21 @@ export async function setPresence(
 
 export async function setCallStatus(callId: string, status: CallStatus): Promise<void> {
   await updateDoc(callRef(callId), { status, updatedAt: serverTimestamp() });
+}
+
+/**
+ * The student asking to be dialled again.
+ *
+ * Only the teacher may write an offer, so a student whose connection died had
+ * no way to ask for a new one — reloading the tab was the entire repertoire.
+ * `ringing` is the status that already meant "the teacher is being asked to
+ * start"; raising it from the student's side puts the prompt back on the
+ * teacher's screen without a new field, a rules change or a second offerer.
+ *
+ * It clears itself: the offer that answers it writes `connecting`.
+ */
+export async function requestRedial(callId: string): Promise<void> {
+  await setCallStatus(callId, 'ringing');
 }
 
 /**
@@ -157,11 +183,27 @@ export async function recordRoute(callId: string, route: ConnectionRoute): Promi
   await updateDoc(callRef(callId), { route, updatedAt: serverTimestamp() });
 }
 
+/**
+ * The lesson is through. Called every time a connection reaches `connected`,
+ * which includes every ICE restart and every screen-share renegotiation — so
+ * `startedAt` is written once and then left alone, or the recorded start time
+ * would creep forward to whenever the last blip happened to be.
+ *
+ * The read also makes the common case free: a call that is already `active`
+ * with a start time writes nothing at all.
+ */
 export async function markCallActive(callId: string): Promise<void> {
-  await updateDoc(callRef(callId), {
-    status: 'active' satisfies CallStatus,
-    startedAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  await runTransaction(db, async (tx) => {
+    const ref = callRef(callId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) return;
+    const data = snap.data();
+    if (data.status === 'active' && data.startedAt) return;
+    tx.update(ref, {
+      status: 'active' satisfies CallStatus,
+      ...(data.startedAt ? {} : { startedAt: serverTimestamp() }),
+      updatedAt: serverTimestamp(),
+    });
   });
 }
 
@@ -202,7 +244,22 @@ export function watchCall(
 ): Unsubscribe {
   return onSnapshot(
     callRef(callId),
-    (snap) => onCall(snap.exists() ? ({ id: snap.id, ...snap.data() } as Call) : null),
+    (snap) =>
+      onCall(
+        snap.exists()
+          ? ({
+              id: snap.id,
+              // Our own heartbeat is what the peer's is aged against, and by
+              // default an unacknowledged `serverTimestamp()` reads as `null`
+              // — so for the moment between writing a beat and the server
+              // confirming it, this browser had no timestamp of its own and
+              // fell back to the local clock it is trying not to trust.
+              // `previous` keeps the last confirmed beat instead, which is at
+              // most one heartbeat old.
+              ...snap.data({ serverTimestamps: 'previous' }),
+            } as Call)
+          : null
+      ),
     (err) => onError?.(err)
   );
 }

@@ -96,11 +96,14 @@ export default function CallPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const window = useMemo(
+  // Not named `window`: shadowing the global inside a component that reaches
+  // for `window.addEventListener` one refactor later is a trap worth not
+  // setting.
+  const doorState = useMemo(
     () => (booking ? callWindowState(booking, now) : null),
     [booking, now]
   );
-  const roomOpen = !!booking && !!role && isCallableBooking(booking) && window === 'open';
+  const roomOpen = !!booking && !!role && isCallableBooking(booking) && doorState === 'open';
 
   // Camera and microphone are only acquired once the room is genuinely open, so
   // an early arrival does not light up a webcam for ten minutes.
@@ -155,10 +158,10 @@ export default function CallPage() {
   if (!isCallableBooking(booking)) {
     return <Notice title={t('gate.notCallable.title')} body={t('gate.notCallable.body')} />;
   }
-  if (window === 'over') {
+  if (doorState === 'over') {
     return <Notice title={t('gate.over.title')} body={t('gate.over.body')} />;
   }
-  if (window === 'early') {
+  if (doorState === 'early') {
     const { opensAt } = joinWindow(booking);
     return (
       <Notice
@@ -249,13 +252,17 @@ export default function CallPage() {
             chatUnread={chat.unread}
             fullscreen={fullscreen}
             onToggleFullscreen={toggleFullscreen}
-            // Only the teacher offers, so only the teacher can re-dial — and
-            // only while the media is not through, which is the one case where
-            // there is anything to fix.
+            // Only the teacher offers, so the two sides repair differently:
+            // the teacher dials a fresh generation, the student can only ask
+            // to be dialled. Same button either way — from the inside a broken
+            // call is one problem, not two — and only while the media is not
+            // through, which is the one case where there is anything to fix.
             onRedial={
-              role === 'teacher' && !session.connected && !session.reconnecting
-                ? () => void session.redial()
-                : undefined
+              session.connected || session.reconnecting
+                ? undefined
+                : role === 'teacher'
+                  ? () => void session.redial()
+                  : () => void session.requestRedial()
             }
             onToggleMic={media.toggleMic}
             onToggleCam={media.toggleCam}

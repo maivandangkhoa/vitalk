@@ -93,6 +93,7 @@
     "connection-failed": "接続が切断されました。もう一度入室してください。",
     "offer-failed": "レッスンを開始できませんでした。",
     "answer-failed": "先生に接続できませんでした。",
+    "no-answer": "相手から応答がありません。もう一度発信してください。",
     "room-unavailable": "教室との接続が失われました。",
     "shareFailed": "画面共有を開始できませんでした。",
     "fullscreenFailed": "このブラウザでは全画面を利用できません。"

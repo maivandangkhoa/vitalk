@@ -123,6 +123,15 @@ export const ICE_RECOVERY_GRACE_MS = 4_000;
 /** How long the teacher's incoming-call prompt rings before auto-declining. */
 export const RING_TIMEOUT_MS = 30_000;
 
+/**
+ * How long a fresh dial waits for its answer before giving up.
+ *
+ * Without one the teacher waits forever: an offer nobody answers leaves ICE at
+ * `new` — checks never start, so `failed` never fires and none of the recovery
+ * paths that hang off it ever run. The stage just stays black.
+ */
+export const OFFER_TIMEOUT_MS = 30_000;
+
 /** The room opens this long before the lesson starts. */
 export const JOIN_WINDOW_BEFORE_MS = 10 * 60_000;
 

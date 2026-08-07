@@ -6,7 +6,9 @@ import {
   recordRoute,
   type CallRole,
 } from '@/lib/webrtc';
+import { relayOnly, timeline } from '@/lib/callDebug';
 import { useIceServers } from './useIceServers';
+import { useCallSenders } from './useCallSenders';
 import type { ConnectionRoute } from '@/types/call';
 
 export type IceTrouble = 'disconnected' | 'failed' | null;
@@ -26,72 +28,9 @@ interface UsePeerConnectionInput {
   onFatalError: (code: string) => void;
 }
 
-/**
- * How far the camera is scaled down while a screen is being shared. The screen
- * is what people are reading; the face becomes a thumbnail, the way it does in
- * every other conferencing tool. Without this the two videos compete for one
- * bandwidth estimate and the *screen* is what turns to mush.
- */
-const SHARING_CAMERA_ENCODING = {
-  scaleResolutionDownBy: 4,
-  maxBitrate: 150_000,
-  maxFramerate: 15,
-} as const;
-
 /** How long to keep asking the stats which route won, before giving up. */
 const ROUTE_READ_ATTEMPTS = 10;
 const ROUTE_READ_INTERVAL_MS = 1_000;
-
-/**
- * Force every candidate through TURN, for verifying the relay works at all.
- *
- * Read per connection rather than once at module load, so it can be turned on
- * by editing the address bar and re-dialling.
- */
-function relayOnly(): boolean {
-  if (typeof window === 'undefined') return false;
-  return new URLSearchParams(window.location.search).get('ice') === 'relay';
-}
-
-/**
- * A timeline of one connection, printed when the address bar says `?debug=call`.
- *
- * "The picture takes ten seconds" has half a dozen possible causes — gathering,
- * the answer coming back, connectivity checks, DTLS, the first keyframe — and
- * they are indistinguishable from the outside. Elapsed milliseconds since the
- * connection was built tell them apart in one glance.
- */
-function timeline(): (label: string) => void {
-  if (
-    typeof window === 'undefined' ||
-    new URLSearchParams(window.location.search).get('debug') !== 'call'
-  ) {
-    return () => {};
-  }
-  const startedAt = performance.now();
-  return (label: string) =>
-    console.log(`[call] +${Math.round(performance.now() - startedAt)}ms ${label}`);
-}
-
-async function setCameraEncoding(sender: RTCRtpSender, shrink: boolean) {
-  try {
-    const params = sender.getParameters();
-    // A sender that has not negotiated yet has no encodings to configure.
-    if (!params.encodings?.length) return;
-    const encoding = params.encodings[0];
-    if (shrink) {
-      Object.assign(encoding, SHARING_CAMERA_ENCODING);
-    } else {
-      encoding.scaleResolutionDownBy = 1;
-      delete encoding.maxBitrate;
-      delete encoding.maxFramerate;
-    }
-    await sender.setParameters(params);
-  } catch (err) {
-    // Quality tuning is not worth failing a call over.
-    console.error('usePeerConnection: setParameters failed', err);
-  }
-}
 
 export interface PeerConnection {
   /** Live connection, or null between attempts. */
@@ -119,6 +58,11 @@ export interface PeerConnection {
   teardown: () => void;
   /** Adopt the live connection for a new generation — an ICE restart. */
   adopt: (session: number) => RTCPeerConnection | null;
+  /**
+   * Give a connection that was built without TURN the credentials it missed.
+   * Does nothing when it already has them.
+   */
+  repairIceServers: () => Promise<void>;
   acceptCandidate: (candidate: RTCIceCandidateInit) => Promise<void>;
   drainCandidates: () => Promise<void>;
   /** Re-read what the peer is sending once a negotiation has settled. */
@@ -149,6 +93,19 @@ export function usePeerConnection({
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const sessionRef = useRef(-1);
+  /**
+   * Which `create` is the current one.
+   *
+   * Building a connection has to wait on the TURN credentials, and for the
+   * seconds that takes `pcRef` is still empty — so a second `create` starting
+   * in that window saw nothing to replace and built its own. Both then finished,
+   * one overwrote the other in `pcRef`, and the loser stayed open forever:
+   * holding the camera, gathering candidates and publishing them under the same
+   * generation as the winner, whose peer then rejected every one of them.
+   */
+  const createTokenRef = useRef(0);
+  /** The current connection was built on the STUN-only fallback, not real credentials. */
+  const degradedIceRef = useRef(false);
   const remoteDescSetRef = useRef(false);
   const candidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -162,13 +119,15 @@ export function usePeerConnection({
    * stream id, and identity alone read that as a second screen.
    */
   const cameraMidRef = useRef<string | null>(null);
-  // Which sender carries what. Looking senders up by `track.kind` breaks the
-  // moment there are two video senders — both would resolve to the same track.
-  const sendersRef = useRef<{
-    audio: RTCRtpSender | null;
-    camera: RTCRtpSender | null;
-    screen: RTCRtpSender | null;
-  }>({ audio: null, camera: null, screen: null });
+
+  // Everything this browser sends lives next door: which sender carries which
+  // track, and keeping the two in step with the camera and the shared screen.
+  const senders = useCallSenders({
+    pcRef,
+    localStream,
+    screenStream,
+    onNegotiationNeeded,
+  });
 
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [remoteScreenStream, setRemoteScreenStream] = useState<MediaStream | null>(null);
@@ -196,10 +155,15 @@ export function usePeerConnection({
     // moment a re-dial starts.
     pcRef.current?.close();
     pcRef.current = null;
+    // Abandons any `create` still waiting on its credentials. Without this a
+    // room that was torn down mid-dial got a live connection handed back to it
+    // a second later, with nothing left that would ever close it.
+    createTokenRef.current++;
+    degradedIceRef.current = false;
     candidateQueueRef.current = [];
     remoteDescSetRef.current = false;
     sessionRef.current = -1;
-    sendersRef.current = { audio: null, camera: null, screen: null };
+    senders.clear();
     primaryStreamIdRef.current = null;
     cameraMidRef.current = null;
     setRemoteStream(null);
@@ -210,7 +174,7 @@ export function usePeerConnection({
     setNegotiating(false);
     setIceTrouble(null);
     setReconnecting(false);
-  }, []);
+  }, [senders]);
 
   /**
    * Ask for the TURN credentials before anyone dials.
@@ -229,9 +193,19 @@ export function usePeerConnection({
     async (session: number) => {
       if (!callId || !uid) return null;
 
+      // Claimed before the first await, so a second call knows it has been
+      // superseded even though `pcRef` is empty for the whole wait.
+      const token = ++createTokenRef.current;
+      pcRef.current?.close();
+      pcRef.current = null;
+
       const mark = timeline();
-      const iceServers = await fetchIceServers();
+      const { iceServers, degraded } = await fetchIceServers();
       mark('ice servers');
+      // A newer attempt started while this one was waiting. Returning before
+      // the connection exists is what keeps it from being leaked.
+      if (createTokenRef.current !== token) return null;
+
       const pc = new RTCPeerConnection({
         iceServers,
         // Most pairs connect straight to each other, so a TURN server that is
@@ -241,6 +215,7 @@ export function usePeerConnection({
         // makes calls slower, so it must never be the default.
         ...(relayOnly() ? { iceTransportPolicy: 'relay' as const } : {}),
       });
+      degradedIceRef.current = degraded;
       pcRef.current = pc;
       candidateQueueRef.current = [];
       remoteDescSetRef.current = false;
@@ -250,28 +225,7 @@ export function usePeerConnection({
       setConnected(false);
       setNegotiating(true);
 
-      const senders = { audio: null, camera: null, screen: null } as {
-        audio: RTCRtpSender | null;
-        camera: RTCRtpSender | null;
-        screen: RTCRtpSender | null;
-      };
-      const local = localStreamRef.current;
-      if (local) {
-        for (const track of local.getTracks()) {
-          const sender = pc.addTrack(track, local);
-          if (track.kind === 'audio') senders.audio = sender;
-          else senders.camera = sender;
-        }
-      }
-      // A re-dial while the screen is already up must carry it into the new
-      // connection, or the share silently disappears on reconnect.
-      const screen = screenStreamRef.current;
-      const screenTrack = screen?.getVideoTracks()[0];
-      if (screen && screenTrack) {
-        senders.screen = pc.addTrack(screenTrack, screen);
-        if (senders.camera) void setCameraEncoding(senders.camera, true);
-      }
-      sendersRef.current = senders;
+      senders.attach(pc);
 
       // Two inbound videos are told apart by the m-line they arrive on: the
       // first video transceiver is the camera, any later one is a screen. The
@@ -322,6 +276,10 @@ export function usePeerConnection({
       pc.onicegatheringstatechange = () => mark(`gathering ${pc.iceGatheringState}`);
 
       pc.oniceconnectionstatechange = () => {
+        // Same guard the connection-state handler carries: a replaced attempt
+        // reporting `connected` would clear the reconnecting banner that
+        // belongs to the connection actually being repaired.
+        if (pcRef.current !== pc) return;
         const state = pc.iceConnectionState;
         mark(`ice ${state}`);
         setIceTrouble(state === 'disconnected' || state === 'failed' ? state : null);
@@ -371,7 +329,7 @@ export function usePeerConnection({
 
       return pc;
     },
-    [callId, uid, role, fetchIceServers, onFatalError]
+    [callId, uid, role, fetchIceServers, onFatalError, senders]
   );
 
   /**
@@ -407,6 +365,37 @@ export function usePeerConnection({
     return pc;
   }, []);
 
+  /**
+   * Hand a connection the TURN credentials it was built without.
+   *
+   * The credentials come from a Cloud Run function that is idle between
+   * lessons, so the first dial of the day can time out and fall back to STUN
+   * alone. That fallback used to be permanent: an ICE restart reuses the same
+   * connection, and nothing ever revisited its configuration — so a pair that
+   * needed a relay could never get one for the rest of the lesson, however
+   * quickly the credentials arrived afterwards.
+   *
+   * Only ever upgrades. A second failure leaves the connection exactly as it
+   * is rather than replacing working credentials with the fallback.
+   */
+  const repairIceServers = useCallback(async () => {
+    const pc = pcRef.current;
+    if (!pc || !degradedIceRef.current) return;
+    try {
+      const { iceServers, degraded } = await fetchIceServers();
+      if (degraded || pcRef.current !== pc) return;
+      pc.setConfiguration({
+        iceServers,
+        // Must match what the connection was created with — changing the
+        // policy on a live connection is rejected outright.
+        ...(relayOnly() ? { iceTransportPolicy: 'relay' as const } : {}),
+      });
+      degradedIceRef.current = false;
+    } catch (err) {
+      console.error('usePeerConnection: repairing ICE servers failed', err);
+    }
+  }, [fetchIceServers]);
+
   /** Feed a remote candidate, or hold it until there is a description to attach it to. */
   const acceptCandidate = useCallback(async (candidate: RTCIceCandidateInit) => {
     const pc = pcRef.current;
@@ -435,57 +424,6 @@ export function usePeerConnection({
     }
   }, []);
 
-  // Keep the outgoing tracks in step with the local stream. Switching camera or
-  // starting a screen share swaps a track inside the same stream, and
-  // `replaceTrack` applies that to a live connection without renegotiating.
-  const trackSignature = localStream
-    ? localStream
-        .getTracks()
-        .map((t) => t.id)
-        .join(',')
-    : '';
-  useEffect(() => {
-    const pc = pcRef.current;
-    if (!pc || !localStream) return;
-    // Addressed through the remembered senders rather than by kind: with a
-    // screen share running there are two video senders, and matching on kind
-    // would hand both of them the camera track.
-    const swap = (sender: RTCRtpSender | null, next: MediaStreamTrack | undefined) => {
-      if (!sender || !next || next === sender.track) return;
-      sender.replaceTrack(next).catch((err) =>
-        console.error('usePeerConnection: replaceTrack failed', err)
-      );
-    };
-    swap(sendersRef.current.audio, localStream.getAudioTracks()[0]);
-    swap(sendersRef.current.camera, localStream.getVideoTracks()[0]);
-  }, [trackSignature, localStream]);
-
-  /**
-   * Add or drop the screen as a second outgoing video. Both need a fresh offer,
-   * which is why this is only ever wired up for the side allowed to offer.
-   */
-  useEffect(() => {
-    const pc = pcRef.current;
-    if (!pc || pc.connectionState === 'closed') return;
-
-    const senders = sendersRef.current;
-    const screenTrack = screenStream?.getVideoTracks()[0];
-
-    if (screenStream && screenTrack && !senders.screen) {
-      senders.screen = pc.addTrack(screenTrack, screenStream);
-      if (senders.camera) void setCameraEncoding(senders.camera, true);
-      onNegotiationNeeded?.();
-      return;
-    }
-
-    if (!screenStream && senders.screen) {
-      pc.removeTrack(senders.screen);
-      senders.screen = null;
-      if (senders.camera) void setCameraEncoding(senders.camera, false);
-      onNegotiationNeeded?.();
-    }
-  }, [screenStream, onNegotiationNeeded]);
-
   useEffect(() => {
     return () => {
       pcRef.current?.close();
@@ -510,6 +448,7 @@ export function usePeerConnection({
     create,
     teardown,
     adopt,
+    repairIceServers,
     acceptCandidate,
     drainCandidates,
     reconcileRemoteMedia,

@@ -20,6 +20,20 @@ const FETCH_TIMEOUT_MS = 3_000;
 
 const STUN_ONLY: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
 
+export interface IceServersResult {
+  iceServers: RTCIceServer[];
+  /**
+   * The request failed or timed out and this is the local STUN-only fallback —
+   * not what the server would have answered.
+   *
+   * Worth telling apart from a real answer that happens to be STUN-only: a
+   * degraded set is stale the moment the credentials land, and a connection
+   * built on one can be upgraded in place rather than left without a relay for
+   * the rest of the lesson.
+   */
+  degraded: boolean;
+}
+
 /**
  * TURN credentials for one lesson, minted server-side and cached for as long as
  * they are valid.
@@ -37,12 +51,12 @@ export function useIceServers(bookingId: string | undefined) {
    */
   const inFlight = useRef<Promise<IceServersResponse> | null>(null);
 
-  return useCallback(async (): Promise<RTCIceServer[]> => {
-    if (!bookingId) return STUN_ONLY;
+  return useCallback(async (): Promise<IceServersResult> => {
+    if (!bookingId) return { iceServers: STUN_ONLY, degraded: true };
 
     const cached = cache.current;
     if (cached && cached.expiresAt - REFRESH_MARGIN_MS > Date.now()) {
-      return cached.servers;
+      return { iceServers: cached.servers, degraded: false };
     }
 
     try {
@@ -76,12 +90,14 @@ export function useIceServers(bookingId: string | undefined) {
           setTimeout(() => reject(new Error('ice-timeout')), FETCH_TIMEOUT_MS)
         ),
       ]);
-      return data.iceServers;
+      return { iceServers: data.iceServers, degraded: false };
     } catch (err) {
       // A call over STUN alone still works for most pairs, so a failure here
-      // degrades the connection rather than blocking the lesson outright.
+      // degrades the connection rather than blocking the lesson outright. The
+      // flag is what lets the connection be repaired once the credentials do
+      // arrive, instead of spending the whole lesson without a relay.
       console.error('useIceServers: falling back to STUN only', err);
-      return STUN_ONLY;
+      return { iceServers: STUN_ONLY, degraded: true };
     }
   }, [bookingId]);
 }

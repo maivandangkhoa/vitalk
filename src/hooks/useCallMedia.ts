@@ -194,6 +194,10 @@ export function useCallMedia(
       const next = media.getTracks()[0];
       if (kind === 'video') {
         next.enabled = camOn;
+        // Stopped, not just dropped: a camera parked by a replacement share is
+        // still live, and forgetting the reference leaves the webcam light on
+        // with nothing left that could ever turn it off.
+        cameraTrackRef.current?.stop();
         cameraTrackRef.current = null;
       } else {
         next.enabled = micOn;

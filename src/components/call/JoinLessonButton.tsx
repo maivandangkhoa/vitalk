@@ -29,10 +29,7 @@ export function JoinLessonButton({ booking, className }: JoinLessonButtonProps) 
   // room — offering them a button that leads to a locked door is worse than
   // offering nothing.
   const callable =
-    isCallableBooking(booking) &&
-    booking.platform === 'havitalk' &&
-    !!user &&
-    roleOf(booking, user.uid) !== null;
+    isCallableBooking(booking) && !!user && roleOf(booking, user.uid) !== null;
 
   useEffect(() => {
     if (!callable) return;

@@ -93,6 +93,7 @@
     "connection-failed": "Mất kết nối. Hãy thử vào lại.",
     "offer-failed": "Không bắt đầu được buổi học.",
     "answer-failed": "Không kết nối được với giáo viên.",
+    "no-answer": "Phía bên kia không trả lời. Hãy thử gọi lại.",
     "room-unavailable": "Mất liên lạc với lớp học.",
     "shareFailed": "Chưa bắt đầu được chia sẻ màn hình.",
     "fullscreenFailed": "Trình duyệt này không hỗ trợ toàn màn hình."
