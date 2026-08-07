@@ -53,6 +53,26 @@ function relayOnly(): boolean {
   return new URLSearchParams(window.location.search).get('ice') === 'relay';
 }
 
+/**
+ * A timeline of one connection, printed when the address bar says `?debug=call`.
+ *
+ * "The picture takes ten seconds" has half a dozen possible causes — gathering,
+ * the answer coming back, connectivity checks, DTLS, the first keyframe — and
+ * they are indistinguishable from the outside. Elapsed milliseconds since the
+ * connection was built tell them apart in one glance.
+ */
+function timeline(): (label: string) => void {
+  if (
+    typeof window === 'undefined' ||
+    new URLSearchParams(window.location.search).get('debug') !== 'call'
+  ) {
+    return () => {};
+  }
+  const startedAt = performance.now();
+  return (label: string) =>
+    console.log(`[call] +${Math.round(performance.now() - startedAt)}ms ${label}`);
+}
+
 async function setCameraEncoding(sender: RTCRtpSender, shrink: boolean) {
   try {
     const params = sender.getParameters();
@@ -209,7 +229,9 @@ export function usePeerConnection({
     async (session: number) => {
       if (!callId || !uid) return null;
 
+      const mark = timeline();
       const iceServers = await fetchIceServers();
+      mark('ice servers');
       const pc = new RTCPeerConnection({
         iceServers,
         // Most pairs connect straight to each other, so a TURN server that is
@@ -261,6 +283,7 @@ export function usePeerConnection({
         const incoming = event.streams[0];
         if (!incoming) return;
         const mid = event.transceiver.mid ?? null;
+        mark(`track ${event.track.kind} mid=${mid}`);
 
         if (event.track.kind === 'video') {
           if (cameraMidRef.current === null) cameraMidRef.current = mid;
@@ -296,8 +319,11 @@ export function usePeerConnection({
         );
       };
 
+      pc.onicegatheringstatechange = () => mark(`gathering ${pc.iceGatheringState}`);
+
       pc.oniceconnectionstatechange = () => {
         const state = pc.iceConnectionState;
+        mark(`ice ${state}`);
         setIceTrouble(state === 'disconnected' || state === 'failed' ? state : null);
         if (state === 'connected' || state === 'completed') setReconnecting(false);
       };
@@ -306,6 +332,7 @@ export function usePeerConnection({
         // A connection that has already been replaced still fires its last
         // events; letting them through would report the dead attempt's state.
         if (pcRef.current !== pc) return;
+        mark(`connection ${pc.connectionState}`);
         setConnected(pc.connectionState === 'connected');
         if (pc.connectionState === 'connected') {
           setConnecting(false);

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MicOff, VideoOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +11,8 @@ interface VideoTileProps {
    * pointed at is usually right at the edge.
    */
   contain?: boolean;
+  /** Fired the first time this element actually has a picture to show. */
+  onFirstFrame?: () => void;
   className?: string;
 }
 
@@ -18,19 +20,32 @@ interface VideoTileProps {
  * `srcObject` is a property, not an attribute, so React cannot set it from JSX
  * — every video element in the app needs this effect.
  */
-function VideoTile({ stream, muted, mirrored, contain, className }: VideoTileProps) {
+function VideoTile({
+  stream,
+  muted,
+  mirrored,
+  contain,
+  onFirstFrame,
+  className,
+}: VideoTileProps) {
   const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     if (el.srcObject !== stream) el.srcObject = stream;
+    // `autoPlay` alone is a request the browser may refuse — a remote tile
+    // carries sound, and autoplay with sound is blocked until the page has been
+    // interacted with. Asking explicitly (and again on every stream change)
+    // starts the picture that would otherwise sit black waiting for a click.
+    el.play().catch(() => undefined);
   }, [stream]);
 
   return (
     <video
       ref={ref}
       autoPlay
+      onLoadedData={onFirstFrame}
       // Without `playsInline` iOS Safari hijacks the video into its fullscreen
       // player the moment it starts, which ends the lesson layout.
       playsInline
@@ -83,6 +98,16 @@ export function VideoStage({
   // a fraction of its usual bitrate while this is on.
   const sharing = !!screenStream;
 
+  // A remote track exists from the moment the descriptions are exchanged, but
+  // no picture arrives until ICE and DTLS have finished — several seconds on a
+  // phone network. Showing the tile straight away meant staring at a black
+  // rectangle with a name on it, which reads as a call that has gone wrong.
+  // Remembered as the stream's id rather than a boolean, so a peer who
+  // reconnects is waited for again instead of inheriting the last one's frame.
+  const [framedId, setFramedId] = useState<string | null>(null);
+  const remoteId = remoteStream?.id ?? null;
+  const remoteReady = !!remoteId && framedId === remoteId;
+
   return (
     <div
       className="relative h-full w-full overflow-hidden rounded-2xl bg-neutral-900"
@@ -91,14 +116,18 @@ export function VideoStage({
       {sharing ? (
         <VideoTile stream={screenStream} contain muted />
       ) : remoteStream ? (
-        <VideoTile stream={remoteStream} />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center px-6 text-center">
+        <VideoTile stream={remoteStream} onFirstFrame={() => setFramedId(remoteId)} />
+      ) : null}
+
+      {/* Kept over the tile rather than instead of it: the video element has to
+          be mounted and playing for the first frame to ever arrive. */}
+      {!sharing && !remoteReady && (
+        <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
           <p className="text-sm text-neutral-400">{placeholder}</p>
         </div>
       )}
 
-      {(remoteStream || sharing) && (
+      {((remoteStream && remoteReady) || sharing) && (
         <div className="absolute top-3 left-3 rounded-lg bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
           {sharing ? screenLabel : peerName}
         </div>
