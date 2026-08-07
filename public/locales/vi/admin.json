@@ -34,6 +34,7 @@
     "save": "Lưu",
     "basicInfo": "Thông tin cơ bản",
     "name": "Tên",
+    "nameRequired": "Tên không được để trống",
     "age": "Tuổi",
     "location": "Địa điểm",
     "profileImageUrl": "URL ảnh hồ sơ",

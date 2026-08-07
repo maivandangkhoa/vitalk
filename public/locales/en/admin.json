@@ -34,6 +34,7 @@
     "save": "Save",
     "basicInfo": "Basic Info",
     "name": "Name",
+    "nameRequired": "Name can't be empty",
     "age": "Age",
     "location": "Location",
     "profileImageUrl": "Profile Image URL",

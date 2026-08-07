@@ -22,6 +22,7 @@ export default function AdminProfile() {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [location, setLocation] = useState('');
   const [profileImageUrl, setProfileImageUrl] = useState('');
@@ -42,6 +43,7 @@ export default function AdminProfile() {
         const snap = await getDoc(doc(db, 'teachers', teacherId));
         if (snap.exists()) {
           const data = snap.data();
+          setName(data.name || '');
           setAge(data.age || '');
           setLocation(data.location || '');
           setProfileImageUrl(data.profileImageUrl || '');
@@ -94,6 +96,11 @@ export default function AdminProfile() {
 
   const handleSave = async () => {
     if (!teacherId) return;
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      toast.error(t('profile.nameRequired'));
+      return;
+    }
     setSaving(true);
     try {
       const cleanOverrides: Partial<Record<AllowedDuration, number>> = {};
@@ -102,6 +109,7 @@ export default function AdminProfile() {
         if (typeof v === 'number' && v > 0) cleanOverrides[d] = v;
       }
       await setDoc(doc(db, 'teachers', teacherId), {
+        name: trimmedName,
         age,
         location,
         profileImageUrl,
@@ -162,6 +170,7 @@ export default function AdminProfile() {
         <Card>
           <CardContent className="space-y-4 pt-6">
             <h3 className="flex items-center gap-2 font-semibold"><span className="h-5 w-1 rounded-full bg-indigo-500" />{t('profile.basicInfo')}</h3>
+            <Field label={t('profile.name')} value={name} onChange={setName} />
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t('profile.age')} value={age} onChange={setAge} />
               <Field label={t('profile.location')} value={location} onChange={setLocation} />

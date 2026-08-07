@@ -34,6 +34,7 @@
     "save": "保存",
     "basicInfo": "基本信息",
     "name": "姓名",
+    "nameRequired": "姓名不能为空",
     "age": "年龄",
     "location": "所在地",
     "profileImageUrl": "头像 URL",

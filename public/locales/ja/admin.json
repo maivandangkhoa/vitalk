@@ -34,6 +34,7 @@
     "save": "保存",
     "basicInfo": "基本情報",
     "name": "名前",
+    "nameRequired": "名前を入力してください",
     "age": "年齢",
     "location": "所在地",
     "profileImageUrl": "プロフィール画像URL",
