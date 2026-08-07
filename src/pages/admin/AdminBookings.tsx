@@ -75,7 +75,7 @@ function AdminBookingCard({
               </Badge>
               <Badge className={paymentStatusColors[booking.paymentStatus] || ''}>
                 <DollarSign className="mr-0.5 h-3 w-3" />
-                {t(`bookings.${booking.paymentStatus}`)}
+                {t(`bookings.payment.${booking.paymentStatus}`)}
               </Badge>
             </div>
 

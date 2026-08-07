@@ -112,6 +112,7 @@ export function useCall({
     adopt,
     acceptCandidate,
     drainCandidates,
+    reconcileRemoteMedia,
     setConnecting,
     setReconnecting,
   } = peer;
@@ -406,6 +407,9 @@ export function useCall({
         await drainCandidates();
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
+        // Both descriptions are in place, so the transceivers now say what the
+        // teacher is really sending — including that a screen share has gone.
+        reconcileRemoteMedia();
         await publishAnswer(callId, { type: 'answer', sdp: answer.sdp ?? '' });
       } catch (err) {
         console.error('useCall: answering failed', err);
@@ -428,6 +432,7 @@ export function useCall({
     create,
     teardown,
     drainCandidates,
+    reconcileRemoteMedia,
     setConnecting,
     sessionRef,
     remoteDescSetRef,
@@ -458,6 +463,7 @@ export function useCall({
         await pc.setRemoteDescription(new RTCSessionDescription(answer));
         remoteDescSetRef.current = true;
         await drainCandidates();
+        reconcileRemoteMedia();
         negotiatingRef.current = false;
         // A share that was toggled while this offer was in flight gets its own
         // offer now, in order rather than on top.
@@ -476,6 +482,7 @@ export function useCall({
     call?.answer,
     call?.session,
     drainCandidates,
+    reconcileRemoteMedia,
     startCall,
     pcRef,
     sessionRef,

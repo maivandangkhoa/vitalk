@@ -84,6 +84,8 @@ export interface PeerConnection {
   adopt: (session: number) => RTCPeerConnection | null;
   acceptCandidate: (candidate: RTCIceCandidateInit) => Promise<void>;
   drainCandidates: () => Promise<void>;
+  /** Re-read what the peer is sending once a negotiation has settled. */
+  reconcileRemoteMedia: () => void;
   setConnecting: (value: boolean) => void;
   setReconnecting: (value: boolean) => void;
 }
@@ -293,6 +295,30 @@ export function usePeerConnection({
     [callId, uid, role, fetchIceServers, onFatalError]
   );
 
+  /**
+   * Re-read what the other side is actually sending, once a negotiation has
+   * settled.
+   *
+   * Dropping a screen share is `removeTrack` plus a re-offer, and that leaves
+   * the receiving track *muted*, not ended — so a screen that stopped kept its
+   * last black frame on the student's stage forever. The transceiver's
+   * `currentDirection` is the honest answer, and it is only trustworthy once
+   * both descriptions are in place, which is why this is called rather than
+   * wired to an event.
+   */
+  const reconcileRemoteMedia = useCallback(() => {
+    const pc = pcRef.current;
+    if (!pc) return;
+    const stillSharing = pc.getTransceivers().some(
+      (transceiver) =>
+        transceiver.receiver.track?.kind === 'video' &&
+        transceiver.mid !== cameraMidRef.current &&
+        (transceiver.currentDirection === 'sendrecv' ||
+          transceiver.currentDirection === 'recvonly')
+    );
+    if (!stillSharing) setRemoteScreenStream(null);
+  }, []);
+
   const adopt = useCallback((session: number) => {
     const pc = pcRef.current;
     if (!pc || pc.connectionState === 'closed') return null;
@@ -406,6 +432,7 @@ export function usePeerConnection({
     adopt,
     acceptCandidate,
     drainCandidates,
+    reconcileRemoteMedia,
     setConnecting,
     setReconnecting,
   };
