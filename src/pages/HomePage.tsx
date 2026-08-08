@@ -22,6 +22,7 @@ import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/sha
 import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
 import { useTeachers } from '@/hooks/useTeachers';
 import { usePublicReviews } from '@/hooks/useReviews';
+import { siteReviewStats } from '@/lib/reviewStats';
 import { pickLang } from '@/lib/multiLang';
 import { richTextToPlain } from '@/lib/richText';
 import type { Language } from '@/types';
@@ -51,23 +52,8 @@ export default function HomePage() {
     ? reviews.slice(0, 4).map((r) => ({ id: r.id, name: r.studentName, text: r.content, rating: r.rating }))
     : FALLBACK_REVIEWS_PREVIEW.map((r) => ({ ...r, id: r.name }));
 
-  // Hero stats used to be hardcoded at "362+" and "5.0", which nothing backed —
-  // a visitor could disprove the count by opening /reviews.
-  //
-  // The count is the reviews actually on the site. The rating cannot come from
-  // those same documents, though: italki's review endpoint carries no stars, so
-  // every imported review is stored at a flat 5 and averaging them would only
-  // measure the importer. teachers.rating holds italki's real per-teacher
-  // figure, weighted here by how many reviews each teacher accounts for.
-  const ratedTeachers = teachers.filter((t) => t.rating > 0 && t.totalReviews > 0);
-  const ratedReviewCount = ratedTeachers.reduce((sum, t) => sum + t.totalReviews, 0);
-  const averageRating =
-    ratedReviewCount > 0
-      ? (
-          ratedTeachers.reduce((sum, t) => sum + t.rating * t.totalReviews, 0) /
-          ratedReviewCount
-        ).toFixed(1)
-      : null;
+  // Shared with /reviews so the two pages cannot drift apart again.
+  const { reviewCount, averageRating } = siteReviewStats(teachers, reviews);
 
   // Carousel state
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -134,12 +120,12 @@ export default function HomePage() {
                 <span className="font-medium">{t('hero.stats.teachers', { count: teachers.length })}</span>
               </div>
             )}
-            {reviews.length > 0 && (
+            {reviewCount !== null && (
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100">
                   <Star className="h-4 w-4 text-amber-600" />
                 </div>
-                <span className="font-medium">{t('hero.stats.reviews', { count: reviews.length })}</span>
+                <span className="font-medium">{t('hero.stats.reviews', { count: reviewCount })}</span>
               </div>
             )}
             {averageRating && (

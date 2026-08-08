@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Quote, Loader2 } from 'lucide-react';
 import { usePublicReviews } from '@/hooks/useReviews';
+import { useTeachers } from '@/hooks/useTeachers';
+import { siteReviewStats } from '@/lib/reviewStats';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 
 // Fallback reviews from italki (shown when Firestore is empty)
@@ -40,14 +42,15 @@ function ReviewCard({ name, content, rating }: { name: string; content: string; 
 export default function ReviewsPage() {
   const { t } = useTranslation('common');
   const { reviews, loading } = usePublicReviews();
+  const { teachers } = useTeachers();
 
   const displayReviews = reviews.length > 0
     ? reviews.map((r) => ({ name: r.studentName, content: r.content, rating: r.rating }))
     : FALLBACK_REVIEWS;
 
-  const avgRating = displayReviews.length > 0
-    ? (displayReviews.reduce((sum, r) => sum + r.rating, 0) / displayReviews.length).toFixed(1)
-    : '5.0';
+  // Same numbers as the hero on `/`. This page used to hold its own copy — a
+  // literal 362 and a local average — which is how the two drifted apart.
+  const { reviewCount, averageRating } = siteReviewStats(teachers, reviews);
 
   return (
     <div className="px-4 py-16 md:py-24">
@@ -57,15 +60,30 @@ export default function ReviewsPage() {
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
             {t('reviews.subtitle')}
           </p>
-          <div className="mt-6 inline-flex items-center gap-3 rounded-2xl bg-white px-6 py-3 shadow-sm">
-            <div className="flex">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-              ))}
+          {averageRating && (
+            <div className="mt-6 inline-flex items-center gap-3 rounded-2xl bg-white px-6 py-3 shadow-sm">
+              <div className="flex">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    // Filled to match the score. These were five solid stars
+                    // whatever the number beside them said.
+                    className={
+                      i <= Math.round(Number(averageRating))
+                        ? 'h-5 w-5 fill-yellow-400 text-yellow-400'
+                        : 'h-5 w-5 text-zinc-300'
+                    }
+                  />
+                ))}
+              </div>
+              <span className="font-mono text-lg font-semibold">{averageRating}</span>
+              {reviewCount !== null && (
+                <span className="text-muted-foreground">
+                  {t('reviews.reviewCount', { count: reviewCount })}
+                </span>
+              )}
             </div>
-            <span className="font-mono text-lg font-semibold">{avgRating}</span>
-            <span className="text-muted-foreground">{t('reviews.reviewCount', { count: 362 })}</span>
-          </div>
+          )}
         </AnimatedSection>
 
         {loading ? (
