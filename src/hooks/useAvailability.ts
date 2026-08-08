@@ -126,38 +126,3 @@ export function useAvailability(teacherId: string, yearMonth: string) {
 
   return { availability, loading, saveAvailability };
 }
-
-export function useAvailableSlots(teacherId: string, yearMonth: string) {
-  const [slots, setSlots] = useState<Record<string, TimeSlot[]>>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!teacherId || !yearMonth) return;
-
-    const fetch = async () => {
-      setLoading(true);
-      try {
-        const snap = await getDoc(availabilityDocPath(teacherId, yearMonth));
-        if (snap.exists()) {
-          const data = snap.data() as MonthlyAvailability;
-          const available: Record<string, TimeSlot[]> = {};
-          for (const [date, daySlots] of Object.entries(data.slots)) {
-            const free = daySlots.filter((s) => !s.bookingId);
-            if (free.length > 0) {
-              available[date] = free;
-            }
-          }
-          setSlots(available);
-        } else {
-          setSlots({});
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetch();
-  }, [teacherId, yearMonth]);
-
-  return { slots, loading };
-}

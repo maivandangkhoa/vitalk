@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
+import { format } from 'date-fns';
 import { db } from '@/lib/firebase';
 import type { MonthlyAvailability } from '@/types';
 import type { TeacherProfile } from '@/types';
@@ -111,16 +112,27 @@ export function useAllTeachersAvailableSlots(
           }
         }
 
-        const today = new Date(new Date().toDateString());
+        // Slot times above are already in the user's timezone, and userTz comes
+        // from the browser itself, so plain local `now` is the right yardstick.
+        const now = new Date();
+        const today = new Date(now.toDateString());
+        const todayStr = format(now, 'yyyy-MM-dd');
+        const nowTime = format(now, 'HH:mm');
         const result: AggregatedSlots = {};
 
         for (const [date, slotMap] of Object.entries(aggregated)) {
           const dateObj = new Date(date + 'T00:00:00');
           if (dateObj < today) continue;
 
-          const sorted = Array.from(slotMap.values()).sort((a, b) =>
+          let sorted = Array.from(slotMap.values()).sort((a, b) =>
             a.startTime.localeCompare(b.startTime),
           );
+          // Dropping whole past days is not enough: on today itself, the hours
+          // that have already gone by were still offered. Both are zero-padded
+          // 24h "HH:mm", so a string compare is an ordering compare.
+          if (date === todayStr) {
+            sorted = sorted.filter((slot) => slot.startTime > nowTime);
+          }
           if (sorted.length > 0) {
             result[date] = sorted;
           }
