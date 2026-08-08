@@ -4,12 +4,15 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getUserRole } from '@/lib/auth';
 import { useAuthStore } from '@/stores/authStore';
+import { useAppUpdate } from '@/hooks/useAppUpdate';
 import { router } from '@/router';
 import { Toaster } from '@/components/ui/sonner';
 import '@/lib/i18n';
 
 export default function App() {
   const { setUser, setRole, setTeacherId, setLoading } = useAuthStore();
+
+  useAppUpdate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
