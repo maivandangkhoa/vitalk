@@ -8,6 +8,14 @@ import { MAX_MESSAGE_LENGTH } from '@/types/chat';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+/**
+ * The button in the right-hand slot is exactly as tall as the collapsed field
+ * beside it (`min-h-11` there, 44px), so the row reads as one control rather
+ * than a field with something smaller bolted on. 44px is also the smallest
+ * comfortable tap target on a phone.
+ */
+const SLOT = 'size-11 rounded-2xl';
+
 interface Props {
   conversationId: string;
   senderId: string;
@@ -87,6 +95,12 @@ export function MessageComposer({
     el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
   };
 
+  // What decides which button the right-hand slot shows. Deliberately "is there
+  // anything to send" rather than "is the field focused": on a phone the field
+  // stays focused for the whole conversation, so focus would park a disabled
+  // send button there and leave no way to reach the image picker at all.
+  const canSend = !!image || !!text.trim();
+
   if (blocked) {
     return (
       <div className="border-t border-zinc-100 bg-amber-50/60 px-4 py-3">
@@ -119,15 +133,6 @@ export function MessageComposer({
           className="hidden"
           onChange={(e) => pickImage(e.target.files?.[0])}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={t('chat.attachImage')}
-          onClick={() => fileRef.current?.click()}
-        >
-          <ImagePlus className="h-5 w-5" />
-        </Button>
 
         <textarea
           ref={textRef}
@@ -146,22 +151,45 @@ export function MessageComposer({
               void send();
             }
           }}
-          className="max-h-36 flex-1 resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm outline-none focus:border-indigo-400"
+          // `leading-6` pins the line box: without it the 16px floor that stops
+          // iOS zooming (see `index.css`) makes one line taller on a phone than
+          // on a desktop, and the button would only match on one of them.
+          className="max-h-36 min-h-11 flex-1 resize-none rounded-2xl border border-zinc-200 px-4 py-2 text-sm leading-6 outline-none focus:border-indigo-400"
         />
 
-        <Button
-          type="button"
-          size="icon"
-          aria-label={t('chat.send')}
-          disabled={sending || (!image && !text.trim())}
-          onClick={send}
-        >
-          {sending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-        </Button>
+        {/* One slot, two jobs. Empty composer means the only thing you can do
+            is attach, so that is the button you get; the moment there is
+            something to send it becomes send. Nothing here is ever disabled,
+            and the row is one button narrower than it used to be. */}
+        {canSend ? (
+          <Button
+            type="button"
+            size="icon"
+            className={SLOT}
+            aria-label={t('chat.send')}
+            disabled={sending}
+            onClick={send}
+          >
+            {/* `size-*` on purpose: the button's own `[&_svg]` rule only leaves
+                an icon alone when the class name says `size-`. */}
+            {sending ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Send className="size-5" />
+            )}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={SLOT}
+            aria-label={t('chat.attachImage')}
+            onClick={() => fileRef.current?.click()}
+          >
+            <ImagePlus className="size-5" />
+          </Button>
+        )}
       </div>
     </div>
   );
