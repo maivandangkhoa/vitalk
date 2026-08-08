@@ -36,3 +36,6 @@ firebase-auth.json
 # copies of Caddy's private key. Only the .example is tracked.
 infrastructure/coturn/turnserver.conf
 infrastructure/coturn/certs/
+
+# Claude Code local settings (per-machine)
+.claude/settings.local.json
