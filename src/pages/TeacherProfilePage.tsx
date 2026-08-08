@@ -7,7 +7,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MessageTeacherButton } from '@/components/chat/MessageTeacherButton';
 import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
+import { TeacherRichText } from '@/components/teachers/TeacherRichText';
 import { Star, MapPin, GraduationCap, Calendar, Loader2 } from 'lucide-react';
+import { pickLang } from '@/lib/multiLang';
 import type { Language } from '@/types';
 
 function toEmbedUrl(url: string): string | null {
@@ -63,8 +65,8 @@ export default function TeacherProfilePage() {
     );
   }
 
-  const bio = teacher.bio?.[lang] || teacher.bio?.en || '';
-  const teachingStyle = teacher.teachingStyle?.[lang] || teacher.teachingStyle?.en || '';
+  const bio = pickLang(teacher.bio, lang);
+  const teachingStyle = pickLang(teacher.teachingStyle, lang);
   const initials = teacher.name
     .split(' ')
     .map((n) => n[0])
@@ -155,9 +157,7 @@ export default function TeacherProfilePage() {
                   <GraduationCap className="h-6 w-6 text-indigo-500" />
                   {t('aboutMe')}
                 </h2>
-                <div className="whitespace-pre-line leading-relaxed text-muted-foreground">
-                  {bio}
-                </div>
+                <TeacherRichText html={bio} />
               </CardContent>
             </Card>
           </AnimatedSection>
@@ -172,9 +172,7 @@ export default function TeacherProfilePage() {
                   <Calendar className="h-6 w-6 text-indigo-500" />
                   {t('teachingStyle')}
                 </h2>
-                <div className="whitespace-pre-line leading-relaxed text-muted-foreground">
-                  {teachingStyle}
-                </div>
+                <TeacherRichText html={teachingStyle} />
               </CardContent>
             </Card>
           </AnimatedSection>

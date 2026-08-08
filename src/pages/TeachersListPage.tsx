@@ -6,6 +6,7 @@ import { AnimatedSection } from '@/components/shared/motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
+import { TeacherRichText } from '@/components/teachers/TeacherRichText';
 import { MessageTeacherButton } from '@/components/chat/MessageTeacherButton';
 import {
   Star,
@@ -14,6 +15,7 @@ import {
   Calendar,
   Loader2,
 } from 'lucide-react';
+import { pickLang } from '@/lib/multiLang';
 import type { Language } from '@/types';
 import type { TeacherProfile } from '@/types/profile';
 
@@ -41,9 +43,8 @@ function TeacherFullCard({ teacher, lang }: { teacher: TeacherProfile; lang: Lan
   const { reviews } = usePublicReviews(teacher.id);
   const recentReviews = reviews.slice(0, 5);
 
-  const bio = teacher.bio?.[lang] || teacher.bio?.en || '';
-  const teachingStyle =
-    teacher.teachingStyle?.[lang] || teacher.teachingStyle?.en || '';
+  const bio = pickLang(teacher.bio, lang);
+  const teachingStyle = pickLang(teacher.teachingStyle, lang);
   const initials = teacher.name
     .split(' ')
     .map((n) => n[0])
@@ -135,9 +136,7 @@ function TeacherFullCard({ teacher, lang }: { teacher: TeacherProfile; lang: Lan
                   <GraduationCap className="h-6 w-6 text-indigo-500" />
                   {t('aboutMe')}
                 </h3>
-                <div className="whitespace-pre-line leading-relaxed text-muted-foreground">
-                  {bio}
-                </div>
+                <TeacherRichText html={bio} />
               </CardContent>
             </Card>
           </div>
@@ -152,9 +151,7 @@ function TeacherFullCard({ teacher, lang }: { teacher: TeacherProfile; lang: Lan
                   <Calendar className="h-6 w-6 text-indigo-500" />
                   {t('teachingStyle')}
                 </h3>
-                <div className="whitespace-pre-line leading-relaxed text-muted-foreground">
-                  {teachingStyle}
-                </div>
+                <TeacherRichText html={teachingStyle} />
               </CardContent>
             </Card>
           </div>

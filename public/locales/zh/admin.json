@@ -48,7 +48,30 @@
     "hourlyRateHint": "每 60 分钟的基础美元价格，其他时长会按下方倍率计算。",
     "priceTable": "自动计算的价格（USD）",
     "derived": "默认",
-    "overridePlaceholder": "覆盖（可选）"
+    "overridePlaceholder": "覆盖（可选）",
+    "bold": "加粗",
+    "italic": "斜体",
+    "bulletList": "项目符号列表",
+    "numberedList": "编号列表",
+    "insertImage": "插入图片",
+    "imageUrlPlaceholder": "粘贴图片链接...",
+    "imageUrlInsecure": "图片链接必须以 https:// 开头",
+    "imageTooLarge": "图片必须小于 10MB",
+    "close": "关闭",
+    "imageSize": {
+      "sm": "小",
+      "md": "中",
+      "full": "整宽"
+    },
+    "preview": "预览",
+    "backToEdit": "返回编辑",
+    "previewFallback": "该语言为空，使用此语言的访客将看到下面的备用内容。",
+    "previewEmpty": "暂无内容可显示 — 尚未填写任何语言。",
+    "previewCaption": "与教师页面简介卡片的宽度和字号一致。",
+    "underline": "下划线",
+    "alignLeft": "左对齐",
+    "alignCenter": "居中对齐",
+    "alignRight": "右对齐"
   },
   "settings": {
     "save": "保存",

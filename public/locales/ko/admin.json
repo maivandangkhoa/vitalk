@@ -48,7 +48,30 @@
     "hourlyRateHint": "60분 기준 USD 기본 요율입니다. 다른 시간은 아래 배수로 계산됩니다.",
     "priceTable": "자동 계산 가격 (USD)",
     "derived": "기본값",
-    "overridePlaceholder": "재정의 (선택)"
+    "overridePlaceholder": "재정의 (선택)",
+    "bold": "굵게",
+    "italic": "기울임",
+    "bulletList": "글머리 기호 목록",
+    "numberedList": "번호 매기기 목록",
+    "insertImage": "이미지 삽입",
+    "imageUrlPlaceholder": "이미지 URL 붙여넣기...",
+    "imageUrlInsecure": "이미지 URL은 https:// 로 시작해야 합니다",
+    "imageTooLarge": "이미지는 10MB 미만이어야 합니다",
+    "close": "닫기",
+    "imageSize": {
+      "sm": "작게",
+      "md": "중간",
+      "full": "전체 너비"
+    },
+    "preview": "미리보기",
+    "backToEdit": "편집으로 돌아가기",
+    "previewFallback": "이 언어는 비어 있어, 해당 언어 방문자에게는 아래 대체 내용이 표시됩니다.",
+    "previewEmpty": "표시할 내용이 없습니다 — 아직 어떤 언어도 입력되지 않았습니다.",
+    "previewCaption": "강사 페이지의 소개 카드와 동일한 너비 및 글자 크기입니다.",
+    "underline": "밑줄",
+    "alignLeft": "왼쪽 정렬",
+    "alignCenter": "가운데 정렬",
+    "alignRight": "오른쪽 정렬"
   },
   "settings": {
     "save": "저장",

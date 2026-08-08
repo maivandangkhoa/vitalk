@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,11 +10,29 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
 import { AnimatedSection } from '@/components/shared/motion';
+import { isRichTextEmpty, toRichHtml } from '@/lib/richText';
+import { pickLang } from '@/lib/multiLang';
 import type { Language } from '@/types';
 import { ALLOWED_DURATIONS, DEFAULT_HOURLY_RATE_USD, DURATION_MULTIPLIERS, type AllowedDuration } from '@/lib/constants';
 
+const RichTextField = lazy(() => import('@/components/admin/RichTextField'));
+
 const LANGS: Language[] = ['en', 'ko', 'zh', 'ja', 'vi'];
 const LANG_LABELS: Record<Language, string> = { en: 'English', ko: '한국어', zh: '中文', ja: '日本語', vi: 'Tiếng Việt' };
+
+/** Bio/teaching style were plain textareas before, so old rows arrive as text. */
+function toRichMultiLang(value: Partial<Record<Language, string>>): Record<Language, string> {
+  const out: Record<Language, string> = { en: '', vi: '', ko: '', zh: '', ja: '' };
+  for (const lang of LANGS) out[lang] = toRichHtml(value[lang]);
+  return out;
+}
+
+/** Store '' rather than the '<p></p>' an untouched editor serialises. */
+function dropEmptyLangs(value: Record<Language, string>): Record<Language, string> {
+  const out: Record<Language, string> = { en: '', vi: '', ko: '', zh: '', ja: '' };
+  for (const lang of LANGS) out[lang] = isRichTextEmpty(value[lang]) ? '' : value[lang];
+  return out;
+}
 
 export default function AdminProfile() {
   const { t } = useTranslation('admin');
@@ -49,8 +67,8 @@ export default function AdminProfile() {
           setLocation(data.location || '');
           setProfileImageUrl(data.profileImageUrl || '');
           setVideoIntroUrl(data.videoIntroUrl || '');
-          if (data.bio) setBio(data.bio);
-          if (data.teachingStyle) setTeachingStyle(data.teachingStyle);
+          if (data.bio) setBio(toRichMultiLang(data.bio));
+          if (data.teachingStyle) setTeachingStyle(toRichMultiLang(data.teachingStyle));
           const rate = typeof data.hourlyRate === 'number'
             ? data.hourlyRate
             : typeof data.lessonPrice === 'number' && data.lessonPrice > 0
@@ -115,8 +133,8 @@ export default function AdminProfile() {
         location,
         profileImageUrl,
         videoIntroUrl,
-        bio,
-        teachingStyle,
+        bio: dropEmptyLangs(bio),
+        teachingStyle: dropEmptyLangs(teachingStyle),
         hourlyRate,
         lessonPriceOverrides: cleanOverrides,
         updatedAt: serverTimestamp(),
@@ -315,18 +333,24 @@ function MultiLangTextarea({ value, onChange }: {
         {LANGS.map((lang) => (
           <TabsTrigger key={lang} value={lang}>
             {LANG_LABELS[lang]}
-            {value[lang]?.trim() && <span className="ml-1 text-xs text-emerald-500">*</span>}
+            {!isRichTextEmpty(value[lang]) && <span className="ml-1 text-xs text-emerald-500">*</span>}
           </TabsTrigger>
         ))}
       </TabsList>
       {LANGS.map((lang) => (
         <TabsContent key={lang} value={lang} className="mt-3">
-          <textarea
-            value={value[lang]}
-            onChange={(e) => onChange(lang, e.target.value)}
-            rows={12}
-            className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-          />
+          {/* Only the open tab mounts an editor — otherwise this page would
+              spin up ten Tiptap instances (5 languages × 2 fields). */}
+          {lang === active && (
+            <Suspense fallback={<div className="h-72 animate-pulse rounded-xl bg-muted/40" />}>
+              <RichTextField
+                content={value[lang] || ''}
+                onChange={(html) => onChange(lang, html)}
+                // Exactly what a visitor on this language sees, fallback included.
+                previewHtml={pickLang(value, lang)}
+              />
+            </Suspense>
+          )}
         </TabsContent>
       ))}
     </Tabs>

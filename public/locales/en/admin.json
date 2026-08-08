@@ -48,7 +48,30 @@
     "hourlyRateHint": "Base USD rate per 60 min. Other durations scale by the multiplier shown below.",
     "priceTable": "Auto-derived prices (USD)",
     "derived": "Default",
-    "overridePlaceholder": "Override (optional)"
+    "overridePlaceholder": "Override (optional)",
+    "bold": "Bold",
+    "italic": "Italic",
+    "bulletList": "Bullet list",
+    "numberedList": "Numbered list",
+    "insertImage": "Insert image",
+    "imageUrlPlaceholder": "Paste image URL...",
+    "imageUrlInsecure": "Image URL must start with https://",
+    "imageTooLarge": "Image must be under 10MB",
+    "close": "Close",
+    "imageSize": {
+      "sm": "Small",
+      "md": "Medium",
+      "full": "Full width"
+    },
+    "preview": "Preview",
+    "backToEdit": "Back to editing",
+    "previewFallback": "This language is empty, so visitors reading it see the fallback shown below.",
+    "previewEmpty": "Nothing to show yet — no language has been filled in.",
+    "previewCaption": "Same width and text size as the bio card on the teacher page.",
+    "underline": "Underline",
+    "alignLeft": "Align left",
+    "alignCenter": "Align center",
+    "alignRight": "Align right"
   },
   "settings": {
     "save": "Save",

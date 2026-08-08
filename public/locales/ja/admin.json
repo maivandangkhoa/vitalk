@@ -48,7 +48,30 @@
     "hourlyRateHint": "60分あたりの基本USD料金。他の時間は下の倍率で計算されます。",
     "priceTable": "自動計算価格 (USD)",
     "derived": "デフォルト",
-    "overridePlaceholder": "上書き (任意)"
+    "overridePlaceholder": "上書き (任意)",
+    "bold": "太字",
+    "italic": "斜体",
+    "bulletList": "箇条書き",
+    "numberedList": "番号付きリスト",
+    "insertImage": "画像を挿入",
+    "imageUrlPlaceholder": "画像URLを貼り付け...",
+    "imageUrlInsecure": "画像URLは https:// で始まる必要があります",
+    "imageTooLarge": "画像は10MB未満にしてください",
+    "close": "閉じる",
+    "imageSize": {
+      "sm": "小",
+      "md": "中",
+      "full": "全幅"
+    },
+    "preview": "プレビュー",
+    "backToEdit": "編集に戻る",
+    "previewFallback": "この言語は空のため、この言語の訪問者には下のフォールバックが表示されます。",
+    "previewEmpty": "表示するものがありません — まだどの言語も入力されていません。",
+    "previewCaption": "講師ページの自己紹介カードと同じ幅・文字サイズです。",
+    "underline": "下線",
+    "alignLeft": "左揃え",
+    "alignCenter": "中央揃え",
+    "alignRight": "右揃え"
   },
   "settings": {
     "save": "保存",

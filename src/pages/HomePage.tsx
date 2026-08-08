@@ -21,6 +21,8 @@ import { AnimatedSection, AnimatePresence, motion, StaggerContainer, StaggerItem
 import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
 import { useTeachers } from '@/hooks/useTeachers';
 import { usePublicReviews } from '@/hooks/useReviews';
+import { pickLang } from '@/lib/multiLang';
+import { richTextToPlain } from '@/lib/richText';
 import type { Language } from '@/types';
 
 const FALLBACK_REVIEWS_PREVIEW = [
@@ -208,7 +210,9 @@ export default function HomePage() {
                 <AnimatePresence mode="wait" custom={direction}>
                   {(() => {
                     const teacher = teachers[currentIndex];
-                    const bio = teacher.bio?.[lang] || teacher.bio?.en || '';
+                    // Flattened to text on purpose: the carousel clamps to 3
+                    // lines, which images and block markup would break.
+                    const bio = richTextToPlain(pickLang(teacher.bio, lang));
                     const initials = teacher.name
                       .split(' ')
                       .map((n) => n[0])
