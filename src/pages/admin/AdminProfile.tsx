@@ -6,9 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Loader2, Upload, Users2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
-import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
+import { db } from '@/lib/firebase';
+import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
+import { TeacherSelector } from '@/components/admin/TeacherSelector';
+import { TimezoneSelect } from '@/components/admin/TimezoneSelect';
+import { useTeacherSelector } from '@/hooks/useTeacherSelector';
 import { AnimatedSection } from '@/components/shared/motion';
 import { isRichTextEmpty, toRichHtml } from '@/lib/richText';
 import { pickLang } from '@/lib/multiLang';
@@ -44,6 +46,7 @@ export default function AdminProfile() {
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [location, setLocation] = useState('');
+  const [timezone, setTimezone] = useState('');
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [videoIntroUrl, setVideoIntroUrl] = useState('');
   const [bio, setBio] = useState<Record<Language, string>>({ en: '', vi: '', ko: '', zh: '', ja: '' });
@@ -65,6 +68,7 @@ export default function AdminProfile() {
           setName(data.name || '');
           setAge(data.age || '');
           setLocation(data.location || '');
+          setTimezone(data.timezone || '');
           setProfileImageUrl(data.profileImageUrl || '');
           setVideoIntroUrl(data.videoIntroUrl || '');
           if (data.bio) setBio(toRichMultiLang(data.bio));
@@ -98,11 +102,11 @@ export default function AdminProfile() {
     }
     setUploadingImage(true);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const filePath = `teacher-profiles/${Date.now()}.${ext}`;
-      const storageRef = ref(storage, filePath);
-      const snapshot = await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(snapshot.ref);
+      const url = await uploadPublicImage({
+        dir: 'teacher-profiles',
+        file,
+        maxDim: MAX_DIM.avatar,
+      });
       setProfileImageUrl(url);
       toast.success(t('teachers.imageUploaded'));
     } catch {
@@ -131,6 +135,7 @@ export default function AdminProfile() {
         name: trimmedName,
         age,
         location,
+        timezone,
         profileImageUrl,
         videoIntroUrl,
         bio: dropEmptyLangs(bio),
@@ -193,6 +198,16 @@ export default function AdminProfile() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t('profile.age')} value={age} onChange={setAge} />
               <Field label={t('profile.location')} value={location} onChange={setLocation} />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">{t('teachers.timezone')}</label>
+              <TimezoneSelect value={timezone} onChange={setTimezone} />
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t(
+                  'profile.timezoneHint',
+                  'Your availability is stored in this zone and converted before a student sees it. Leaving it unset shows the wrong times to anyone in another country.'
+                )}
+              </p>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium">{t('profile.profileImageUrl')}</label>

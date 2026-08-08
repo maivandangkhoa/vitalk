@@ -72,7 +72,8 @@
     "alignLeft": "左对齐",
     "alignCenter": "居中对齐",
     "alignRight": "右对齐",
-    "langHint": "学生浏览网站时会看到对应语言的内容。绿色 * 表示该语言已有内容。"
+    "langHint": "学生浏览网站时会看到对应语言的内容。绿色 * 表示该语言已有内容。",
+    "timezoneHint": "您的可授课时间以此时区保存，并在学生查看前完成转换。留空会让其他国家的学生看到错误的时间。"
   },
   "settings": {
     "save": "保存",
@@ -278,7 +279,10 @@
     "selectLanguage": "选择语言",
     "levelNative": "母语（教学）",
     "levelLabel": "等级",
-    "addLanguage": "添加语言"
+    "addLanguage": "添加语言",
+    "timezonePlaceholder": "选择时区",
+    "timezoneCommon": "常用",
+    "timezoneAll": "所有时区"
   },
   "migration": {
     "title": "数据迁移",

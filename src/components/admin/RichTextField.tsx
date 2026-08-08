@@ -3,8 +3,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect, useRef, useState } from 'react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
+import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -161,11 +160,14 @@ export default function RichTextField({
     }
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const rand = Math.random().toString(36).slice(2, 8);
-      const storageRef = ref(storage, `teacher-profiles/bio-${Date.now()}-${rand}.${ext}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      insertImage(await getDownloadURL(snapshot.ref));
+      insertImage(
+        await uploadPublicImage({
+          dir: 'teacher-profiles',
+          file,
+          maxDim: MAX_DIM.article,
+          namePrefix: 'bio',
+        })
+      );
       toast.success(t('teachers.imageUploaded'));
     } catch {
       toast.error(t('teachers.imageUploadFailed'));

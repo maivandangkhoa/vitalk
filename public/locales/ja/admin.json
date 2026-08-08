@@ -72,7 +72,8 @@
     "alignLeft": "左揃え",
     "alignCenter": "中央揃え",
     "alignRight": "右揃え",
-    "langHint": "受講者はサイトを閲覧している言語の内容を見ます。緑色の * は内容が入っている言語です。"
+    "langHint": "受講者はサイトを閲覧している言語の内容を見ます。緑色の * は内容が入っている言語です。",
+    "timezoneHint": "空き時間はこのタイムゾーンで保存され、生徒に表示される前に変換されます。未設定のままだと他国の生徒に誤った時刻が表示されます。"
   },
   "settings": {
     "save": "保存",
@@ -278,7 +279,10 @@
     "selectLanguage": "言語を選択",
     "levelNative": "ネイティブ（指導）",
     "levelLabel": "レベル",
-    "addLanguage": "言語を追加"
+    "addLanguage": "言語を追加",
+    "timezonePlaceholder": "タイムゾーンを選択",
+    "timezoneCommon": "よく使う",
+    "timezoneAll": "すべてのタイムゾーン"
   },
   "migration": {
     "title": "データ移行",

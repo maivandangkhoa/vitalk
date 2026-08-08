@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   collection,
   query,
@@ -16,26 +16,27 @@ import type { AppNotification } from '@/types';
 
 const PAGE_SIZE = 30;
 
+/** A snapshot, tagged with the account it belongs to. */
+interface Feed {
+  uid: string;
+  items: AppNotification[];
+}
+
 export function useNotifications() {
   const { user } = useAuthStore();
-  const [items, setItems] = useState<AppNotification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [feed, setFeed] = useState<Feed | null>(null);
 
   // Everyone signed in now has a feed — students receive chat notifications
   // even though bookings only ever notify teachers and admins.
   const eligible = !!user;
 
   useEffect(() => {
-    if (!eligible || !user) {
-      setItems([]);
-      setLoading(false);
-      return;
-    }
+    if (!eligible || !user) return;
+    const uid = user.uid;
 
-    setLoading(true);
     const q = query(
       collection(db, 'notifications'),
-      where('userId', '==', user.uid),
+      where('userId', '==', uid),
       orderBy('createdAt', 'desc'),
       limit(PAGE_SIZE)
     );
@@ -43,21 +44,28 @@ export function useNotifications() {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setItems(
-          snap.docs.map(
+        setFeed({
+          uid,
+          items: snap.docs.map(
             (d) => ({ id: d.id, ...d.data() }) as AppNotification
-          )
-        );
-        setLoading(false);
+          ),
+        });
       },
       (err) => {
         console.error('useNotifications snapshot error', err);
-        setLoading(false);
+        setFeed({ uid, items: [] });
       }
     );
 
     return () => unsub();
   }, [user, eligible]);
+
+  // Tagging the feed with its uid means "loading" and "empty" are derived from
+  // whose data we are holding, rather than written back by the effect. Signing
+  // out or switching account therefore cannot leak the previous user's feed.
+  const current = user && feed?.uid === user.uid ? feed : null;
+  const items = useMemo(() => current?.items ?? [], [current]);
+  const loading = eligible && !current;
 
   const unreadCount = items.filter((n) => !n.read).length;
 

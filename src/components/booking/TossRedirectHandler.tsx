@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,37 +15,48 @@ export default function TossRedirectHandler() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const { confirmPayment } = useTossPayment();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [errorMsg, setErrorMsg] = useState('');
-
   const tossStatus = searchParams.get('toss');
   const paymentKey = searchParams.get('paymentKey');
   const orderId = searchParams.get('orderId');
   const amount = searchParams.get('amount');
   const bookingId = searchParams.get('bookingId');
 
+  // A failed redirect is fully described by the URL, so it is the initial state
+  // rather than something an effect writes back a render later.
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(() =>
+    tossStatus === 'fail' ? 'error' : 'loading'
+  );
+  const [errorMsg, setErrorMsg] = useState(() =>
+    tossStatus === 'fail' ? searchParams.get('message') || 'Payment failed' : ''
+  );
+
+  // Confirmation must happen exactly once. The effect's dependencies are now
+  // honest, which means it can re-run — and charging twice is not an option.
+  const confirmed = useRef(false);
+
   useEffect(() => {
-    if (tossStatus === 'success' && paymentKey && orderId && amount && bookingId) {
-      confirmPayment({
-        paymentKey,
-        orderId,
-        amount: Number(amount),
-        bookingId,
-      })
-        .then(() => {
-          setStatus('success');
-          // Clear search params
-          setSearchParams({});
-        })
-        .catch((err) => {
-          setStatus('error');
-          setErrorMsg(err instanceof Error ? err.message : 'Payment confirmation failed');
-        });
-    } else if (tossStatus === 'fail') {
-      setStatus('error');
-      setErrorMsg(searchParams.get('message') || 'Payment failed');
+    if (confirmed.current) return;
+    if (tossStatus !== 'success' || !paymentKey || !orderId || !amount || !bookingId) {
+      return;
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    confirmed.current = true;
+
+    confirmPayment({
+      paymentKey,
+      orderId,
+      amount: Number(amount),
+      bookingId,
+    })
+      .then(() => {
+        setStatus('success');
+        // Clear search params
+        setSearchParams({});
+      })
+      .catch((err) => {
+        setStatus('error');
+        setErrorMsg(err instanceof Error ? err.message : 'Payment confirmation failed');
+      });
+  }, [tossStatus, paymentKey, orderId, amount, bookingId, confirmPayment, setSearchParams]);
 
   if (status === 'loading') {
     return (

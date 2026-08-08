@@ -72,7 +72,8 @@
     "alignLeft": "Align left",
     "alignCenter": "Align center",
     "alignRight": "Align right",
-    "langHint": "Students see this in whatever language they browse the site in. The green * marks languages that already have content."
+    "langHint": "Students see this in whatever language they browse the site in. The green * marks languages that already have content.",
+    "timezoneHint": "Your availability is stored in this zone and converted before a student sees it. Leaving it unset shows the wrong times to anyone in another country."
   },
   "settings": {
     "save": "Save",
@@ -278,7 +279,10 @@
     "selectLanguage": "Select language",
     "levelNative": "Native (Teaches)",
     "levelLabel": "Level",
-    "addLanguage": "Add language"
+    "addLanguage": "Add language",
+    "timezonePlaceholder": "Select a timezone",
+    "timezoneCommon": "Common",
+    "timezoneAll": "All timezones"
   },
   "migration": {
     "title": "Data Migration",

@@ -72,7 +72,8 @@
     "alignLeft": "Canh trái",
     "alignCenter": "Canh giữa",
     "alignRight": "Canh phải",
-    "langHint": "Học viên xem trang bằng ngôn ngữ nào thì thấy bản đó. Dấu * xanh là ngôn ngữ đã có nội dung."
+    "langHint": "Học viên xem trang bằng ngôn ngữ nào thì thấy bản đó. Dấu * xanh là ngôn ngữ đã có nội dung.",
+    "timezoneHint": "Lịch rảnh của bạn được lưu theo múi giờ này rồi quy đổi trước khi học viên nhìn thấy. Bỏ trống sẽ hiện sai giờ với người ở nước khác."
   },
   "settings": {
     "save": "Lưu",
@@ -278,7 +279,10 @@
     "selectLanguage": "Chọn ngôn ngữ",
     "levelNative": "Bản ngữ (Dạy)",
     "levelLabel": "Cấp",
-    "addLanguage": "Thêm ngôn ngữ"
+    "addLanguage": "Thêm ngôn ngữ",
+    "timezonePlaceholder": "Chọn múi giờ",
+    "timezoneCommon": "Thường dùng",
+    "timezoneAll": "Tất cả múi giờ"
   },
   "migration": {
     "title": "Di chuyển dữ liệu",

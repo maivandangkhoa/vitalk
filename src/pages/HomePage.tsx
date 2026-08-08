@@ -17,7 +17,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { AnimatedSection, AnimatePresence, motion, StaggerContainer, StaggerItem } from '@/components/shared/motion';
+import { AnimatePresence, motion } from 'motion/react';
+import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { TeacherLanguages } from '@/components/teachers/TeacherLanguages';
 import { useTeachers } from '@/hooks/useTeachers';
 import { usePublicReviews } from '@/hooks/useReviews';

@@ -18,8 +18,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { functions, storage } from '@/lib/firebase';
+import { functions } from '@/lib/firebase';
+import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
+import { TimezoneSelect } from '@/components/admin/TimezoneSelect';
+import { DEFAULT_TIMEZONE } from '@/lib/constants';
 import {
   useAdminTeachers,
   createTeacher,
@@ -35,7 +37,7 @@ import {
   type LinkableAccount,
 } from '@/lib/teacherLink';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
-import { LANG_INFO, normalizeLangKey } from '@/components/teachers/TeacherLanguages';
+import { LANG_INFO, normalizeLangKey } from '@/lib/languages';
 
 /** Language proficiency row used by the editor (flattened from the stored Record). */
 interface LangRow {
@@ -88,7 +90,9 @@ const EMPTY_FORM: TeacherForm = {
   name: '',
   slug: '',
   email: '',
-  timezone: '',
+  // Matches the fallback convertTime() already applies, so a profile nobody
+  // edits behaves the same as one saved without touching this field.
+  timezone: DEFAULT_TIMEZONE,
   isActive: true,
   uid: '',
   contactTeams: '',
@@ -156,11 +160,15 @@ export default function AdminTeachers() {
     }
     setUploadingQr(slot);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const filePath = `teacher-qr/${slot}-${Date.now()}.${ext}`;
-      const storageRef = ref(storage, filePath);
-      const snapshot = await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(snapshot.ref);
+      // A QR has to survive being pointed at by a phone camera, so it keeps far
+      // more detail than it displays and is encoded at a higher quality.
+      const url = await uploadPublicImage({
+        dir: 'teacher-qr',
+        file,
+        maxDim: MAX_DIM.qr,
+        quality: 0.95,
+        namePrefix: slot,
+      });
       setForm((prev) => ({
         ...prev,
         ...(slot === 'zalo' ? { contactZaloQrUrl: url } : { contactKakaoTalkQrUrl: url }),
@@ -238,7 +246,7 @@ export default function AdminTeachers() {
         name: data.name,
         slug,
         email: '',
-        timezone: '',
+        timezone: DEFAULT_TIMEZONE,
         isActive: true,
         uid: '',
         contactTeams: '',
@@ -518,11 +526,9 @@ export default function AdminTeachers() {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium">{t('teachers.timezone')}</label>
-                  <input
+                  <TimezoneSelect
                     value={form.timezone}
-                    onChange={(e) => setForm({ ...form, timezone: e.target.value })}
-                    className={inputClass}
-                    placeholder="Asia/Seoul"
+                    onChange={(timezone) => setForm({ ...form, timezone })}
                   />
                 </div>
                 <div className="md:col-span-2">

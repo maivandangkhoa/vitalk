@@ -200,39 +200,36 @@ export function useCreateBooking() {
  * being the one that needs it. Read once: a lesson's time and participants do
  * not change while someone is sitting in its room.
  */
+/** A fetch result, tagged with the id it belongs to. */
+interface BookingResult {
+  id: string;
+  booking: Booking | null;
+  notFound: boolean;
+}
+
 export function useBooking(bookingId: string | undefined) {
-  const [booking, setBooking] = useState<Booking | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [result, setResult] = useState<BookingResult | null>(null);
 
   useEffect(() => {
-    if (!bookingId) {
-      setBooking(null);
-      setLoading(false);
-      return;
-    }
+    if (!bookingId) return;
 
     let cancelled = false;
-    setLoading(true);
-    setNotFound(false);
 
     getDoc(doc(db, 'bookings', bookingId))
       .then((snap) => {
         if (cancelled) return;
-        if (!snap.exists()) {
-          setNotFound(true);
-          setBooking(null);
-          return;
-        }
-        setBooking({ id: snap.id, ...snap.data() } as Booking);
+        setResult({
+          id: bookingId,
+          booking: snap.exists()
+            ? ({ id: snap.id, ...snap.data() } as Booking)
+            : null,
+          notFound: !snap.exists(),
+        });
       })
       .catch(() => {
         // The rules refuse a booking that is not yours, which reads the same as
         // one that does not exist — and should, so ids cannot be probed.
-        if (!cancelled) setNotFound(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setResult({ id: bookingId, booking: null, notFound: true });
       });
 
     return () => {
@@ -240,7 +237,16 @@ export function useBooking(bookingId: string | undefined) {
     };
   }, [bookingId]);
 
-  return { booking, loading, notFound };
+  // Tagging the result with its id lets "loading" be derived from whether the
+  // held result matches the id being asked about, instead of being reset from
+  // inside the effect on every change.
+  const current = bookingId && result?.id === bookingId ? result : null;
+
+  return {
+    booking: current?.booking ?? null,
+    loading: !!bookingId && !current,
+    notFound: current?.notFound ?? false,
+  };
 }
 
 export async function updateBookingStatus(

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { useAdminReviews, toggleReviewVisibility, deleteReview, updateReview } from '@/hooks/useReviews';
-import { useTeacherSelector } from '@/components/admin/TeacherSelector';
+import { useTeacherSelector } from '@/hooks/useTeacherSelector';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 
 export default function AdminReviews() {

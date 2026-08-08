@@ -89,33 +89,55 @@ export async function deleteReview(id: string) {
 }
 
 /** Check which bookings already have reviews */
+const NO_REVIEWS: ReadonlySet<string> = new Set();
+
+/**
+ * Which of these booking ids already have a review. Kept free of state so the
+ * effect below stays a plain "fetch, then store the result" — Firestore's `in`
+ * operator caps at 30 values, hence the batching.
+ */
+async function fetchReviewedIds(key: string): Promise<Set<string>> {
+  const idList = key ? key.split(',') : [];
+  const ids = new Set<string>();
+  for (let i = 0; i < idList.length; i += 30) {
+    const batch = idList.slice(i, i + 30);
+    const q = query(collection(db, 'reviews'), where('bookingId', 'in', batch));
+    const snap = await getDocs(q);
+    snap.docs.forEach((d) => {
+      const bookingId = d.data().bookingId;
+      if (bookingId) ids.add(bookingId);
+    });
+  }
+  return ids;
+}
+
 export function useBookingReviewStatus(bookingIds: string[]) {
-  const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
+  // Tagged with the key it was fetched for, so a stale result is ignored by
+  // derivation instead of being cleared from inside the effect.
+  const [result, setResult] = useState<{ key: string; ids: Set<string> } | null>(
+    null
+  );
+
+  // Callers rebuild the array every render, so its identity is useless as a
+  // dependency; the contents are what matter. Deriving the ids back out of the
+  // key keeps the dependency list honest and statically checkable.
+  const key = bookingIds.join(',');
 
   const refetch = useCallback(async () => {
-    if (bookingIds.length === 0) {
-      setReviewedIds(new Set());
-      return;
-    }
-    const batches = [];
-    for (let i = 0; i < bookingIds.length; i += 30) {
-      batches.push(bookingIds.slice(i, i + 30));
-    }
-    const ids = new Set<string>();
-    for (const batch of batches) {
-      const q = query(collection(db, 'reviews'), where('bookingId', 'in', batch));
-      const snap = await getDocs(q);
-      snap.docs.forEach((d) => {
-        const bookingId = d.data().bookingId;
-        if (bookingId) ids.add(bookingId);
-      });
-    }
-    setReviewedIds(ids);
-  }, [bookingIds.join(',')]);
+    setResult({ key, ids: await fetchReviewedIds(key) });
+  }, [key]);
 
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    let cancelled = false;
+    fetchReviewedIds(key).then((ids) => {
+      if (!cancelled) setResult({ key, ids });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [key]);
+
+  const reviewedIds = result?.key === key ? result.ids : NO_REVIEWS;
 
   return { reviewedIds, refetch };
 }

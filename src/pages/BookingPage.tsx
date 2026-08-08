@@ -92,25 +92,100 @@ export default function BookingPage() {
   const { teachers, loading: teachersLoading } = useTeachers();
   const { lessonTypes, loading: lessonTypesLoading } = useLessonTypes();
 
-  const [currentStep, setCurrentStep] = useState<number>(0);
-  const [selectedLesson, setSelectedLesson] = useState<string>('');
-  const [selectedDuration, setSelectedDuration] = useState<AllowedDuration>(60);
-  const [viewMonth, setViewMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
-  const [lessonFormat, setLessonFormat] = useState<'online' | 'offline'>('online');
-  const [platform, setPlatform] = useState<typeof PLATFORM_OPTIONS[number]>('havitalk');
-  const [selectedLocationId, setSelectedLocationId] = useState('');
-  const [customLocationAddress, setCustomLocationAddress] = useState('');
+  // A draft saved before the user was bounced to /login is read during the
+  // first render, so every field below starts from it instead of being
+  // overwritten an extra render later. The read is pure — which matters,
+  // because StrictMode double-invokes initializers — and the removal that
+  // consumes it happens in an effect further down.
+  const [draft] = useState<Record<string, unknown>>(() => {
+    const raw = sessionStorage.getItem(BOOKING_DRAFT_KEY);
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+  });
+  const draftDate = typeof draft.selectedDate === 'string' ? draft.selectedDate : '';
+
+  const [currentStep, setCurrentStep] = useState<number>(
+    typeof draft.currentStep === 'number' ? draft.currentStep : 0
+  );
+  const [selectedLessonChoice, setSelectedLesson] = useState<string>(
+    typeof draft.selectedLesson === 'string' ? draft.selectedLesson : ''
+  );
+  const [durationChoice, setDurationChoice] = useState<AllowedDuration>(
+    typeof draft.selectedDuration === 'number' && isAllowedDuration(draft.selectedDuration)
+      ? draft.selectedDuration
+      : 60
+  );
+  const [viewMonth, setViewMonth] = useState(() =>
+    draftDate ? new Date(draftDate) : new Date()
+  );
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() =>
+    draftDate ? new Date(draftDate) : undefined
+  );
+  const [selectedTime, setSelectedTime] = useState<string>(
+    typeof draft.selectedTime === 'string' ? draft.selectedTime : ''
+  );
+  const [teacherChoice, setTeacherChoice] = useState<string>(
+    typeof draft.selectedTeacherId === 'string' ? draft.selectedTeacherId : ''
+  );
+  const [lessonFormat, setLessonFormat] = useState<'online' | 'offline'>(
+    draft.lessonFormat === 'offline' ? 'offline' : 'online'
+  );
+  const [platform, setPlatform] = useState<typeof PLATFORM_OPTIONS[number]>(
+    (PLATFORM_OPTIONS as readonly string[]).includes(draft.platform as string)
+      ? (draft.platform as typeof PLATFORM_OPTIONS[number])
+      : 'havitalk'
+  );
+  const [selectedLocationId, setSelectedLocationId] = useState(
+    typeof draft.selectedLocationId === 'string' ? draft.selectedLocationId : ''
+  );
+  const [customLocationAddress, setCustomLocationAddress] = useState(
+    typeof draft.customLocationAddress === 'string' ? draft.customLocationAddress : ''
+  );
   // null until the user types or a draft is restored, so the field can fall
   // back to the account email as it loads without clobbering either.
-  const [emailOverride, setEmailOverride] = useState<string | null>(null);
-  const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer');
+  const [emailOverride, setEmailOverride] = useState<string | null>(
+    typeof draft.contactEmail === 'string' ? draft.contactEmail : null
+  );
+  const [notes, setNotes] = useState(
+    typeof draft.notes === 'string' ? draft.notes : ''
+  );
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    typeof draft.paymentMethod === 'string'
+      ? (draft.paymentMethod as PaymentMethod)
+      : 'bank_transfer'
+  );
   const [bookingComplete, setBookingComplete] = useState(false);
   const [createdBookingId, setCreatedBookingId] = useState<string>('');
   const [showPaymentUI, setShowPaymentUI] = useState(false);
+
+  // Arriving via /book?lessonId=… (e.g. from the /lessons page) preselects that
+  // lesson. Derived rather than written back by an effect; an explicit choice by
+  // the user takes precedence, and the step is left alone so they can still pick
+  // a duration.
+  const lessonIdParam = searchParams.get('lessonId') || '';
+  const selectedLesson =
+    selectedLessonChoice ||
+    (lessonTypes.some((l) => l.id === lessonIdParam) ? lessonIdParam : '');
+
+  const selectedLessonData = lessonTypes.find((o) => o.id === selectedLesson);
+  const allowedDurations: AllowedDuration[] = useMemo(() => {
+    const allowed = selectedLessonData?.allowedDurations;
+    if (allowed && allowed.length > 0) return allowed;
+    return [...ALLOWED_DURATIONS];
+  }, [selectedLessonData]);
+
+  // Clamped to what the chosen lesson allows. Deriving instead of correcting it
+  // from an effect matters here: the slot query below keys off this value, so a
+  // corrected-a-render-later duration meant querying availability twice.
+  const selectedDuration: AllowedDuration = allowedDurations.includes(durationChoice)
+    ? durationChoice
+    : allowedDurations.includes(60)
+      ? 60
+      : allowedDurations[0];
 
   const yearMonth = format(viewMonth, 'yyyy-MM');
   const { slots: aggregatedSlotsRaw, loading: slotsLoading } = useAllTeachersAvailableSlots(teachers, yearMonth, selectedDuration);
@@ -121,6 +196,10 @@ export default function BookingPage() {
   // that one teacher (hide picker, filter availability to their slots only).
   const lockedTeacherId = searchParams.get('teacherId') || '';
   const isTeacherLocked = !!lockedTeacherId && teachers.some((t) => t.id === lockedTeacherId);
+
+  // In locked mode the picker is hidden, so the locked teacher simply *is* the
+  // selection — no need to write it into state and keep the two in step.
+  const selectedTeacherId = isTeacherLocked ? lockedTeacherId : teacherChoice;
 
   // Filter aggregated slots down to just the locked teacher when applicable.
   const aggregatedSlots: AggregatedSlots = useMemo(() => {
@@ -151,7 +230,12 @@ export default function BookingPage() {
   const trimmedEmail = contactEmail.trim();
   const emailValid = EMAIL_RE.test(trimmedEmail);
   const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-  const daySlots: AggregatedSlot[] = selectedDateStr ? (aggregatedSlots[selectedDateStr] || []) : [];
+  // Memoised so the lookup does not hand a fresh array to every downstream
+  // useMemo on each render.
+  const daySlots: AggregatedSlot[] = useMemo(
+    () => (selectedDateStr ? aggregatedSlots[selectedDateStr] || [] : []),
+    [selectedDateStr, aggregatedSlots],
+  );
 
   // Find the selected aggregated slot
   const selectedSlot = useMemo(
@@ -181,74 +265,10 @@ export default function BookingPage() {
       .map((d) => new Date(d + 'T00:00:00'));
   }, [aggregatedSlots]);
 
-  const selectedLessonData = lessonTypes.find((o) => o.id === selectedLesson);
-  const allowedDurations: AllowedDuration[] = useMemo(() => {
-    const allowed = selectedLessonData?.allowedDurations;
-    if (allowed && allowed.length > 0) return allowed;
-    return [...ALLOWED_DURATIONS];
-  }, [selectedLessonData]);
-
-  // Keep selectedDuration consistent with the chosen lesson's allowedDurations.
+  // The draft was already applied by the state initializers above; consume it
+  // here so a fresh visit starts clean.
   useEffect(() => {
-    if (!allowedDurations.includes(selectedDuration)) {
-      setSelectedDuration(allowedDurations.includes(60) ? 60 : allowedDurations[0]);
-    }
-  }, [allowedDurations, selectedDuration]);
-
-  // Auto-select a random teacher when time slot changes
-  useEffect(() => {
-    if (availableTeachersForSlot.length > 0 && !availableTeachersForSlot.some((t) => t.id === selectedTeacherId)) {
-      const randomIndex = Math.floor(Math.random() * availableTeachersForSlot.length);
-      setSelectedTeacherId(availableTeachersForSlot[randomIndex].id);
-    }
-  }, [availableTeachersForSlot, selectedTeacherId]);
-
-  // Pre-fill the locked teacher on mount so the "Booking with" banner shows
-  // immediately, before any time slot is picked.
-  useEffect(() => {
-    if (isTeacherLocked && selectedTeacherId !== lockedTeacherId) {
-      setSelectedTeacherId(lockedTeacherId);
-    }
-  }, [isTeacherLocked, lockedTeacherId, selectedTeacherId]);
-
-  // Pre-select a lesson when arriving via /book?lessonId=… (e.g. from the
-  // /lessons page). Stay on step 1 so the user can still pick a duration.
-  const lessonIdParam = searchParams.get('lessonId') || '';
-  useEffect(() => {
-    if (!lessonIdParam || selectedLesson) return;
-    if (lessonTypes.some((l) => l.id === lessonIdParam)) {
-      setSelectedLesson(lessonIdParam);
-    }
-  }, [lessonIdParam, lessonTypes, selectedLesson]);
-
-  // Restore a booking draft saved before the user was bounced to /login,
-  // then clear it so a fresh visit starts clean.
-  useEffect(() => {
-    const raw = sessionStorage.getItem(BOOKING_DRAFT_KEY);
-    if (!raw) return;
     sessionStorage.removeItem(BOOKING_DRAFT_KEY);
-    try {
-      const draft = JSON.parse(raw);
-      if (draft.selectedLesson) setSelectedLesson(draft.selectedLesson);
-      if (isAllowedDuration(draft.selectedDuration)) setSelectedDuration(draft.selectedDuration);
-      if (draft.selectedDate) {
-        const d = new Date(draft.selectedDate);
-        setSelectedDate(d);
-        setViewMonth(d);
-      }
-      if (draft.selectedTime) setSelectedTime(draft.selectedTime);
-      if (draft.selectedTeacherId) setSelectedTeacherId(draft.selectedTeacherId);
-      if (draft.lessonFormat) setLessonFormat(draft.lessonFormat);
-      if (draft.platform) setPlatform(draft.platform);
-      if (draft.selectedLocationId) setSelectedLocationId(draft.selectedLocationId);
-      if (draft.customLocationAddress) setCustomLocationAddress(draft.customLocationAddress);
-      if (draft.contactEmail) setEmailOverride(draft.contactEmail);
-      if (draft.notes) setNotes(draft.notes);
-      if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod);
-      if (typeof draft.currentStep === 'number') setCurrentStep(draft.currentStep);
-    } catch {
-      // ignore corrupted draft
-    }
   }, []);
 
   // Handle Toss payment redirect
@@ -367,7 +387,7 @@ export default function BookingPage() {
     setSelectedLesson('');
     setSelectedDate(undefined);
     setSelectedTime('');
-    setSelectedTeacherId('');
+    setTeacherChoice('');
     setSelectedLocationId('');
     setNotes('');
   };
@@ -543,7 +563,7 @@ export default function BookingPage() {
                         <button
                           key={d}
                           type="button"
-                          onClick={() => setSelectedDuration(d)}
+                          onClick={() => setDurationChoice(d)}
                           className={`flex flex-col items-center gap-1 rounded-xl border px-3 py-3 text-sm transition-all ${
                             active
                               ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
@@ -581,7 +601,7 @@ export default function BookingPage() {
                   onSelect={(d) => {
                     setSelectedDate(d);
                     setSelectedTime('');
-                    if (!isTeacherLocked) setSelectedTeacherId('');
+                    if (!isTeacherLocked) setTeacherChoice('');
                   }}
                   month={viewMonth}
                   onMonthChange={setViewMonth}
@@ -606,7 +626,18 @@ export default function BookingPage() {
                             key={slot.startTime}
                             variant={selectedTime === slot.startTime ? 'default' : 'outline'}
                             className="h-auto rounded-xl px-3 py-2.5"
-                            onClick={() => setSelectedTime(slot.startTime)}
+                            onClick={() => {
+                              setSelectedTime(slot.startTime);
+                              // Pick a teacher for the slot here rather than in
+                              // an effect: Math.random() cannot be derived
+                              // during render, and the choice belongs to the
+                              // moment the time is chosen. The picker below
+                              // still lets the user override it.
+                              if (!isTeacherLocked && slot.teachers.length > 0) {
+                                const pick = Math.floor(Math.random() * slot.teachers.length);
+                                setTeacherChoice(slot.teachers[pick].id);
+                              }
+                            }}
                           >
                             <div className="flex flex-col items-center gap-1">
                               <span className="font-mono text-xs">{slot.startTime} - {slot.endTime}</span>
@@ -642,7 +673,7 @@ export default function BookingPage() {
                           key={teacher.id}
                           teacher={teacher}
                           selected={selectedTeacherId === teacher.id}
-                          onClick={() => setSelectedTeacherId(teacher.id)}
+                          onClick={() => setTeacherChoice(teacher.id)}
                         />
                       ))}
                     </div>

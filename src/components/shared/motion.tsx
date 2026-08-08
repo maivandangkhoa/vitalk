@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, type Variants } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import { cn } from '@/lib/utils';
 
 export function AnimatedSection({
@@ -33,7 +33,7 @@ export function AnimatedCard({
   );
 }
 
-export const staggerContainer: Variants = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -41,7 +41,7 @@ export const staggerContainer: Variants = {
   },
 };
 
-export const staggerItem: Variants = {
+const staggerItem: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
@@ -70,5 +70,3 @@ export function StaggerItem({
     </motion.div>
   );
 }
-
-export { motion, AnimatePresence };

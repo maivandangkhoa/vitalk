@@ -12,7 +12,12 @@ function isChunkLoadError(err: unknown): boolean {
   );
 }
 
-export function lazyWithRetry<T extends ComponentType<any>>(
+export function lazyWithRetry<
+  // React types `lazy` itself as `ComponentType<any>`; narrowing this further
+  // makes the call below unassignable, so the escape hatch has to match theirs.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends ComponentType<any>,
+>(
   importer: () => Promise<{ default: T }>,
 ) {
   return lazy(async () => {

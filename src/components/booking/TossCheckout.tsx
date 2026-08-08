@@ -54,7 +54,9 @@ export default function TossCheckout({
     script.onload = () => setSdkLoaded(true);
     script.onerror = () => toast.error(t('payment.tossLoadFailed'));
     document.head.appendChild(script);
-  }, []);
+    // Re-running on a language change is harmless: the guard above finds the
+    // script already in the DOM and stops.
+  }, [t]);
 
   // Initialize TossPayments
   useEffect(() => {

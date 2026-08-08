@@ -10,7 +10,16 @@ import { richTextToPlain } from '@/lib/richText';
 import type { Language } from '@/types';
 import type { TeacherProfile } from '@/types/profile';
 
-function TeacherCard({ teacher, lang }: { teacher: TeacherProfile; lang: Language }) {
+function TeacherCard({
+  teacher,
+  lang,
+  priority,
+}: {
+  teacher: TeacherProfile;
+  lang: Language;
+  /** Above the fold: fetch the avatar eagerly instead of waiting for scroll. */
+  priority: boolean;
+}) {
   const { t } = useTranslation('teachers');
   // Flattened to text on purpose: the card clamps to 3 lines, which images
   // and block markup would break.
@@ -35,6 +44,11 @@ function TeacherCard({ teacher, lang }: { teacher: TeacherProfile; lang: Languag
           <img
             src={teacher.profileImageUrl}
             alt={teacher.name}
+            width={80}
+            height={80}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
             className="h-20 w-20 shrink-0 rounded-full object-cover shadow-sm"
           />
         ) : (
@@ -117,8 +131,13 @@ export default function TeachersListPage() {
           </AnimatedSection>
         ) : (
           <AnimatedSection className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2">
-            {teachers.map((teacher) => (
-              <TeacherCard key={teacher.id} teacher={teacher} lang={lang} />
+            {teachers.map((teacher, i) => (
+              <TeacherCard
+                key={teacher.id}
+                teacher={teacher}
+                lang={lang}
+                priority={i < 2}
+              />
             ))}
           </AnimatedSection>
         )}

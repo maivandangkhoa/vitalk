@@ -1,9 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { Suspense } from 'react';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
-import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { SuspenseWrapper } from './SuspenseWrapper';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 
 // Lazy load pages
@@ -42,10 +41,6 @@ const AdminMessages = lazyWithRetry(() => import('@/pages/admin/AdminMessages'))
 // Public teacher pages
 const TeachersListPage = lazyWithRetry(() => import('@/pages/TeachersListPage'));
 const TeacherProfilePage = lazyWithRetry(() => import('@/pages/TeacherProfilePage'));
-
-function SuspenseWrapper({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>;
-}
 
 export const router = createBrowserRouter([
   {

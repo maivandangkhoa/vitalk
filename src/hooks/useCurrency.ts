@@ -19,15 +19,14 @@ const CACHE_TTL = 5 * 60 * 1000;
 export function useCurrencySettings() {
   const { i18n } = useTranslation();
   const lang = i18n.language as Language;
+  // Lazy initializer, so a warm module cache is picked up during the first
+  // render rather than written back from the effect a render later.
   const [config, setConfig] = useState<CurrencyConfig>(
-    cachedConfig ?? DEFAULT_CURRENCY_CONFIG
+    () => cachedConfig ?? DEFAULT_CURRENCY_CONFIG
   );
 
   useEffect(() => {
-    if (cachedConfig && Date.now() - cacheTimestamp < CACHE_TTL) {
-      setConfig(cachedConfig);
-      return;
-    }
+    if (cachedConfig && Date.now() - cacheTimestamp < CACHE_TTL) return;
 
     const fetchConfig = async () => {
       try {

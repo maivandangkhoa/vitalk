@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Loader2, Wand2, Eye, ArrowLeft, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
-import { functions, storage } from '@/lib/firebase';
-import { ref, uploadBytes } from 'firebase/storage';
+import { functions } from '@/lib/firebase';
+import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
 import { useAdminBlogPost, useSaveBlogPost } from '@/hooks/useBlog';
 import type { Language, MultiLangText } from '@/types';
 
@@ -63,11 +63,11 @@ export default function AdminBlogEdit() {
     }
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const filePath = `blog-covers/${Date.now()}.${ext}`;
-      const storageRef = ref(storage, filePath);
-      await uploadBytes(storageRef, file);
-      const url = `https://storage.googleapis.com/havitalk/${filePath}`;
+      const url = await uploadPublicImage({
+        dir: 'blog-covers',
+        file,
+        maxDim: MAX_DIM.article,
+      });
       setCoverImageUrl(url);
       toast.success(t('blog.coverUploaded'));
     } catch {

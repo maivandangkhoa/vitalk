@@ -26,7 +26,8 @@ import {
   updateBookingStatus,
 } from '@/hooks/useBookings';
 import { useAuthStore } from '@/stores/authStore';
-import { useTeacherSelector, TeacherSelector } from '@/components/admin/TeacherSelector';
+import { TeacherSelector } from '@/components/admin/TeacherSelector';
+import { useTeacherSelector } from '@/hooks/useTeacherSelector';
 import { statusColors, paymentStatusColors } from '@/lib/utils';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import type { Booking, BookingStatus } from '@/types';

@@ -1,9 +1,11 @@
 import * as admin from "firebase-admin";
 import * as path from "path";
+import { readFileSync } from "fs";
 
+// Read rather than import: the file sits outside rootDir, so a JSON import
+// would not survive the build.
 const serviceAccountPath = path.join(__dirname, "../service-account.json");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const serviceAccount = require(serviceAccountPath);
+const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -13,6 +15,9 @@ admin.initializeApp({
 // Payment functions
 export { createPaypalOrder, capturePaypalOrder } from "./paypal";
 export { confirmTossPayment } from "./toss";
+
+// Image uploads (public ACL + long cache, so images serve from the GCS edge)
+export { publishUpload } from "./publishUpload";
 
 // Auth
 export { setUserRole } from "./auth";

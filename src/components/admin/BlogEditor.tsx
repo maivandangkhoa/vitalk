@@ -5,8 +5,7 @@ import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
 import { useRef, useState } from 'react';
-import { ref, uploadBytes } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
+import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
 import { toast } from 'sonner';
 import {
   Bold,
@@ -84,11 +83,13 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
     }
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const filePath = `blog-images/inline/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
-      const storageRef = ref(storage, filePath);
-      await uploadBytes(storageRef, file);
-      const url = `https://storage.googleapis.com/havitalk/${filePath}`;
+      // This path used to hand back a storage.googleapis.com URL for an object
+      // with no public ACL, which 403s. publishUpload is what makes it resolve.
+      const url = await uploadPublicImage({
+        dir: 'blog-images/inline',
+        file,
+        maxDim: MAX_DIM.article,
+      });
       insertImage(url);
       toast.success('Image uploaded');
     } catch {
