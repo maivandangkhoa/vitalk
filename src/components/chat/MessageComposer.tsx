@@ -168,6 +168,12 @@ export function MessageComposer({
             className={SLOT}
             aria-label={t('chat.send')}
             disabled={sending}
+            // What closes the phone keyboard is focus leaving the field, and it
+            // leaves at `mousedown` — before the click that actually sends. So
+            // the send button cancels that default action and never takes focus
+            // at all: the keyboard survives one message and the next, and only
+            // a tap somewhere else on the page puts it away.
+            onMouseDown={(e) => e.preventDefault()}
             onClick={send}
           >
             {/* `size-*` on purpose: the button's own `[&_svg]` rule only leaves
