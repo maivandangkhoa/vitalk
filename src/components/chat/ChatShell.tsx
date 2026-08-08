@@ -8,9 +8,11 @@ import { MessageThread } from './MessageThread';
 import { MessageComposer } from './MessageComposer';
 import { useConversations } from '@/hooks/useConversations';
 import { useMessages } from '@/hooks/useMessages';
+import { useMobileFullscreen } from '@/hooks/useMobileFullscreen';
 import { counterpartOf, otherParticipant, unreadFor } from '@/lib/chat';
 import { UNREAD_SEND_LIMIT } from '@/types/chat';
 import { useAuthStore } from '@/stores/authStore';
+import { cn } from '@/lib/utils';
 
 interface Props {
   /** Route prefix the list links into: `/messages` or `/admin/messages`. */
@@ -23,7 +25,8 @@ interface Props {
  * The whole chat UI, one component for both shells. Students get it inside the
  * public layout at `/messages`; teachers and admins get the same thing inside
  * the admin layout. Two columns on desktop; on mobile the selected id decides
- * which of the two is on screen.
+ * which of the two is on screen — and an open thread takes over the screen
+ * entirely, the way every other messaging app on the phone behaves.
  */
 export function ChatShell({ basePath, monitor = false }: Props) {
   const { t } = useTranslation();
@@ -40,6 +43,9 @@ export function ChatShell({ basePath, monitor = false }: Props) {
     if (!loading && conversationId && !active) navigate(basePath, { replace: true });
   }, [loading, conversationId, active, basePath, navigate]);
 
+  // An open thread on the phone owns the whole viewport, keyboard included.
+  const fullscreen = useMobileFullscreen(!!active);
+
   if (!user) return null;
 
   const other = active ? counterpartOf(active, user.uid) : null;
@@ -52,7 +58,22 @@ export function ChatShell({ basePath, monitor = false }: Props) {
     unreadFor(active, otherParticipant(active, user.uid)) >= UNREAD_SEND_LIMIT;
 
   return (
-    <div className="flex h-[calc(100vh-9rem)] overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
+    <div
+      className={cn(
+        'flex overflow-hidden border-zinc-100 bg-white',
+        // Sized to the *visual* viewport rather than the screen, so the
+        // composer lands on top of the keyboard instead of under it. See
+        // `useMobileFullscreen` — it also freezes the page behind, which is
+        // what stops the site header and footer scrolling into the thread.
+        // The viewport-tall frame is a *desktop* idea — there it holds the two
+        // columns side by side. On a phone the inbox is just a list, so it
+        // takes the height of its rows and the page scrolls; a fixed frame
+        // there draws a screen-tall box around a single conversation.
+        fullscreen
+          ? 'fixed inset-x-0 top-0 z-[60] h-[var(--app-vh,100dvh)] translate-y-[var(--app-vv-top,0px)]'
+          : 'rounded-2xl border shadow-sm md:h-[calc(100dvh-9rem)]'
+      )}
+    >
       <aside
         className={`w-full shrink-0 overflow-y-auto border-r border-zinc-100 md:w-80 ${
           active ? 'hidden md:block' : 'block'
@@ -132,7 +153,9 @@ export function ChatShell({ basePath, monitor = false }: Props) {
               )}
             </header>
 
-            <div className="min-h-0 flex-1 overflow-y-auto bg-zinc-50/60">
+            {/* `overscroll-contain`: reaching the end of the thread must not
+                hand the gesture to the page behind it. */}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-zinc-50/60">
               <MessageThread
                 messages={messages}
                 loading={loadingMessages}

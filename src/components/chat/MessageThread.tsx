@@ -34,6 +34,16 @@ export function MessageThread({
     bottomRef.current?.scrollIntoView({ block: 'end' });
   }, [messages.length]);
 
+  // The keyboard opening halves the thread's height without moving its scroll
+  // position, which buries the newest message — the one you are answering.
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const toBottom = () => bottomRef.current?.scrollIntoView({ block: 'end' });
+    viewport.addEventListener('resize', toBottom);
+    return () => viewport.removeEventListener('resize', toBottom);
+  }, []);
+
   if (loading) return <LoadingSpinner />;
 
   if (messages.length === 0) {
