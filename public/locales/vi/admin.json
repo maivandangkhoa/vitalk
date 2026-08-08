@@ -71,7 +71,8 @@
     "underline": "Gạch chân",
     "alignLeft": "Canh trái",
     "alignCenter": "Canh giữa",
-    "alignRight": "Canh phải"
+    "alignRight": "Canh phải",
+    "langHint": "Học viên xem trang bằng ngôn ngữ nào thì thấy bản đó. Dấu * xanh là ngôn ngữ đã có nội dung."
   },
   "settings": {
     "save": "Lưu",

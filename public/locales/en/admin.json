@@ -71,7 +71,8 @@
     "underline": "Underline",
     "alignLeft": "Align left",
     "alignCenter": "Align center",
-    "alignRight": "Align right"
+    "alignRight": "Align right",
+    "langHint": "Students see this in whatever language they browse the site in. The green * marks languages that already have content."
   },
   "settings": {
     "save": "Save",

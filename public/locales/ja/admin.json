@@ -71,7 +71,8 @@
     "underline": "下線",
     "alignLeft": "左揃え",
     "alignCenter": "中央揃え",
-    "alignRight": "右揃え"
+    "alignRight": "右揃え",
+    "langHint": "受講者はサイトを閲覧している言語の内容を見ます。緑色の * は内容が入っている言語です。"
   },
   "settings": {
     "save": "保存",

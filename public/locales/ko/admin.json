@@ -71,7 +71,8 @@
     "underline": "밑줄",
     "alignLeft": "왼쪽 정렬",
     "alignCenter": "가운데 정렬",
-    "alignRight": "오른쪽 정렬"
+    "alignRight": "오른쪽 정렬",
+    "langHint": "학생에게는 사이트를 보는 언어의 내용이 표시됩니다. 초록색 *는 이미 내용이 있는 언어입니다."
   },
   "settings": {
     "save": "저장",

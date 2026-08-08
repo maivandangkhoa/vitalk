@@ -71,7 +71,8 @@
     "underline": "下划线",
     "alignLeft": "左对齐",
     "alignCenter": "居中对齐",
-    "alignRight": "右对齐"
+    "alignRight": "右对齐",
+    "langHint": "学生浏览网站时会看到对应语言的内容。绿色 * 表示该语言已有内容。"
   },
   "settings": {
     "save": "保存",

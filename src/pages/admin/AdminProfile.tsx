@@ -326,9 +326,13 @@ function MultiLangTextarea({ value, onChange }: {
   value: Record<Language, string>;
   onChange: (lang: Language, text: string) => void;
 }) {
+  const { t } = useTranslation('admin');
   const [active, setActive] = useState<Language>('en');
   return (
     <Tabs value={active} onValueChange={(v) => setActive(v as Language)}>
+      <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+        {t('profile.langHint')}
+      </p>
       <TabsList>
         {LANGS.map((lang) => (
           <TabsTrigger key={lang} value={lang}>
