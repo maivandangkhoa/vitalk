@@ -8,6 +8,7 @@ import { MessagesLink } from '@/components/layout/MessagesLink';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { signOut } from '@/lib/auth';
+import { inboxPathFor } from '@/lib/chat';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -188,7 +189,7 @@ export function Header() {
                       </Link>
                     )}
                     <Link
-                      to={role === 'admin' || role === 'teacher' ? '/admin/messages' : '/messages'}
+                      to={inboxPathFor(role)}
                       onClick={() => setMobileNavOpen(false)}
                       className="rounded-xl px-3 py-1.5 text-sm font-medium text-muted-foreground transition-all hover:bg-indigo-50 hover:text-indigo-600"
                     >

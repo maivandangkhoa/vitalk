@@ -10,7 +10,7 @@ import {
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from './firebase';
 import { MAX_MESSAGE_LENGTH } from '@/types/chat';
-import type { Conversation, TeacherProfile } from '@/types';
+import type { Conversation, TeacherProfile, UserRole } from '@/types';
 
 /**
  * A conversation's id is its pair. Deriving it instead of querying means the
@@ -38,6 +38,16 @@ export function counterpartOf(convo: Conversation, uid: string) {
 
 export function unreadFor(convo: Conversation, uid: string): number {
   return convo.unread?.[uid] ?? 0;
+}
+
+/**
+ * Where this role's *own* conversations live. A teacher answers students from
+ * the admin shell, next to their bookings. Everyone else — an admin included —
+ * belongs in `/messages`: `/admin/messages` puts an admin in monitor mode,
+ * which is a view of other people's threads, not an inbox of their own.
+ */
+export function inboxPathFor(role: UserRole): string {
+  return role === 'teacher' ? '/admin/messages' : '/messages';
 }
 
 interface OpenConversationInput {

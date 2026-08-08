@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { openConversation } from '@/lib/chat';
+import { inboxPathFor, openConversation } from '@/lib/chat';
 import { useAuthStore } from '@/stores/authStore';
 import type { TeacherProfile } from '@/types';
 
@@ -48,8 +48,7 @@ export function MessageTeacherButton({
         studentPhoto: user.photoURL || '',
         teacher,
       });
-      const base = role === 'admin' || role === 'teacher' ? '/admin/messages' : '/messages';
-      navigate(`${base}/${id}`);
+      navigate(`${inboxPathFor(role)}/${id}`);
     } catch (err) {
       console.error('openConversation error', err);
       toast.error(t('chat.openFailed'));

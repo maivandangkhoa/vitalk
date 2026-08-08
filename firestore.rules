@@ -149,8 +149,11 @@ service cloud.firestore {
     // Conversations - a student/teacher pair's in-app chat.
     // The document id *is* the pair ("{studentId}_{teacherId}"), so a pair can
     // never end up with two conversations and authorization needs no lookup.
-    // Admins read everything (dispute handling) but are never participants, so
-    // they cannot post — read-only by construction.
+    // Admins read everything (dispute handling); posting stays gated on being
+    // a participant, which for an admin only happens in a thread they opened
+    // themselves. The monitor UI hides the composer regardless — nothing may
+    // be sent from a page meant for watching — but that is a UI choice, not
+    // something enforced here.
     match /conversations/{conversationId} {
       function participants() {
         return resource.data.participants;

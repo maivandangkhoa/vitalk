@@ -50,11 +50,15 @@ export function ChatShell({ basePath, monitor = false }: Props) {
 
   const other = active ? counterpartOf(active, user.uid) : null;
   const isParticipant = !!active && active.participants.includes(user.uid);
+  // The monitor is a window onto other people's threads, so it never composes —
+  // not even in the odd thread the admin is a party to. Their own conversations
+  // live at `/messages`, where they are a student like anyone else.
+  const canReply = !monitor && isParticipant;
   // The rules refuse the write once this many of my messages sit unread, so
   // say why up front instead of letting the send fail.
   const throttled =
     !!active &&
-    isParticipant &&
+    canReply &&
     unreadFor(active, otherParticipant(active, user.uid)) >= UNREAD_SEND_LIMIT;
 
   return (
@@ -144,9 +148,10 @@ export function ChatShell({ basePath, monitor = false }: Props) {
                   </div>
                 </>
               )}
-              {/* An admin who also teaches is a participant in their own
-                  threads, so read-only follows participation, not role. */}
-              {!isParticipant && (
+              {/* Read-only for every thread in the monitor; elsewhere it
+                  follows participation, so an admin who also teaches can
+                  answer their own students. */}
+              {!canReply && (
                 <span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-muted-foreground">
                   {t('chat.readOnly')}
                 </span>
@@ -175,7 +180,7 @@ export function ChatShell({ basePath, monitor = false }: Props) {
               />
             </div>
 
-            {isParticipant ? (
+            {canReply ? (
               <MessageComposer
                 conversationId={active.id}
                 senderId={user.uid}

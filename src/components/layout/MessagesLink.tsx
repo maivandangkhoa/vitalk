@@ -2,22 +2,22 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MessageCircle } from 'lucide-react';
 import { useConversations } from '@/hooks/useConversations';
+import { inboxPathFor } from '@/lib/chat';
 import { useAuthStore } from '@/stores/authStore';
 
 /**
- * Inbox shortcut with an unread badge. Teachers and admins work out of
- * `/admin/messages`, everyone else out of `/messages` — same UI either way.
+ * Inbox shortcut with an unread badge. The badge counts the viewer's own
+ * unread messages, so it has to link to the inbox those threads live in —
+ * see `inboxPathFor`.
  */
 export function MessagesLink() {
   const { t } = useTranslation();
   const { role } = useAuthStore();
   const { totalUnread } = useConversations();
 
-  const to = role === 'admin' || role === 'teacher' ? '/admin/messages' : '/messages';
-
   return (
     <Link
-      to={to}
+      to={inboxPathFor(role)}
       aria-label={t('chat.title')}
       className="relative flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-indigo-50 hover:text-indigo-600"
     >
