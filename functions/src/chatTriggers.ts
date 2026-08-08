@@ -122,7 +122,11 @@ async function emailAddressFor(uid: string): Promise<string | null> {
 
 export const sweepUnreadMessageEmails = onSchedule(
   {
-    schedule: "*/5 * * * *",
+    // Every 30 min, not every 5: this was 46% of the project's whole Cloud Run
+    // bill. The cron only adds latency on top of EMAIL_AFTER_MS, so the email
+    // now lands 15-45 minutes after a message goes unread instead of 15-20.
+    // Acceptable for a fallback channel — push is the primary one.
+    schedule: "*/30 * * * *",
     secrets: [
       "GMAIL_CLIENT_ID",
       "GMAIL_CLIENT_SECRET",
