@@ -5,6 +5,71 @@ interface SyncRequest {
   teacherId: string;
 }
 
+const USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+/**
+ * Refreshes the teacher's headline rating and review count.
+ *
+ * Neither number can come from the imported review documents: italki's reviews
+ * endpoint carries no star rating, only an `is_reviews_up` thumb, so every
+ * imported review is stored at a flat 5 and averaging them says nothing. The
+ * profile endpoint does expose a real rating, under `overall_rating` — as a
+ * string, and *not* under the `avg_rating` this code used to read, which is why
+ * every imported teacher sat at 0 and their cards rendered no stars.
+ *
+ * italki no longer reports a review total either, so the count is taken from
+ * the reviews actually held for this teacher.
+ */
+async function refreshTeacherRating(
+  firestoreTeacherId: string,
+  italkiTeacherId: string
+): Promise<{ rating: number; totalReviews: number } | null> {
+  try {
+    const res = await fetch(
+      `https://api.italki.com/api/v2/teacher/${italkiTeacherId}`,
+      { headers: { "User-Agent": USER_AGENT, Accept: "application/json" } }
+    );
+    if (!res.ok) {
+      console.error(`italki profile returned ${res.status}`);
+      return null;
+    }
+
+    const json = (await res.json()) as {
+      data?: { teacher_info?: { overall_rating?: string } };
+    };
+    const info = json.data?.teacher_info;
+    if (!info) return null;
+
+    const rating = Number(info.overall_rating) || 0;
+    const held = await admin
+      .firestore()
+      .collection("reviews")
+      .where("teacherId", "==", firestoreTeacherId)
+      .where("isVisible", "==", true)
+      .get();
+    const totalReviews = held.size;
+
+    await admin
+      .firestore()
+      .doc(`teachers/${firestoreTeacherId}`)
+      .set(
+        {
+          rating,
+          totalReviews,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    return { rating, totalReviews };
+  } catch (err) {
+    // A failed rating refresh must not lose the reviews already imported.
+    console.error("italki rating refresh failed:", err);
+    return null;
+  }
+}
+
 interface ItalkiReview {
   user_info: {
     user_id: number;
@@ -142,6 +207,11 @@ export const syncItalkiReviews = onCall(
       await batch.commit();
     }
 
-    return { imported, skipped, total: allReviews.length };
+    const teacherRating = await refreshTeacherRating(
+      firestoreTeacherId,
+      italkiTeacherId
+    );
+
+    return { imported, skipped, total: allReviews.length, teacherRating };
   }
 );

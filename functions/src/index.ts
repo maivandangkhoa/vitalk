@@ -37,6 +37,7 @@ export { onCallWritten } from "./callTriggers";
 // Scheduled tasks
 export { sendLessonReminders } from "./reminders";
 export { cleanupOldCalls } from "./callCleanup";
+export { markBookingsCompleted } from "./completeBookings";
 
 // Blog AI translation
 export { translateBlogPost } from "./translateBlog";

@@ -28,8 +28,16 @@ interface ItalkiTeacherResponse {
       lesson_count: number;
       student_count: number;
       attend_rate: number;
-      avg_rating: number;
-      total_ratings: number;
+      /**
+       * italki renamed these: `avg_rating`/`total_ratings` are gone and the
+       * rating now arrives as a string under `overall_rating`. Reading the old
+       * names silently produced 0, which is why every imported teacher had no
+       * rating and their cards rendered no stars. There is no review-count
+       * field any more — the count has to come from the reviews we hold.
+       */
+      overall_rating?: string;
+      pro_rating?: string;
+      tutor_rating?: string;
       session_price_obj?: Array<{
         session_name: string;
         origin_amount: number;
@@ -177,8 +185,10 @@ export const scrapeItalkiProfile = onCall(
         bio: user_info.intro || "",
         teachingStyle: pro_info?.teaching_style || "",
         languages,
-        rating: teacher_info.avg_rating || 0,
-        totalReviews: teacher_info.total_ratings || 0,
+        rating: Number(teacher_info.overall_rating) || 0,
+        // italki no longer reports a review count; syncItalkiReviews fills this
+        // in from the reviews actually imported.
+        totalReviews: 0,
         lessonPrice,
         currency,
         videoIntroUrl: teacher_info.teacher_video || "",
