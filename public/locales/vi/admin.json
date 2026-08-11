@@ -363,7 +363,22 @@
     "saveFailed": "Lưu thất bại",
     "titleLabel": "Tiêu đề",
     "excerptLabel": "Tóm tắt",
-    "contentLabel": "Nội dung"
+    "contentLabel": "Nội dung",
+    "ai": {
+      "short": "AI",
+      "title": "Sinh ảnh minh hoạ",
+      "description": "Mô tả tấm ảnh bạn muốn. Máy trả về hai ba phương án, bạn chọn tấm ưng — chưa chọn thì chưa có gì được lưu.",
+      "forPost": "Cho bài",
+      "promptPlaceholder": "vd: a steaming bowl of pho on a wooden table in a small eatery, warm morning light through the window, shallow depth of field",
+      "promptHint": "Viết bằng tiếng Anh cho kết quả tốt nhất — model học bằng tiếng Anh. Chữ, biển hiệu và logo đã bị chặn sẵn.",
+      "generate": "Sinh ảnh",
+      "generating": "Đang sinh…",
+      "useThis": "Dùng tấm này",
+      "picked": "Đã thêm ảnh",
+      "reviewHint": "Soi kỹ bàn tay và mọi tấm biển trong khung trước khi chọn — đó là hai chỗ model hay vẽ sai nhất.",
+      "generateFailed": "Không sinh được ảnh. Thử lại.",
+      "uploadFailed": "Không lưu được ảnh."
+    }
   },
   "policy": {
     "title": "Chỉnh sửa chính sách",

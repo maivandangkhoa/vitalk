@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Loader2, Wand2, Eye, ArrowLeft, Upload } from 'lucide-react';
+import { Save, Loader2, Wand2, Eye, ArrowLeft, Upload, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
@@ -14,6 +14,7 @@ import { useAdminBlogPost, useSaveBlogPost } from '@/hooks/useBlog';
 import type { Language, MultiLangText } from '@/types';
 
 const BlogEditor = lazy(() => import('@/components/admin/BlogEditor'));
+const AiImageDialog = lazy(() => import('@/components/admin/AiImageDialog'));
 
 const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'en', label: 'English' },
@@ -52,6 +53,7 @@ export default function AdminBlogEdit() {
   const [isPublished, setIsPublished] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [aiCoverOpen, setAiCoverOpen] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,14 +280,33 @@ export default function AdminBlogEdit() {
                   variant="outline"
                   size="sm"
                   className="shrink-0 self-stretch"
+                  title={t('blog.coverImageUrl')}
                   onClick={() => coverInputRef.current?.click()}
                   disabled={uploading}
                 >
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 self-stretch"
+                  title={t('blog.ai.title')}
+                  onClick={() => setAiCoverOpen(true)}
+                >
+                  <Sparkles className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
+
+          {coverImageUrl && (
+            <img
+              src={coverImageUrl}
+              alt=""
+              className="aspect-[16/9] w-full max-w-sm rounded-xl border border-border bg-muted object-cover"
+            />
+          )}
           <div>
             <label className="mb-1 block text-sm font-medium">{t('blog.tags')}</label>
             <input
@@ -353,6 +374,16 @@ export default function AdminBlogEdit() {
           </TabsContent>
         ))}
       </Tabs>
+
+      <Suspense fallback={null}>
+        <AiImageDialog
+          open={aiCoverOpen}
+          onOpenChange={setAiCoverOpen}
+          dir="blog-covers"
+          postTitle={LANGUAGES.map((l) => title[l.code]).find(Boolean)}
+          onPicked={setCoverImageUrl}
+        />
+      </Suspense>
     </div>
   );
 }

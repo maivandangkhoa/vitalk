@@ -363,7 +363,22 @@
     "saveFailed": "Failed to save",
     "titleLabel": "Title",
     "excerptLabel": "Excerpt",
-    "contentLabel": "Content"
+    "contentLabel": "Content",
+    "ai": {
+      "short": "AI",
+      "title": "Generate an illustration",
+      "description": "Describe the picture you want. Two or three options come back — pick the one you want; nothing is saved until you do.",
+      "forPost": "For post",
+      "promptPlaceholder": "e.g. a steaming bowl of pho on a wooden table in a small eatery, warm morning light through the window, shallow depth of field",
+      "promptHint": "Write it in English — the model was trained on English. Text, signs and logos are already blocked.",
+      "generate": "Generate",
+      "generating": "Generating…",
+      "useThis": "Use this",
+      "picked": "Image added",
+      "reviewHint": "Look closely at hands and at any sign or poster in the frame before you pick — those are the two things the model gets wrong.",
+      "generateFailed": "Could not generate. Try again.",
+      "uploadFailed": "Could not save the image."
+    }
   },
   "policy": {
     "title": "Edit Policy",

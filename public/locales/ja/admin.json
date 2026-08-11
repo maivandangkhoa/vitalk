@@ -363,7 +363,22 @@
     "saveFailed": "保存に失敗しました",
     "titleLabel": "タイトル",
     "excerptLabel": "抜粋",
-    "contentLabel": "コンテンツ"
+    "contentLabel": "コンテンツ",
+    "ai": {
+      "short": "AI",
+      "title": "挿絵を生成",
+      "description": "欲しい画像を説明してください。2〜3枚の候補が出るので気に入ったものを選びます。選ぶまでは何も保存されません。",
+      "forPost": "対象の記事",
+      "promptPlaceholder": "例: a steaming bowl of pho on a wooden table in a small eatery, warm morning light through the window, shallow depth of field",
+      "promptHint": "英語で書くと最も良い結果になります。文字・看板・ロゴは既にブロック済みです。",
+      "generate": "生成",
+      "generating": "生成中…",
+      "useThis": "これを使う",
+      "picked": "画像を追加しました",
+      "reviewHint": "選ぶ前に手の形と画面内の看板をよく見てください。モデルが最も間違えるのはこの二つです。",
+      "generateFailed": "生成できませんでした。もう一度お試しください。",
+      "uploadFailed": "画像を保存できませんでした。"
+    }
   },
   "policy": {
     "title": "ポリシー編集",

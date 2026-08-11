@@ -42,6 +42,9 @@ export { markBookingsCompleted } from "./completeBookings";
 // Blog AI translation
 export { translateBlogPost } from "./translateBlog";
 
+// Blog AI illustration (Fechtin AI Gateway → Cloudflare Workers AI)
+export { generateBlogImage } from "./generateImage";
+
 // Naver blog import
 export { scrapeNaverBlog } from "./scrapeNaver";
 

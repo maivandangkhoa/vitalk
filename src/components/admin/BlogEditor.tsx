@@ -4,7 +4,8 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
 import { toast } from 'sonner';
 import {
@@ -25,8 +26,11 @@ import {
   Code,
   Upload,
   Loader2,
+  Sparkles,
   X,
 } from 'lucide-react';
+
+const AiImageDialog = lazy(() => import('@/components/admin/AiImageDialog'));
 
 interface BlogEditorProps {
   content: string;
@@ -35,9 +39,11 @@ interface BlogEditorProps {
 }
 
 export default function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) {
+  const { t } = useTranslation('admin');
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -214,10 +220,23 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
                 {uploading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Upload className="mr-1.5 h-3.5 w-3.5" />}
                 Upload
               </Button>
+              <Button size="sm" variant="outline" onClick={() => setAiOpen(true)}>
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                {t('blog.ai.short')}
+              </Button>
             </div>
           </div>
         </div>
       )}
+
+      <Suspense fallback={null}>
+        <AiImageDialog
+          open={aiOpen}
+          onOpenChange={setAiOpen}
+          dir="blog-images/inline"
+          onPicked={insertImage}
+        />
+      </Suspense>
 
       {/* Editor */}
       <EditorContent

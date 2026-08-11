@@ -363,7 +363,22 @@
     "saveFailed": "保存失败",
     "titleLabel": "标题",
     "excerptLabel": "摘要",
-    "contentLabel": "正文"
+    "contentLabel": "正文",
+    "ai": {
+      "short": "AI",
+      "title": "生成配图",
+      "description": "描述你想要的画面。系统会给出两三张候选，选中一张即可——没选之前不会保存任何图片。",
+      "forPost": "所属文章",
+      "promptPlaceholder": "例: a steaming bowl of pho on a wooden table in a small eatery, warm morning light through the window, shallow depth of field",
+      "promptHint": "用英文写效果最好，模型是用英文训练的。文字、招牌和标志已默认屏蔽。",
+      "generate": "生成",
+      "generating": "生成中…",
+      "useThis": "用这张",
+      "picked": "已添加图片",
+      "reviewHint": "选之前请仔细看手部和画面里的招牌——这两处模型最容易画错。",
+      "generateFailed": "生成失败，请重试。",
+      "uploadFailed": "图片保存失败。"
+    }
   },
   "policy": {
     "title": "编辑政策",

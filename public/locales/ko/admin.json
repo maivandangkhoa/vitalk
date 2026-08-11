@@ -363,7 +363,22 @@
     "saveFailed": "저장에 실패했습니다",
     "titleLabel": "제목",
     "excerptLabel": "요약",
-    "contentLabel": "내용"
+    "contentLabel": "내용",
+    "ai": {
+      "short": "AI",
+      "title": "삽화 생성",
+      "description": "원하는 그림을 설명하세요. 두세 장이 나오면 마음에 드는 것을 고르면 됩니다. 고르기 전에는 아무것도 저장되지 않습니다.",
+      "forPost": "대상 글",
+      "promptPlaceholder": "예: a steaming bowl of pho on a wooden table in a small eatery, warm morning light through the window, shallow depth of field",
+      "promptHint": "영어로 쓰면 결과가 가장 좋습니다. 글자, 간판, 로고는 이미 차단되어 있습니다.",
+      "generate": "생성",
+      "generating": "생성 중…",
+      "useThis": "이걸로",
+      "picked": "이미지가 추가되었습니다",
+      "reviewHint": "고르기 전에 손 모양과 화면 속 간판을 자세히 보세요. 모델이 가장 자주 틀리는 두 곳입니다.",
+      "generateFailed": "생성하지 못했습니다. 다시 시도하세요.",
+      "uploadFailed": "이미지를 저장하지 못했습니다."
+    }
   },
   "policy": {
     "title": "정책 편집",
