@@ -7,5 +7,14 @@
   "tags": "태그",
   "allPosts": "전체 게시물",
   "publishedOn": "{{date}} 게시",
-  "minuteRead": "{{minutes}}분 읽기"
+  "minuteRead": "{{minutes}}분 읽기",
+  "featured": "최신 글",
+  "readPost": "이 글 읽기",
+  "onlyFeatured": "아직 글이 하나뿐입니다 — 위의 대표 글을 읽어 보세요.",
+  "relatedPosts": "다른 글",
+  "cta": {
+    "title": "읽는 것과 말하는 것은 다릅니다.",
+    "body": "하비톡의 베트남 원어민 선생님과 수업을 예약해 보세요. 직접 말하고 그 자리에서 교정받으며, 내일 바로 쓸 수 있는 표현을 가져갑니다.",
+    "label": "선생님 찾기"
+  }
 }

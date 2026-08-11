@@ -7,5 +7,14 @@
   "tags": "Thẻ",
   "allPosts": "Tất cả bài viết",
   "publishedOn": "Đăng ngày {{date}}",
-  "minuteRead": "{{minutes}} phút đọc"
+  "minuteRead": "{{minutes}} phút đọc",
+  "featured": "Bài mới nhất",
+  "readPost": "Đọc bài này",
+  "onlyFeatured": "Mới chỉ có một bài viết — đọc ngay ở tấm bìa phía trên nhé.",
+  "relatedPosts": "Bài viết khác",
+  "cta": {
+    "title": "Đọc là một chuyện. Nói được lại là chuyện khác.",
+    "body": "Đặt một buổi học với giáo viên người Việt của HaviTalk — bạn nói, được sửa ngay tại chỗ, và mang về đúng những câu dùng được ngày hôm sau.",
+    "label": "Tìm giáo viên"
+  }
 }

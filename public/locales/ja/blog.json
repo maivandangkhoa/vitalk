@@ -7,5 +7,14 @@
   "tags": "タグ",
   "allPosts": "すべての投稿",
   "publishedOn": "{{date}} 公開",
-  "minuteRead": "{{minutes}}分で読めます"
+  "minuteRead": "{{minutes}}分で読めます",
+  "featured": "最新の記事",
+  "readPost": "この記事を読む",
+  "onlyFeatured": "まだ記事が1本だけです — 上の記事をご覧ください。",
+  "relatedPosts": "ほかの記事",
+  "cta": {
+    "title": "読めることと、話せることは別です。",
+    "body": "HaviTalk のベトナム語ネイティブ講師とレッスンを予約しましょう。実際に話して、その場で直してもらい、明日から使える表現を持ち帰れます。",
+    "label": "講師を探す"
+  }
 }

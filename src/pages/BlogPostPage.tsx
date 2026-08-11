@@ -3,16 +3,34 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Loader2, Eye, CheckCircle, Pencil } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Loader2, Eye, CheckCircle, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import { useBlogPost, useBlogPostPreview, togglePublish } from '@/hooks/useBlog';
+import { useBlogPost, useBlogPostPreview, usePublishedPosts, togglePublish } from '@/hooks/useBlog';
 import { useAuthStore } from '@/stores/authStore';
 import { AnimatedSection } from '@/components/shared/motion';
+import { BlogPostCard } from '@/components/blog/BlogPostCard';
 import { sanitizeHtml } from '@/lib/sanitize';
-import type { Language } from '@/types';
+import { estimateReadTime, formatDate, pickPostLang } from '@/lib/blog';
+import type { BlogPost, Language } from '@/types';
+
+/**
+ * Ba bài gợi ý: ưu tiên bài trùng tag, thiếu thì lấp bằng bài mới nhất.
+ * Trộn hai nguồn qua `Map` để một bài vừa trùng tag vừa mới không hiện hai lần.
+ */
+function relatedTo(current: BlogPost, all: BlogPost[]): BlogPost[] {
+  const others = all.filter((p) => p.id !== current.id);
+  const sameTag = others.filter((p) => p.tags.some((tag) => current.tags.includes(tag)));
+  const picked = new Map<string, BlogPost>();
+  for (const post of [...sameTag, ...others]) {
+    if (picked.size >= 3) break;
+    picked.set(post.id, post);
+  }
+  return [...picked.values()];
+}
 
 export default function BlogPostPage() {
   const { t, i18n } = useTranslation('common');
+  const { t: tb } = useTranslation('blog');
   const { t: ta } = useTranslation('admin');
   const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +44,7 @@ export default function BlogPostPage() {
   const publicResult = useBlogPost(isPreview ? '' : (slug || ''));
   const previewResult = useBlogPostPreview(isPreview ? (slug || '') : '');
   const { post, loading } = isPreview ? previewResult : publicResult;
+  const { posts: allPosts } = usePublishedPosts();
 
   const [publishing, setPublishing] = useState(false);
 
@@ -65,15 +84,12 @@ export default function BlogPostPage() {
     );
   }
 
-  const title = post.title[lang] || post.title.ko || post.title.en;
-  const content = post.content[lang] || post.content.ko || post.content.en;
-  const publishedDate = post.publishedAt
-    ? new Date(
-        typeof post.publishedAt === 'object' && 'seconds' in post.publishedAt
-          ? (post.publishedAt as { seconds: number }).seconds * 1000
-          : post.publishedAt
-      ).toLocaleDateString()
-    : '';
+  const title = pickPostLang(post.title, lang);
+  const excerpt = pickPostLang(post.excerpt, lang);
+  const content = pickPostLang(post.content, lang);
+  const publishedDate = formatDate(post.publishedAt, lang);
+  const minutes = estimateReadTime(content);
+  const related = relatedTo(post, allPosts);
 
   return (
     <div className="px-4 py-16">
@@ -122,40 +138,59 @@ export default function BlogPostPage() {
           {t('blog.backToBlog')}
         </Button>
 
-        {post.coverImageUrl && (
-          <div className="mb-8 overflow-hidden rounded-2xl">
-            <img
-              src={post.coverImageUrl}
-              alt={title}
-              className="w-full object-cover"
-            />
-          </div>
-        )}
-
-        <div className="mb-4 flex flex-wrap gap-2">
+        {/* Tiêu đề đứng TRƯỚC ảnh bìa: mở trang ra là biết ngay đang đọc gì,
+            thay vì phải cuộn qua một tấm ảnh cao mới thấy tên bài. */}
+        <div className="mb-3 flex flex-wrap gap-2">
           {post.tags.map((tag) => (
             <Badge key={tag} variant="secondary">{tag}</Badge>
           ))}
         </div>
 
-        <h1 className="text-3xl font-bold leading-tight md:text-4xl">
+        <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
           {title}
         </h1>
 
-        {publishedDate && (
-          <div className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            {publishedDate}
-          </div>
+        {excerpt && (
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{excerpt}</p>
         )}
 
-        <div className="mt-8 rounded-2xl bg-white p-8 shadow-sm">
-          <div
-            className="prose prose-lg max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
-          />
+        <div className="mt-5 flex flex-wrap items-center gap-4 border-b border-border pb-6 text-sm text-muted-foreground">
+          {publishedDate && (
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4" />
+              {publishedDate}
+            </span>
+          )}
+          <span className="flex items-center gap-1.5">
+            <Clock className="h-4 w-4" />
+            {tb('minuteRead', { minutes })}
+          </span>
         </div>
+
+        {post.coverImageUrl && (
+          <img
+            src={post.coverImageUrl}
+            alt={title}
+            className="mt-8 aspect-[16/9] w-full rounded-2xl bg-muted object-cover"
+          />
+        )}
+
+        <div
+          className="prose prose-lg mt-8 max-w-none dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
+        />
       </AnimatedSection>
+
+      {related.length > 0 && (
+        <AnimatedSection className="container mx-auto mt-16 max-w-7xl">
+          <h2 className="text-xl font-bold tracking-tight md:text-2xl">{tb('relatedPosts')}</h2>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((item) => (
+              <BlogPostCard key={item.id} post={item} />
+            ))}
+          </div>
+        </AnimatedSection>
+      )}
     </div>
   );
 }

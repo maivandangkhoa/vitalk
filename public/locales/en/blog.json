@@ -7,5 +7,14 @@
   "tags": "Tags",
   "allPosts": "All Posts",
   "publishedOn": "Published on {{date}}",
-  "minuteRead": "{{minutes}} min read"
+  "minuteRead": "{{minutes}} min read",
+  "featured": "Latest post",
+  "readPost": "Read this post",
+  "onlyFeatured": "Only one post so far — it's the cover story above.",
+  "relatedPosts": "More posts",
+  "cta": {
+    "title": "Reading is one thing. Speaking is another.",
+    "body": "Book a lesson with a native Vietnamese teacher on HaviTalk — you speak, get corrected on the spot, and leave with phrases you can use tomorrow.",
+    "label": "Find a teacher"
+  }
 }

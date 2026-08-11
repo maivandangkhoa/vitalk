@@ -7,5 +7,14 @@
   "tags": "标签",
   "allPosts": "所有文章",
   "publishedOn": "发布于 {{date}}",
-  "minuteRead": "阅读约 {{minutes}} 分钟"
+  "minuteRead": "阅读约 {{minutes}} 分钟",
+  "featured": "最新文章",
+  "readPost": "阅读本文",
+  "onlyFeatured": "目前只有一篇文章 —— 就是上面这篇。",
+  "relatedPosts": "其他文章",
+  "cta": {
+    "title": "读懂是一回事，说出口是另一回事。",
+    "body": "在 HaviTalk 预约一节越南母语老师的课：你开口说，老师当场纠正，带走明天就能用的表达。",
+    "label": "寻找老师"
+  }
 }

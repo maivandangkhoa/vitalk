@@ -15,11 +15,13 @@ const FALLBACK_ORDER: Language[] = ['en', 'vi', 'ko', 'zh', 'ja'];
 export function pickLang(
   text: Partial<MultiLangText> | undefined | null,
   lang: string,
+  /** Override for a content area with its own preference (blog prefers `ko`). */
+  fallbackOrder: Language[] = FALLBACK_ORDER,
 ): string {
   if (!text) return '';
   // i18n.language can carry a region suffix ("en-US"); the data never does.
   const requested = (lang || '').split('-')[0] as Language;
-  for (const code of [requested, ...FALLBACK_ORDER]) {
+  for (const code of [requested, ...fallbackOrder]) {
     const value = text[code];
     // isRichTextEmpty, not a bare trim: an empty Tiptap field is '<p></p>'.
     if (value && !isRichTextEmpty(value)) return value;
