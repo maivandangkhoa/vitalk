@@ -11,7 +11,6 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
-import { sanitizeHtml } from '@/lib/sanitize';
 import { aiImagePreviewSrc, aiImageToFile, generateAiImages } from '@/lib/aiImage';
 import {
   POST_KINDS,
@@ -20,6 +19,7 @@ import {
   type ChatTurn,
   type PostKind,
 } from '@/lib/aiWriter';
+import AiDraftCard from '@/components/admin/AiDraftCard';
 import { translatePost, type TranslatedPost } from '@/lib/aiTranslate';
 import { cn } from '@/lib/utils';
 import type { Language } from '@/types';
@@ -43,45 +43,6 @@ interface Bubble {
   role: 'user' | 'assistant';
   text: string;
   draft?: AiDraft;
-}
-
-/**
- * Thẻ bản nháp. Nội dung đi qua `sanitizeHtml` đúng như lúc bài lên trang:
- * xem trước mà lỏng hơn trang thật thì cái nhìn thấy ở đây không chứng minh
- * được gì về cái sẽ đăng.
- */
-function DraftCard({
-  draft,
-  busy,
-  onApply,
-}: {
-  draft: AiDraft;
-  busy: boolean;
-  onApply: (draft: AiDraft) => void;
-}) {
-  const { t } = useTranslation('admin');
-  const chars = draft.content.replace(/<[^>]+>/g, ' ').trim().length;
-
-  return (
-    <div className="space-y-2 rounded-xl border border-border p-3">
-      <p className="text-sm font-semibold">{draft.title}</p>
-      <p className="text-xs text-muted-foreground">{draft.excerpt}</p>
-      {draft.tags.length > 0 && (
-        <p className="text-xs text-indigo-500">{draft.tags.join(' · ')}</p>
-      )}
-      <div
-        className="prose prose-sm max-h-52 max-w-none overflow-y-auto rounded-lg bg-muted/50 p-2 dark:prose-invert"
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(draft.content) }}
-      />
-      <p className="text-xs text-muted-foreground">{t('blog.writer.chars', { count: chars })}</p>
-      {draft.complete && !busy && (
-        <Button size="sm" className="w-full" onClick={() => onApply(draft)}>
-          <Check className="mr-1.5 h-3.5 w-3.5" />
-          {t('blog.writer.apply')}
-        </Button>
-      )}
-    </div>
-  );
 }
 
 /**
@@ -334,7 +295,7 @@ export default function AiWriterPanel({
                   )}
                 </div>
 
-                {b.draft && <DraftCard draft={b.draft} busy={streaming} onApply={apply} />}
+                {b.draft && <AiDraftCard draft={b.draft} busy={streaming} onApply={apply} />}
               </div>
             ))}
 
