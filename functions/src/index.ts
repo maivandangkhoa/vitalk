@@ -39,6 +39,9 @@ export { sendLessonReminders } from "./reminders";
 export { cleanupOldCalls } from "./callCleanup";
 export { markBookingsCompleted } from "./completeBookings";
 
+// Blog link previews (per-post Open Graph tags for crawlers)
+export { blogMeta } from "./ogBlog";
+
 // Blog AI translation
 export { translateBlogPost } from "./translateBlog";
 

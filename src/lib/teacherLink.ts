@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { DEFAULT_HOURLY_RATE_USD } from './constants';
+import { toAsciiSlug } from './slug';
 
 /**
  * A teacher profile's document id IS the owner's auth uid. That single fact
@@ -151,14 +152,11 @@ export class AccountAlreadyLinkedError extends Error {
 
 /** Build a URL-safe slug, falling back to the email local part. */
 function toSlug(name: string, email: string): string {
-  const base = (name || email.split('@')[0] || 'teacher')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[đĐ]/g, 'd')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-  return base || 'teacher';
+  return (
+    toAsciiSlug(name) ||
+    toAsciiSlug(email.split('@')[0] || '') ||
+    'teacher'
+  );
 }
 
 /** Append `-2`, `-3`, … until the slug is free. */

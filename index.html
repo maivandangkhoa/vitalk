@@ -11,6 +11,15 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="HaviTalk" />
+    <!--
+      Everything between og:start and og:end is the site-wide default. The
+      blogMeta function (functions/src/ogBlog.ts) swaps the whole block out for
+      per-post tags when Hosting routes /blog/<slug> through it — crawlers do
+      not run the app, so this markup is all they ever see. Keep the markers,
+      and keep every tag that varies per post inside them: og:image:width left
+      outside would describe the shared image against a post's cover.
+    -->
+    <!-- og:start -->
     <title>HaviTalk — Learn Vietnamese with native teachers</title>
     <meta
       name="description"
@@ -43,6 +52,7 @@
     />
     <meta name="twitter:image" content="https://havitalk.com/og_image.png" />
     <meta name="twitter:image:alt" content="HaviTalk — Learn Vietnamese with native teachers" />
+    <!-- og:end -->
   </head>
   <body>
     <div id="root"></div>

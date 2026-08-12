@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
+import { toAsciiSlug } from '@/lib/slug';
 import { useAdminBlogPost, useSaveBlogPost } from '@/hooks/useBlog';
 import type { Language, MultiLangText } from '@/types';
 
@@ -23,16 +24,6 @@ const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'ja', label: '日本語' },
   { code: 'vi', label: 'Tiếng Việt' },
 ];
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s-]/gu, '')
-    .replace(/[\s_]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .trim() || `post-${Date.now()}`;
-}
 
 export default function AdminBlogEdit() {
   const { t } = useTranslation('admin');
@@ -93,13 +84,13 @@ export default function AdminBlogEdit() {
     }
   }, [post]);
 
-  // Auto-generate slug from first available title (en > ko)
+  // Auto-generate slug from first available title (en > ko > vi)
   useEffect(() => {
     if (isNew) {
-      const source = title.en || title.ko;
-      if (source) setSlug(slugify(source));
+      const source = title.en || title.ko || title.vi;
+      if (source) setSlug(toAsciiSlug(source) || `post-${Date.now()}`);
     }
-  }, [isNew, title.en, title.ko]);
+  }, [isNew, title.en, title.ko, title.vi]);
 
   const handleSave = async () => {
     const hasTitle = LANGUAGES.some((l) => title[l.code].trim());
