@@ -12,6 +12,31 @@
   "readPost": "Read this post",
   "onlyFeatured": "Only one post so far — it's the cover story above.",
   "relatedPosts": "More posts",
+  "like": "Like",
+  "liked": "Liked",
+  "likeFailed": "Couldn't save your like. Try again.",
+  "share": {
+    "label": "Share",
+    "native": "Share…",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "copyFailed": "Couldn't copy the link",
+    "failed": "Couldn't share this post"
+  },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Share what you think about this post…",
+    "post": "Post comment",
+    "loginPrompt": "Sign in to join the conversation.",
+    "login": "Sign in",
+    "empty": "No comments yet. Be the first.",
+    "tooFast": "Please wait {{seconds}}s before posting again.",
+    "failed": "Couldn't post your comment. Try again.",
+    "delete": "Delete comment",
+    "deleteConfirm": "Delete this comment?",
+    "deleted": "Comment deleted",
+    "deleteFailed": "Couldn't delete the comment"
+  },
   "cta": {
     "title": "Reading is one thing. Speaking is another.",
     "body": "Book a lesson with a native Vietnamese teacher on HaviTalk — you speak, get corrected on the spot, and leave with phrases you can use tomorrow.",

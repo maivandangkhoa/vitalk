@@ -7,8 +7,11 @@ import { ArrowLeft, Calendar, Clock, Loader2, Eye, CheckCircle, Pencil } from 'l
 import { toast } from 'sonner';
 import { useBlogPost, useBlogPostPreview, usePublishedPosts, togglePublish } from '@/hooks/useBlog';
 import { useAuthStore } from '@/stores/authStore';
+import { usePostComments } from '@/hooks/useBlogEngagement';
 import { AnimatedSection } from '@/components/shared/motion';
 import { BlogPostCard } from '@/components/blog/BlogPostCard';
+import { PostEngagementBar } from '@/components/blog/PostEngagementBar';
+import { CommentSection } from '@/components/blog/CommentSection';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { estimateReadTime, formatDate, pickPostLang } from '@/lib/blog';
 import type { BlogPost, Language } from '@/types';
@@ -47,6 +50,11 @@ export default function BlogPostPage() {
   const { posts: allPosts } = usePublishedPosts();
 
   const [publishing, setPublishing] = useState(false);
+
+  // Trang có hai lối ra sớm bên dưới, nên hook phải gọi ở đây. Bình luận do
+  // trang giữ chứ không phải `CommentSection`: thanh tương tác cần đếm số, và
+  // hai nơi cùng gọi hook thì thành hai lượt đọc cho cùng một danh sách.
+  const { comments, loading: commentsLoading, addComment, removeComment } = usePostComments(post?.id);
 
   const handleConfirmPublish = async () => {
     if (!post) return;
@@ -179,6 +187,27 @@ export default function BlogPostPage() {
           className="prose prose-lg mt-8 max-w-none dark:prose-invert"
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
         />
+
+        {/* Bài chưa đăng thì không có gì để thích hay chia sẻ — link ra ngoài
+            sẽ 404 với người đọc, và bình luận trên bản nháp là vô nghĩa. */}
+        {post.isPublished && (
+          <>
+            <PostEngagementBar
+              postId={post.id}
+              slug={post.slug}
+              title={title}
+              description={excerpt}
+              imageUrl={post.coverImageUrl || `${window.location.origin}/og_image.png`}
+              commentCount={comments.length}
+            />
+            <CommentSection
+              comments={comments}
+              loading={commentsLoading}
+              addComment={addComment}
+              removeComment={removeComment}
+            />
+          </>
+        )}
       </AnimatedSection>
 
       {related.length > 0 && (

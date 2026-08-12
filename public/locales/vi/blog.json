@@ -12,6 +12,31 @@
   "readPost": "Đọc bài này",
   "onlyFeatured": "Mới chỉ có một bài viết — đọc ngay ở tấm bìa phía trên nhé.",
   "relatedPosts": "Bài viết khác",
+  "like": "Thích",
+  "liked": "Đã thích",
+  "likeFailed": "Chưa lưu được lượt thích. Thử lại nhé.",
+  "share": {
+    "label": "Chia sẻ",
+    "native": "Chia sẻ…",
+    "copyLink": "Sao chép liên kết",
+    "linkCopied": "Đã sao chép liên kết",
+    "copyFailed": "Không sao chép được liên kết",
+    "failed": "Không chia sẻ được bài viết"
+  },
+  "comments": {
+    "title": "Bình luận",
+    "placeholder": "Bạn nghĩ gì về bài viết này?",
+    "post": "Gửi bình luận",
+    "loginPrompt": "Đăng nhập để cùng trò chuyện.",
+    "login": "Đăng nhập",
+    "empty": "Chưa có bình luận nào. Bạn viết đầu tiên nhé.",
+    "tooFast": "Đợi {{seconds}} giây rồi gửi tiếp nhé.",
+    "failed": "Chưa gửi được bình luận. Thử lại nhé.",
+    "delete": "Xoá bình luận",
+    "deleteConfirm": "Xoá bình luận này?",
+    "deleted": "Đã xoá bình luận",
+    "deleteFailed": "Không xoá được bình luận"
+  },
   "cta": {
     "title": "Đọc là một chuyện. Nói được lại là chuyện khác.",
     "body": "Đặt một buổi học với giáo viên người Việt của HaviTalk — bạn nói, được sửa ngay tại chỗ, và mang về đúng những câu dùng được ngày hôm sau.",

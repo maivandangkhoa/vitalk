@@ -121,6 +121,41 @@ service cloud.firestore {
     match /blogPosts/{postId} {
       allow read: if resource.data.isPublished == true || isAdmin();
       allow write: if isAdmin();
+
+      // One like per reader, and the document id *is* the uid: a second like
+      // is the same write, so a duplicate cannot exist and "did I like this"
+      // costs one get instead of a query.
+      match /likes/{userId} {
+        allow read: if true;
+        allow create, delete: if isOwner(userId);
+        allow update: if false;
+      }
+
+      // Comments carry the author's name/photo because `users/{uid}` is
+      // readable only by its owner — the reader rendering the list cannot look
+      // them up. Public read (rather than a get() on the parent post) because
+      // an unpublished post has no comments, and the get() would bill a
+      // document read on every load.
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated()
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.authorName is string
+          && request.resource.data.authorName.size() <= 100
+          && (request.resource.data.authorPhoto == null
+              || request.resource.data.authorPhoto.matches('https://.*'));
+        allow update: if isAuthenticated()
+          && resource.data.authorId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'updatedAt'])
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000;
+        allow delete: if isAdmin()
+          || (isAuthenticated() && resource.data.authorId == request.auth.uid);
+      }
     }
 
     // Blog Post Summaries - public read, only Cloud Functions write

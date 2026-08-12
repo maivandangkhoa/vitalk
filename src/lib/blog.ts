@@ -61,6 +61,35 @@ export function formatDate(value: unknown, lang: Language): string {
   });
 }
 
+/** Đơn vị lớn dần cho `Intl.RelativeTimeFormat`, kèm số giây của mỗi đơn vị. */
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ['day', 86400],
+  ['hour', 3600],
+  ['minute', 60],
+];
+const ONE_MONTH_SECONDS = 30 * 86400;
+
+/**
+ * "3 giờ trước" cho mốc thời gian gần, ngày tháng đầy đủ cho mốc cũ hơn một tháng.
+ *
+ * Chữ do `Intl` sinh nên không tốn key dịch nào; qua một tháng thì "tháng trước"
+ * mơ hồ hơn là hữu ích, lúc đó quay về `formatDate`.
+ */
+export function formatRelativeTime(value: unknown, lang: Language): string {
+  const date = toDate(value);
+  if (!date) return '';
+
+  const seconds = Math.round((date.getTime() - Date.now()) / 1000);
+  const elapsed = Math.abs(seconds);
+  if (elapsed >= ONE_MONTH_SECONDS) return formatDate(date, lang);
+
+  const rtf = new Intl.RelativeTimeFormat(DATE_LOCALES[lang] ?? 'en-US', { numeric: 'auto' });
+  for (const [unit, size] of RELATIVE_UNITS) {
+    if (elapsed >= size) return rtf.format(Math.round(seconds / size), unit);
+  }
+  return rtf.format(seconds, 'second');
+}
+
 const WORDS_PER_MINUTE = 220;
 /** Chữ Hán/Kana không cách nhau bằng khoảng trắng nên đọc theo ký tự, nhanh hơn. */
 const CJK_PER_MINUTE = 500;

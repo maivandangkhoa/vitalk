@@ -12,6 +12,31 @@
   "readPost": "阅读本文",
   "onlyFeatured": "目前只有一篇文章 —— 就是上面这篇。",
   "relatedPosts": "其他文章",
+  "like": "点赞",
+  "liked": "已点赞",
+  "likeFailed": "点赞未保存，请重试。",
+  "share": {
+    "label": "分享",
+    "native": "分享…",
+    "copyLink": "复制链接",
+    "linkCopied": "链接已复制",
+    "copyFailed": "复制链接失败",
+    "failed": "分享失败"
+  },
+  "comments": {
+    "title": "评论",
+    "placeholder": "说说你对这篇文章的看法…",
+    "post": "发表评论",
+    "loginPrompt": "登录后即可参与讨论。",
+    "login": "登录",
+    "empty": "还没有评论，来做第一个吧。",
+    "tooFast": "请等待 {{seconds}} 秒后再发表。",
+    "failed": "评论发表失败，请重试。",
+    "delete": "删除评论",
+    "deleteConfirm": "确定删除这条评论？",
+    "deleted": "评论已删除",
+    "deleteFailed": "删除评论失败"
+  },
   "cta": {
     "title": "读懂是一回事，说出口是另一回事。",
     "body": "在 HaviTalk 预约一节越南母语老师的课：你开口说，老师当场纠正，带走明天就能用的表达。",
