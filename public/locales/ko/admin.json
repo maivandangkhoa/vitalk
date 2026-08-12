@@ -327,7 +327,6 @@
     "publish": "게시",
     "unpublish": "게시 취소",
     "saveDraft": "임시 저장",
-    "autoTranslate": "자동 번역",
     "translating": "번역 중...",
     "deletePost": "게시물 삭제",
     "importNaver": "네이버에서 가져오기",
@@ -378,6 +377,31 @@
       "reviewHint": "고르기 전에 손 모양과 화면 속 간판을 자세히 보세요. 모델이 가장 자주 틀리는 두 곳입니다.",
       "generateFailed": "생성하지 못했습니다. 다시 시도하세요.",
       "uploadFailed": "이미지를 저장하지 못했습니다."
+    },
+    "writer": {
+      "open": "글쓰기 도우미",
+      "title": "글쓰기 도우미",
+      "description": "{{lang}}로 초안을 씁니다. 이어서 말하면 고쳐 씁니다. 표지 이미지는 글이 정해진 뒤에 만듭니다.",
+      "kind": {
+        "expression": "표현 하나 풀기",
+        "situation": "실제 상황",
+        "free": "자유 형식"
+      },
+      "emptyHint": "무엇에 대해 쓸지 알려주세요. 단어 하나, 상황 하나, 수업에서 있었던 일처럼 구체적일수록 선생님 목소리에 가까워집니다.",
+      "usingIdeas": "본문 칸에 적어 둔 메모를 바탕으로 씁니다.",
+      "startPlaceholder": "예: 문장 끝 'ạ'에 대해 써 주세요. 한국 학생들이 자꾸 빠뜨려요…",
+      "revisePlaceholder": "예: 도입부가 너무 길어요. 두 문단으로 줄여 주세요…",
+      "chars": "{{count}}자",
+      "apply": "글에 적용",
+      "applied": "초안을 글에 넣었습니다",
+      "coverStep": "표지 이미지 — 설명을 고친 뒤 한 번에 한 장씩",
+      "anotherImage": "다른 장 생성",
+      "useAsCover": "표지로 사용",
+      "coverSet": "표지 이미지로 설정했습니다",
+      "reset": "처음부터",
+      "failed": "도우미가 답하지 못했습니다. 다시 시도하세요.",
+      "translateStep": "이 글을 어떤 언어로 번역할까요?",
+      "translateTo": "{{count}}개 언어로 번역"
     }
   },
   "policy": {

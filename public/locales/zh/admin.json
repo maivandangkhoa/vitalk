@@ -327,7 +327,6 @@
     "publish": "发布",
     "unpublish": "取消发布",
     "saveDraft": "保存草稿",
-    "autoTranslate": "自动翻译",
     "translating": "翻译中...",
     "deletePost": "删除文章",
     "importNaver": "从 Naver 导入",
@@ -378,6 +377,31 @@
       "reviewHint": "选之前请仔细看手部和画面里的招牌——这两处模型最容易画错。",
       "generateFailed": "生成失败，请重试。",
       "uploadFailed": "图片保存失败。"
+    },
+    "writer": {
+      "open": "写作助手",
+      "title": "写作助手",
+      "description": "用{{lang}}写出初稿，之后可以继续对话修改。文字定下来之后再生成封面图。",
+      "kind": {
+        "expression": "讲一个表达",
+        "situation": "真实场景",
+        "free": "自由发挥"
+      },
+      "emptyHint": "告诉助手你想写什么。越具体越好——一个词、一个场景、课堂上的一件事，写出来越像你自己的语气。",
+      "usingIdeas": "会顺着你在正文框里写下的想法来写。",
+      "startPlaceholder": "例: 写句末的 'ạ'，韩国学生总是漏掉…",
+      "revisePlaceholder": "例: 开头太长了，压缩成两段…",
+      "chars": "{{count}} 字",
+      "apply": "应用到文章",
+      "applied": "初稿已写入文章",
+      "coverStep": "封面图 —— 改好描述再生成，一次一张",
+      "anotherImage": "再生成一张",
+      "useAsCover": "用作封面",
+      "coverSet": "已设为封面图",
+      "reset": "重新开始",
+      "failed": "助手没能回答，请重试。",
+      "translateStep": "这篇文章要翻译成哪些语言？",
+      "translateTo": "翻译成 {{count}} 种语言"
     }
   },
   "policy": {

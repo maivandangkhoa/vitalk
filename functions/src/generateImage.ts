@@ -44,13 +44,18 @@ const SIZES: Record<string, string> = {
 };
 
 /**
- * Sinh ít nhất 2 tấm cho mỗi lần bấm.
+ * Sinh ít nhất 1 tấm.
  *
- * Đây là ràng buộc về chất lượng, không phải mặc định cho tiện: khoảng 1/3 ảnh
- * ra lỗi (chữ bịa, tay thừa ngón), và lỗi đó chỉ lộ khi có tấm khác đặt cạnh để
- * so. Cho phép sinh đúng 1 tấm là mở đường cho việc đăng thẳng ảnh chưa ai soi.
+ * Trần này từng là 2, vì khoảng 1/3 ảnh ra lỗi (chữ bịa, tay thừa ngón) và lỗi
+ * đó lộ rõ nhất khi có tấm khác đặt cạnh để so. Hạ xuống 1 khi trợ lý viết bài
+ * ra đời: ở đó ảnh sinh từng tấm một và tấm nào cũng phải được bấm nhận thủ
+ * công, nên cửa soát vẫn còn — chỉ là soi tuần tự thay vì soi cạnh nhau. Hộp
+ * thoại sinh ảnh trong thanh soạn thảo vẫn xin 3 tấm như cũ.
+ *
+ * Cái KHÔNG được phép quay lại là tự động lấy tấm đầu mà không ai nhìn: đúng
+ * cách hai ảnh bìa hỏng lọt lên trang hôm 2026-08-11.
  */
-const MIN_CANDIDATES = 2;
+const MIN_CANDIDATES = 1;
 const MAX_CANDIDATES = 3;
 
 const MAX_PROMPT_LENGTH = 800;

@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Loader2, Wand2, Eye, ArrowLeft, Upload, Sparkles } from 'lucide-react';
+import { Save, Loader2, Eye, ArrowLeft, Upload, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
 import { toAsciiSlug } from '@/lib/slug';
 import { useAdminBlogPost, useSaveBlogPost } from '@/hooks/useBlog';
+import type { TranslatedPost } from '@/lib/aiTranslate';
+import type { AiDraft } from '@/lib/aiWriter';
 import type { Language, MultiLangText } from '@/types';
 
 const BlogEditor = lazy(() => import('@/components/admin/BlogEditor'));
-const AiImageDialog = lazy(() => import('@/components/admin/AiImageDialog'));
+const AiWriterPanel = lazy(() => import('@/components/admin/AiWriterPanel'));
 
 const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'en', label: 'English' },
@@ -42,10 +42,19 @@ export default function AdminBlogEdit() {
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [tags, setTags] = useState('');
   const [isPublished, setIsPublished] = useState(false);
-  const [translating, setTranslating] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [aiCoverOpen, setAiCoverOpen] = useState(false);
+  const [writerOpen, setWriterOpen] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const activeLang = activeTab as Language;
+
+  /** Bản nháp của trợ lý chỉ ghi vào ĐÚNG tab ngôn ngữ nó vừa viết cho. */
+  const applyDraft = (draft: AiDraft) => {
+    setTitle((prev) => ({ ...prev, [activeLang]: draft.title }));
+    setExcerpt((prev) => ({ ...prev, [activeLang]: draft.excerpt }));
+    setContent((prev) => ({ ...prev, [activeLang]: draft.content }));
+    if (draft.tags.length) setTags(draft.tags.join(', '));
+  };
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -155,39 +164,14 @@ export default function AdminBlogEdit() {
     }
   };
 
-  const handleTranslate = async () => {
-    // Find source language (first language with content)
-    const sourceLang = LANGUAGES.find((l) => content[l.code].trim())?.code;
-    if (!sourceLang) {
-      toast.error(t('blog.writeContentFirst'));
-      return;
-    }
-
-    setTranslating(true);
-    try {
-      const fn = httpsCallable<
-        { title: string; excerpt: string; content: string; sourceLang: string },
-        { title: MultiLangText; excerpt: MultiLangText; content: MultiLangText }
-      >(functions, 'translateBlogPost');
-
-      const result = await fn({
-        title: title[sourceLang],
-        excerpt: excerpt[sourceLang],
-        content: content[sourceLang],
-        sourceLang,
-      });
-
-      // Merge translations (keep source language, update others)
-      setTitle((prev) => ({ ...prev, ...result.data.title, [sourceLang]: prev[sourceLang] }));
-      setExcerpt((prev) => ({ ...prev, ...result.data.excerpt, [sourceLang]: prev[sourceLang] }));
-      setContent((prev) => ({ ...prev, ...result.data.content, [sourceLang]: prev[sourceLang] }));
-
-      toast.success(t('blog.translateSuccess'));
-    } catch {
-      toast.error(t('blog.translateFailed'));
-    } finally {
-      setTranslating(false);
-    }
+  /**
+   * Bản dịch chỉ ghi đè những thứ tiếng trợ lý thật sự trả về — hàm phía server
+   * cố ý không trả khóa rỗng, nên tab không được chọn giữ nguyên bản cũ.
+   */
+  const applyTranslation = (result: TranslatedPost) => {
+    setTitle((prev) => ({ ...prev, ...result.title }));
+    setExcerpt((prev) => ({ ...prev, ...result.excerpt }));
+    setContent((prev) => ({ ...prev, ...result.content }));
   };
 
   if (postLoading) {
@@ -216,13 +200,9 @@ export default function AdminBlogEdit() {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleTranslate} disabled={translating}>
-            {translating ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Wand2 className="mr-2 h-4 w-4" />
-            )}
-            {translating ? t('blog.translating') : t('blog.autoTranslate')}
+          <Button variant="outline" onClick={() => setWriterOpen(true)}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            {t('blog.writer.open')}
           </Button>
           <Button variant="outline" onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -276,16 +256,6 @@ export default function AdminBlogEdit() {
                   disabled={uploading}
                 >
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 self-stretch"
-                  title={t('blog.ai.title')}
-                  onClick={() => setAiCoverOpen(true)}
-                >
-                  <Sparkles className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -367,12 +337,17 @@ export default function AdminBlogEdit() {
       </Tabs>
 
       <Suspense fallback={null}>
-        <AiImageDialog
-          open={aiCoverOpen}
-          onOpenChange={setAiCoverOpen}
-          dir="blog-covers"
-          postTitle={LANGUAGES.map((l) => title[l.code]).find(Boolean)}
-          onPicked={setCoverImageUrl}
+        <AiWriterPanel
+          open={writerOpen}
+          onOpenChange={setWriterOpen}
+          lang={activeLang}
+          languages={LANGUAGES}
+          ideas={content[activeLang]}
+          title={title[activeLang]}
+          tags={tags}
+          onApply={applyDraft}
+          onTranslated={applyTranslation}
+          onCover={setCoverImageUrl}
         />
       </Suspense>
     </div>

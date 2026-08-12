@@ -327,7 +327,6 @@
     "publish": "Publish",
     "unpublish": "Unpublish",
     "saveDraft": "Save Draft",
-    "autoTranslate": "Auto-Translate",
     "translating": "Translating...",
     "deletePost": "Delete Post",
     "importNaver": "Import from Naver",
@@ -378,6 +377,31 @@
       "reviewHint": "Look closely at hands and at any sign or poster in the frame before you pick — those are the two things the model gets wrong.",
       "generateFailed": "Could not generate. Try again.",
       "uploadFailed": "Could not save the image."
+    },
+    "writer": {
+      "open": "Writing assistant",
+      "title": "Writing assistant",
+      "description": "Drafts the post in {{lang}}, then rewrites it as you ask. The cover image comes after the text is settled.",
+      "kind": {
+        "expression": "One expression",
+        "situation": "Real situation",
+        "free": "Free form"
+      },
+      "emptyHint": "Tell the assistant what to write about. The more concrete — a word, a situation, something from class — the closer it lands to your voice.",
+      "usingIdeas": "It will build on the notes already in the content box.",
+      "startPlaceholder": "e.g. write about the final particle 'ạ' — Korean learners keep dropping it…",
+      "revisePlaceholder": "e.g. the opening runs long, cut it to two paragraphs…",
+      "chars": "{{count}} characters",
+      "apply": "Apply to post",
+      "applied": "Draft written into the post",
+      "coverStep": "Cover image — edit the description, one picture per go",
+      "anotherImage": "Generate another",
+      "useAsCover": "Use as cover",
+      "coverSet": "Set as cover image",
+      "reset": "Start over",
+      "failed": "The assistant could not answer. Try again.",
+      "translateStep": "Translate this post into which languages?",
+      "translateTo": "Translate into {{count}}"
     }
   },
   "policy": {

@@ -327,7 +327,6 @@
     "publish": "公開",
     "unpublish": "非公開",
     "saveDraft": "下書き保存",
-    "autoTranslate": "自動翻訳",
     "translating": "翻訳中...",
     "deletePost": "投稿を削除",
     "importNaver": "Naverから取り込み",
@@ -378,6 +377,31 @@
       "reviewHint": "選ぶ前に手の形と画面内の看板をよく見てください。モデルが最も間違えるのはこの二つです。",
       "generateFailed": "生成できませんでした。もう一度お試しください。",
       "uploadFailed": "画像を保存できませんでした。"
+    },
+    "writer": {
+      "open": "執筆アシスタント",
+      "title": "執筆アシスタント",
+      "description": "{{lang}}で下書きを書きます。続けて話しかければ書き直します。表紙画像は本文が決まってから作ります。",
+      "kind": {
+        "expression": "表現をひとつ解説",
+        "situation": "実際の場面",
+        "free": "自由形式"
+      },
+      "emptyHint": "何について書くか伝えてください。単語ひとつ、場面ひとつ、授業での出来事など具体的なほど、先生の声に近づきます。",
+      "usingIdeas": "本文欄に書いたメモを土台にして書きます。",
+      "startPlaceholder": "例: 文末の「ạ」について。韓国の学習者がよく落とします…",
+      "revisePlaceholder": "例: 導入が長いので二段落に縮めてください…",
+      "chars": "{{count}}文字",
+      "apply": "記事に反映",
+      "applied": "下書きを記事に入れました",
+      "coverStep": "表紙画像 — 説明を直してから、一度に一枚",
+      "anotherImage": "もう一枚生成",
+      "useAsCover": "表紙に使う",
+      "coverSet": "表紙画像に設定しました",
+      "reset": "最初から",
+      "failed": "アシスタントが応答できませんでした。もう一度お試しください。",
+      "translateStep": "この記事をどの言語に翻訳しますか？",
+      "translateTo": "{{count}}言語に翻訳"
     }
   },
   "policy": {

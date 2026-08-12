@@ -48,6 +48,9 @@ export { translateBlogPost } from "./translateBlog";
 // Blog AI illustration (Fechtin AI Gateway → Cloudflare Workers AI)
 export { generateBlogImage } from "./generateImage";
 
+// Blog AI writing assistant (Fechtin AI Gateway → Claude Opus)
+export { writeBlogPost } from "./writeBlogPost";
+
 // Naver blog import
 export { scrapeNaverBlog } from "./scrapeNaver";
 

@@ -4,7 +4,7 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
-import { lazy, Suspense, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
 import { toast } from 'sonner';
@@ -58,6 +58,17 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
       onChange(editor.getHTML());
     },
   });
+
+  // `useEditor({ content })` chỉ đọc `content` lúc khởi tạo, nên mọi thứ ghi vào
+  // ô nội dung từ bên ngoài — trợ lý viết bài, nút Tự động dịch — trước nay
+  // không hiện ra nếu đang đứng ở chính tab đó (chuyển tab thì editor mount lại
+  // nên trông như vẫn chạy). So sánh với `getHTML()` để effect nằm im lúc đang
+  // gõ: `onUpdate` set state đúng bằng chuỗi đó, nên con trỏ không bị nhảy.
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content, { emitUpdate: false });
+    }
+  }, [content, editor]);
 
   if (!editor) return null;
 

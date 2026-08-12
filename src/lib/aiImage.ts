@@ -20,14 +20,15 @@ interface GenerateResponse {
  */
 export async function generateAiImages(
   prompt: string,
-  aspect: AiAspect
+  aspect: AiAspect,
+  count = 3
 ): Promise<string[]> {
   const fn = httpsCallable<
-    { prompt: string; aspect: AiAspect },
+    { prompt: string; aspect: AiAspect; count: number },
     GenerateResponse
   >(functions, 'generateBlogImage');
 
-  const res: HttpsCallableResult<GenerateResponse> = await fn({ prompt, aspect });
+  const res: HttpsCallableResult<GenerateResponse> = await fn({ prompt, aspect, count });
   return res.data.images;
 }
 

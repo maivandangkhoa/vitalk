@@ -327,7 +327,6 @@
     "publish": "Đăng bài",
     "unpublish": "Gỡ bài",
     "saveDraft": "Lưu nháp",
-    "autoTranslate": "Tự động dịch",
     "translating": "Đang dịch...",
     "deletePost": "Xóa bài viết",
     "importNaver": "Nhập từ Naver",
@@ -378,6 +377,31 @@
       "reviewHint": "Soi kỹ bàn tay và mọi tấm biển trong khung trước khi chọn — đó là hai chỗ model hay vẽ sai nhất.",
       "generateFailed": "Không sinh được ảnh. Thử lại.",
       "uploadFailed": "Không lưu được ảnh."
+    },
+    "writer": {
+      "open": "Trợ lý viết bài",
+      "title": "Trợ lý viết bài",
+      "description": "Viết bản nháp bằng {{lang}}, rồi nhắn tiếp để sửa. Xong bài mới sinh ảnh bìa.",
+      "kind": {
+        "expression": "Giải nghĩa biểu đạt",
+        "situation": "Chủ đề tình huống",
+        "free": "Tự do"
+      },
+      "emptyHint": "Nói cho trợ lý biết bạn muốn viết về gì. Càng cụ thể — một từ, một tình huống, một kỷ niệm trong lớp — bài càng ra đúng giọng bạn.",
+      "usingIdeas": "Sẽ bám theo những ý bạn đã gõ trong ô nội dung.",
+      "startPlaceholder": "vd: viết về từ 'ạ' cuối câu, học viên Hàn hay quên…",
+      "revisePlaceholder": "vd: mở bài dài quá, rút còn hai đoạn…",
+      "chars": "{{count}} ký tự",
+      "apply": "Áp dụng vào bài",
+      "applied": "Đã ghi bản nháp vào bài",
+      "coverStep": "Ảnh bìa — sửa mô tả rồi sinh, mỗi lượt một tấm",
+      "anotherImage": "Sinh tấm khác",
+      "useAsCover": "Dùng làm ảnh bìa",
+      "coverSet": "Đã đặt làm ảnh bìa",
+      "reset": "Bắt đầu lại",
+      "failed": "Trợ lý không trả lời được. Thử lại.",
+      "translateStep": "Dịch bài này sang thứ tiếng nào?",
+      "translateTo": "Dịch sang {{count}} thứ tiếng"
     }
   },
   "policy": {
