@@ -401,7 +401,9 @@
       "reset": "最初から",
       "failed": "アシスタントが応答できませんでした。もう一度お試しください。",
       "translateStep": "この記事をどの言語に翻訳しますか？",
-      "translateTo": "{{count}}言語に翻訳"
+      "translateTo": "{{count}}言語に翻訳",
+      "imageNotePlaceholder": "例: もっと明るく、椅子は外して、寄って…",
+      "applyNote": "直して再生成"
     }
   },
   "policy": {

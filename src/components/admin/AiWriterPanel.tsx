@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Check, ImagePlus, Languages, Loader2, RotateCcw, Send, Sparkles } from 'lucide-react';
+import { Languages, Loader2, RotateCcw, Send, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -10,8 +10,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
-import { aiImagePreviewSrc, aiImageToFile, generateAiImages } from '@/lib/aiImage';
 import {
   POST_KINDS,
   streamBlogPost,
@@ -19,6 +17,7 @@ import {
   type ChatTurn,
   type PostKind,
 } from '@/lib/aiWriter';
+import AiCoverStep from '@/components/admin/AiCoverStep';
 import AiDraftCard from '@/components/admin/AiDraftCard';
 import { translatePost, type TranslatedPost } from '@/lib/aiTranslate';
 import { cn } from '@/lib/utils';
@@ -80,19 +79,15 @@ export default function AiWriterPanel({
   const [translating, setTranslating] = useState(false);
   const [translated, setTranslated] = useState<Language[]>([]);
 
-  // Chặng ảnh
+  /** Prompt ảnh của bản nháp đã áp dụng; chặng ảnh tự lo phần còn lại. */
   const [imagePrompt, setImagePrompt] = useState('');
-  const [candidates, setCandidates] = useState<string[]>([]);
-  const [picked, setPicked] = useState<number | null>(null);
-  const [imaging, setImaging] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const started = history.length > 0 || streaming;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [bubbles, live, candidates]);
+  }, [bubbles, live, imagePrompt]);
 
   const send = async (text: string) => {
     if (!text.trim() || streaming) return;
@@ -149,9 +144,6 @@ export default function AiWriterPanel({
     setTranslated([]);
     if (draft.imagePrompt && draft.imagePrompt !== imagePrompt) {
       setImagePrompt(draft.imagePrompt);
-      setCandidates([]);
-      setPicked(null);
-      void generate(draft.imagePrompt);
     }
   };
 
@@ -183,43 +175,8 @@ export default function AiWriterPanel({
     }
   };
 
-  /** Mỗi lượt đúng MỘT tấm: chưa ưng thì bấm sinh tiếp, khỏi đốt hạn mức. */
-  const generate = async (prompt: string) => {
-    if (!prompt.trim() || imaging) return;
-    setImaging(true);
-    try {
-      const [image] = await generateAiImages(prompt.trim(), '16:9', 1);
-      if (image) setCandidates((prev) => [...prev, image]);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : '';
-      toast.error(message || t('blog.ai.generateFailed'));
-    } finally {
-      setImaging(false);
-    }
-  };
 
-  // Không đặt tên bắt đầu bằng `use`: eslint sẽ coi đây là React hook.
-  const setAsCover = async (b64: string, index: number) => {
-    setUploading(true);
-    setPicked(index);
-    try {
-      const file = aiImageToFile(b64, `ai-${Date.now()}.jpg`);
-      onCover(
-        await uploadPublicImage({
-          dir: 'blog-covers',
-          file,
-          maxDim: MAX_DIM.article,
-          namePrefix: 'ai',
-        })
-      );
-      toast.success(t('blog.writer.coverSet'));
-    } catch {
-      setPicked(null);
-      toast.error(t('blog.ai.uploadFailed'));
-    } finally {
-      setUploading(false);
-    }
-  };
+
 
   const reset = () => {
     setBubbles([]);
@@ -229,8 +186,6 @@ export default function AiWriterPanel({
     setTargets([]);
     setTranslated([]);
     setImagePrompt('');
-    setCandidates([]);
-    setPicked(null);
   };
 
   const shown = live ? [...bubbles, live] : bubbles;
@@ -351,77 +306,10 @@ export default function AiWriterPanel({
               </div>
             )}
 
-            {/* Chặng ảnh — chỉ hiện sau khi một bản nháp đã được áp dụng. */}
-            {imagePrompt && (
-              <div className="space-y-2 rounded-xl border border-indigo-500/40 bg-indigo-500/5 p-3">
-                <p className="text-xs font-semibold">{t('blog.writer.coverStep')}</p>
-                <textarea
-                  value={imagePrompt}
-                  onChange={(e) => setImagePrompt(e.target.value)}
-                  rows={3}
-                  maxLength={800}
-                  disabled={imaging}
-                  className="w-full rounded-lg border border-input bg-background px-2 py-1.5 text-xs outline-none focus:border-indigo-500 disabled:opacity-60"
-                />
-
-                {candidates.length > 0 && (
-                  <div className="space-y-2">
-                    {candidates.map((b64, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        disabled={uploading}
-                        onClick={() => setAsCover(b64, index)}
-                        className={cn(
-                          'group relative block w-full overflow-hidden rounded-lg border transition-all disabled:opacity-60',
-                          picked === index
-                            ? 'border-emerald-500 ring-2 ring-emerald-500/30'
-                            : 'border-border hover:border-indigo-500'
-                        )}
-                      >
-                        <img
-                          src={aiImagePreviewSrc(b64)}
-                          alt=""
-                          className="aspect-[16/9] w-full object-cover"
-                        />
-                        <span className="absolute inset-0 flex items-center justify-center bg-zinc-950/55 opacity-0 transition-opacity group-hover:opacity-100">
-                          <span className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900">
-                            {uploading && picked === index ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Check className="h-3.5 w-3.5" />
-                            )}
-                            {t('blog.writer.useAsCover')}
-                          </span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {imaging && <div className="aspect-[16/9] w-full animate-pulse rounded-lg bg-muted" />}
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  disabled={imaging || !imagePrompt.trim()}
-                  onClick={() => generate(imagePrompt)}
-                >
-                  {imaging ? (
-                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <ImagePlus className="mr-1.5 h-3.5 w-3.5" />
-                  )}
-                  {candidates.length ? t('blog.writer.anotherImage') : t('blog.ai.generate')}
-                </Button>
-                {candidates.length > 0 && (
-                  <p className="text-xs text-amber-600 dark:text-amber-500">
-                    {t('blog.ai.reviewHint')}
-                  </p>
-                )}
-              </div>
-            )}
+            {/* Chặng ảnh — chỉ hiện sau khi một bản nháp đã được áp dụng.
+                `key` để mỗi bản nháp mới bắt đầu lại từ đầu thay vì kế thừa
+                mấy tấm ảnh của bài trước. */}
+            <AiCoverStep key={imagePrompt} seedPrompt={imagePrompt} onCover={onCover} />
           </div>
 
           <div className="space-y-2 border-t border-border p-4">

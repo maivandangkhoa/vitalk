@@ -401,7 +401,9 @@
       "reset": "重新开始",
       "failed": "助手没能回答，请重试。",
       "translateStep": "这篇文章要翻译成哪些语言？",
-      "translateTo": "翻译成 {{count}} 种语言"
+      "translateTo": "翻译成 {{count}} 种语言",
+      "imageNotePlaceholder": "例: 亮一点、去掉椅子、拍近一些…",
+      "applyNote": "按备注重新生成"
     }
   },
   "policy": {

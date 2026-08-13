@@ -51,6 +51,9 @@ export { generateBlogImage } from "./generateImage";
 // Blog AI writing assistant (Fechtin AI Gateway → Claude Opus)
 export { writeBlogPost } from "./writeBlogPost";
 
+// Sửa prompt ảnh theo lời nhắn của người viết
+export { refineImagePrompt } from "./refineImagePrompt";
+
 // Naver blog import
 export { scrapeNaverBlog } from "./scrapeNaver";
 

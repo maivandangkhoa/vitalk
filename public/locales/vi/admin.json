@@ -401,7 +401,9 @@
       "reset": "Bắt đầu lại",
       "failed": "Trợ lý không trả lời được. Thử lại.",
       "translateStep": "Dịch bài này sang thứ tiếng nào?",
-      "translateTo": "Dịch sang {{count}} thứ tiếng"
+      "translateTo": "Dịch sang {{count}} thứ tiếng",
+      "imageNotePlaceholder": "vd: sáng hơn, bỏ cái ghế đi, chụp gần hơn…",
+      "applyNote": "Chỉnh rồi sinh lại"
     }
   },
   "policy": {

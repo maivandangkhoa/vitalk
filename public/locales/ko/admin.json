@@ -401,7 +401,9 @@
       "reset": "처음부터",
       "failed": "도우미가 답하지 못했습니다. 다시 시도하세요.",
       "translateStep": "이 글을 어떤 언어로 번역할까요?",
-      "translateTo": "{{count}}개 언어로 번역"
+      "translateTo": "{{count}}개 언어로 번역",
+      "imageNotePlaceholder": "예: 더 밝게, 의자는 빼고, 더 가까이…",
+      "applyNote": "수정해서 다시 생성"
     }
   },
   "policy": {

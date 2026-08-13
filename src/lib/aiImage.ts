@@ -33,6 +33,24 @@ export async function generateAiImages(
 }
 
 /**
+ * Viết lại prompt ảnh theo lời nhắn kiểu "sáng hơn, bỏ cái ghế đi".
+ *
+ * Người viết không phải tự nghĩ ra câu tiếng Anh: cứ chê bằng tiếng Việt, model
+ * dịch lời chê đó thành thay đổi trong prompt và giữ nguyên phần không bị chê.
+ */
+export async function refineAiImagePrompt(
+  prompt: string,
+  note: string
+): Promise<string> {
+  const fn = httpsCallable<{ prompt: string; note: string }, { prompt: string }>(
+    functions,
+    'refineImagePrompt'
+  );
+  const res = await fn({ prompt, note });
+  return res.data.prompt;
+}
+
+/**
  * base64 → File, để tấm được chọn đi qua đúng đường upload của mọi ảnh khác
  * (`uploadPublicImage`: hạ kích thước, chuyển WebP, đặt ACL công khai).
  *
