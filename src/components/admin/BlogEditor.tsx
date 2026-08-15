@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
+import type { Editor, EditorEvents } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
@@ -32,6 +33,11 @@ import {
 
 const AiImageDialog = lazy(() => import('@/components/admin/AiImageDialog'));
 
+/** Image files carried by a clipboard payload — empty for an ordinary paste. */
+function imageFilesOf(data: DataTransfer | null): File[] {
+  return Array.from(data?.files ?? []).filter((f) => f.type.startsWith('image/'));
+}
+
 interface BlogEditorProps {
   content: string;
   onChange: (html: string) => void;
@@ -45,6 +51,51 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
   const [uploading, setUploading] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // handlePaste is captured once when the editor is created, so it cannot close
+  // over the editor it belongs to. A ref hands it back the live instance.
+  const editorRef = useRef<Editor | null>(null);
+
+  /**
+   * Uploads an image and drops it where the caret was when the upload started.
+   *
+   * The editor stays live meanwhile, so that position is mapped through every
+   * transaction — otherwise anything typed during the upload would push the
+   * image somewhere other than where it was pasted.
+   *
+   * This path used to hand back a storage.googleapis.com URL for an object with
+   * no public ACL, which 403s. publishUpload is what makes it resolve.
+   */
+  const uploadAndInsert = async (file: File): Promise<boolean> => {
+    const editor = editorRef.current;
+    if (!editor) return false;
+
+    let pos = editor.state.selection.from;
+    const followEdits = ({ transaction }: EditorEvents['transaction']) => {
+      pos = transaction.mapping.map(pos);
+    };
+    editor.on('transaction', followEdits);
+
+    const toastId = toast.loading('Uploading image...');
+    try {
+      const url = await uploadPublicImage({
+        dir: 'blog-images/inline',
+        file,
+        maxDim: MAX_DIM.article,
+      });
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(pos, { type: 'image', attrs: { src: url } })
+        .run();
+      toast.success('Image uploaded', { id: toastId });
+      return true;
+    } catch {
+      toast.error('Failed to upload image', { id: toastId });
+      return false;
+    } finally {
+      editor.off('transaction', followEdits);
+    }
+  };
 
   const editor = useEditor({
     extensions: [
@@ -56,6 +107,20 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
     content,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+    },
+    editorProps: {
+      // A pasted screenshot arrives as a file on the clipboard with no HTML
+      // worth keeping, and ProseMirror would simply drop it. Upload it instead,
+      // so the document holds a real URL rather than nothing.
+      handlePaste: (_view, event) => {
+        const files = imageFilesOf(event.clipboardData);
+        if (!files.length) return false;
+        event.preventDefault();
+        // Each upload maps its own position past the images inserted before it,
+        // so a multi-image paste keeps its order.
+        files.forEach((file) => void uploadAndInsert(file));
+        return true;
+      },
     },
   });
 
@@ -69,6 +134,10 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
       editor.commands.setContent(content, { emitUpdate: false });
     }
   }, [content, editor]);
+
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   if (!editor) return null;
 
@@ -100,17 +169,10 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
     }
     setUploading(true);
     try {
-      // This path used to hand back a storage.googleapis.com URL for an object
-      // with no public ACL, which 403s. publishUpload is what makes it resolve.
-      const url = await uploadPublicImage({
-        dir: 'blog-images/inline',
-        file,
-        maxDim: MAX_DIM.article,
-      });
-      insertImage(url);
-      toast.success('Image uploaded');
-    } catch {
-      toast.error('Failed to upload image');
+      if (await uploadAndInsert(file)) {
+        setShowImageDialog(false);
+        setImageUrl('');
+      }
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
