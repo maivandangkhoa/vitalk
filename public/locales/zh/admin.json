@@ -356,6 +356,7 @@
     "back": "返回",
     "slug": "Slug",
     "coverImageUrl": "封面图片 URL",
+    "uploadingImages": "正在上传图片…",
     "coverUploaded": "封面图片已上传",
     "coverUploadFailed": "图片上传失败",
     "tags": "标签（用逗号分隔）",

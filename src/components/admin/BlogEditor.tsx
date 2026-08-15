@@ -1,5 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
-import type { Editor, EditorEvents } from '@tiptap/react';
+import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
@@ -9,6 +9,13 @@ import { Button } from '@/components/ui/button';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
+import { beginUpload } from '@/lib/pendingUploads';
+import {
+  ImageUploadPreview,
+  hideUploadPreview,
+  showUploadPreview,
+  uploadPreviewPos,
+} from '@/components/admin/imageUploadPreview';
 import { toast } from 'sonner';
 import {
   Bold,
@@ -56,13 +63,14 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
   // handlePaste is captured once when the editor is created, so it cannot close
   // over the editor it belongs to. A ref hands it back the live instance.
   const editorRef = useRef<Editor | null>(null);
+  const uploadSeq = useRef(0);
 
   /**
-   * Uploads an image and drops it where the caret was when the upload started.
+   * Uploads an image, showing it dimmed at the caret while the bytes go up.
    *
-   * The editor stays live meanwhile, so that position is mapped through every
-   * transaction — otherwise anything typed during the upload would push the
-   * image somewhere other than where it was pasted.
+   * The stand-in is a decoration, so the position rides along with anything
+   * typed during the upload and the real image lands where it was dropped. It
+   * deliberately never enters the document — see imageUploadPreview.
    *
    * This path used to hand back a storage.googleapis.com URL for an object with
    * no public ACL, which 403s. publishUpload is what makes it resolve.
@@ -71,31 +79,32 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
     const editor = editorRef.current;
     if (!editor) return false;
 
-    let pos = editor.state.selection.from;
-    const followEdits = ({ transaction }: EditorEvents['transaction']) => {
-      pos = transaction.mapping.map(pos);
-    };
-    editor.on('transaction', followEdits);
+    const id = `upload-${uploadSeq.current++}`;
+    const previewUrl = URL.createObjectURL(file);
+    showUploadPreview(editor, id, previewUrl);
+    // Holds the Save / Preview & publish buttons: the image is not in the
+    // document yet, so saving now would quietly drop it.
+    const endUpload = beginUpload();
 
-    const toastId = toast.loading('Uploading image...');
     try {
       const url = await uploadPublicImage({
         dir: 'blog-images/inline',
         file,
         maxDim: MAX_DIM.article,
       });
-      editor
-        .chain()
-        .focus()
-        .insertContentAt(pos, { type: 'image', attrs: { src: url } })
-        .run();
-      toast.success('Image uploaded', { id: toastId });
+      const pos = uploadPreviewPos(editor, id);
+      if (pos === null) return false;
+      // No .focus() — the writer may well have clicked into another field
+      // during a slow upload, and the position is already pinned.
+      editor.chain().insertContentAt(pos, { type: 'image', attrs: { src: url } }).run();
       return true;
     } catch {
-      toast.error('Failed to upload image', { id: toastId });
+      toast.error('Failed to upload image');
       return false;
     } finally {
-      editor.off('transaction', followEdits);
+      hideUploadPreview(editor, id);
+      URL.revokeObjectURL(previewUrl);
+      endUpload();
     }
   };
 
@@ -108,6 +117,7 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
       // The extension also registers a paste rule, so pasting a YouTube link on
       // an empty line embeds it without touching the toolbar.
       Youtube.configure({ nocookie: true, modestBranding: true, width: 640, height: 360 }),
+      ImageUploadPreview,
       Placeholder.configure({ placeholder: placeholder || 'Start writing...' }),
     ],
     content,

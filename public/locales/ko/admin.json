@@ -356,6 +356,7 @@
     "back": "뒤로",
     "slug": "Slug",
     "coverImageUrl": "커버 이미지 URL",
+    "uploadingImages": "이미지 업로드 중…",
     "coverUploaded": "커버 이미지 업로드 완료",
     "coverUploadFailed": "이미지 업로드 실패",
     "tags": "태그 (쉼표로 구분)",

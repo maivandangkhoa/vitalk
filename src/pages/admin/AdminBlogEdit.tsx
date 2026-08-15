@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Loader2, Eye, ArrowLeft, Upload, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
+import { beginUpload, usePendingUploads } from '@/lib/pendingUploads';
 import { toAsciiSlug } from '@/lib/slug';
 import { useAdminBlogPost, useSaveBlogPost } from '@/hooks/useBlog';
 import type { TranslatedPost } from '@/lib/aiTranslate';
@@ -45,6 +46,7 @@ export default function AdminBlogEdit() {
   const [uploading, setUploading] = useState(false);
   const [writerOpen, setWriterOpen] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const pendingUploads = usePendingUploads();
 
   const activeLang = activeTab as Language;
 
@@ -64,6 +66,9 @@ export default function AdminBlogEdit() {
       return;
     }
     setUploading(true);
+    // Same race as an inline image: the URL only reaches state when the upload
+    // lands, so a save before then keeps the old cover.
+    const endUpload = beginUpload();
     try {
       const url = await uploadPublicImage({
         dir: 'blog-covers',
@@ -75,6 +80,7 @@ export default function AdminBlogEdit() {
     } catch {
       toast.error(t('blog.coverUploadFailed'));
     } finally {
+      endUpload();
       setUploading(false);
       if (coverInputRef.current) coverInputRef.current.value = '';
     }
@@ -101,16 +107,27 @@ export default function AdminBlogEdit() {
     }
   }, [isNew, title.en, title.ko, title.vi]);
 
-  const handleSave = async () => {
-    const hasTitle = LANGUAGES.some((l) => title[l.code].trim());
-    if (!hasTitle) {
+  /** Shared gate for both save paths; says why when it refuses. */
+  const canSave = (): boolean => {
+    if (!LANGUAGES.some((l) => title[l.code].trim())) {
       toast.error(t('blog.titleRequired'));
-      return;
+      return false;
     }
     if (!slug.trim()) {
       toast.error(t('blog.slugRequired'));
-      return;
+      return false;
     }
+    // The buttons are disabled while uploads run, so this is the backstop for
+    // anything that reaches a save another way.
+    if (pendingUploads > 0) {
+      toast.error(t('blog.uploadingImages'));
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!canSave()) return;
 
     try {
       const postData = {
@@ -135,15 +152,7 @@ export default function AdminBlogEdit() {
   };
 
   const handlePreviewPublish = async () => {
-    const hasTitle = LANGUAGES.some((l) => title[l.code].trim());
-    if (!hasTitle) {
-      toast.error(t('blog.titleRequired'));
-      return;
-    }
-    if (!slug.trim()) {
-      toast.error(t('blog.slugRequired'));
-      return;
-    }
+    if (!canSave()) return;
 
     try {
       const postData = {
@@ -204,12 +213,18 @@ export default function AdminBlogEdit() {
             <Sparkles className="mr-2 h-4 w-4" />
             {t('blog.writer.open')}
           </Button>
-          <Button variant="outline" onClick={handleSave} disabled={saving}>
+          {pendingUploads > 0 && (
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              {t('blog.uploadingImages')}
+            </span>
+          )}
+          <Button variant="outline" onClick={handleSave} disabled={saving || pendingUploads > 0}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Save className="mr-2 h-4 w-4" />
             {t('blog.saveDraft')}
           </Button>
-          <Button onClick={handlePreviewPublish} disabled={saving}>
+          <Button onClick={handlePreviewPublish} disabled={saving || pendingUploads > 0}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Eye className="mr-2 h-4 w-4" />
             {t('blog.previewPublish')}

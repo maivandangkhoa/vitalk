@@ -356,6 +356,7 @@
     "back": "Back",
     "slug": "Slug",
     "coverImageUrl": "Cover Image URL",
+    "uploadingImages": "Uploading images…",
     "coverUploaded": "Cover image uploaded",
     "coverUploadFailed": "Failed to upload image",
     "tags": "Tags (comma separated)",
