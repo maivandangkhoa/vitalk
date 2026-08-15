@@ -197,6 +197,22 @@ async function fetchMobileNextData(
 }
 
 /**
+ * The most useful URL on a Naver <img>.
+ *
+ * Naver lazy-loads: `src` holds a blurred 80px placeholder while the real image
+ * waits in `data-lazy-src` (or `data-src`). Reading `src` first is how imported
+ * posts ended up carrying `?type=w80_blur` thumbnails instead of pictures.
+ */
+function bestImageAttr(img: { attr(name: string): string | undefined }): string {
+  return (
+    img.attr("data-lazy-src") ||
+    img.attr("data-src") ||
+    img.attr("src") ||
+    ""
+  );
+}
+
+/**
  * Extract content from SmartEditor ONE (SE3) - the newest Naver editor.
  */
 function extractSE3Content($: cheerio.CheerioAPI): string {
@@ -219,14 +235,14 @@ function extractSE3Content($: cheerio.CheerioAPI): string {
       });
     } else if ($mod.hasClass("se-module-image")) {
       const img = $mod.find("img.se-image-resource");
-      const src = safeSrc(img.attr("data-src") || img.attr("src") || "");
+      const src = safeSrc(bestImageAttr(img));
       if (src) {
         blocks.push(`<p><img src="${src}" alt="" /></p>`);
       }
     } else if ($mod.hasClass("se-module-sticker")) {
       // Sticker/emoji - skip or get image
       const img = $mod.find("img");
-      const src = safeSrc(img.attr("data-src") || img.attr("src") || "");
+      const src = safeSrc(bestImageAttr(img));
       if (src) {
         blocks.push(`<p><img src="${src}" alt="" style="max-width:120px" /></p>`);
       }
@@ -296,7 +312,7 @@ async function uploadNaverImages(
   logNo: string
 ): Promise<{ content: string; coverImageUrl: string }> {
   const bucket = admin.storage().bucket();
-  const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
+  const imgRegex = /<img[^>]*>/g;
   const isNaverImage = (url: string) => {
     try {
       const u = new URL(url);
@@ -317,8 +333,14 @@ async function uploadNaverImages(
     }
   };
 
-  // Inline images come with ?type=w773 from the editor. Upgrade to w966 (the
-  // width Naver renders on desktop blog view) when the requested size is smaller.
+  // Inline images come with ?type=w773 from the editor, or ?type=w80_blur when
+  // Naver lazy-loads them. Upgrade to w966, the width Naver renders on desktop
+  // blog view.
+  //
+  // Plain w966, NOT w966_q90: measured against a live post, w966 returns the
+  // real 900x676 image while w966_q90 is a 404. That 404 is why imported posts
+  // kept their blurred 80px placeholders — the fetch failed and the original
+  // URL stayed in the content.
   const upgradedInlineUrl = (url: string): string => {
     try {
       const u = new URL(url);
@@ -327,7 +349,7 @@ async function uploadNaverImages(
         const widthMatch = type.match(/^w(\d+)/);
         const currentWidth = widthMatch ? parseInt(widthMatch[1], 10) : 0;
         if (currentWidth < 966) {
-          u.searchParams.set("type", "w966_q90");
+          u.searchParams.set("type", "w966");
         }
       }
       return u.toString();
@@ -336,31 +358,56 @@ async function uploadNaverImages(
     }
   };
 
+  /**
+   * Fetches the best of several spellings of one image and stores it.
+   *
+   * Trying more than one matters because the upgraded URL is a guess: when it
+   * misses, the alternative is leaving a hotlink to Naver in the post, which
+   * fails to load from our domain. The largest successful response wins rather
+   * than the first — the placeholder spelling answers 200 with a blurred 80px
+   * thumbnail, so "it responded" is not the same as "it is the image".
+   */
   const uploadImage = async (
-    imageUrl: string,
+    candidates: string[],
     index: number
   ): Promise<string | null> => {
+    let best: { buffer: Buffer; contentType: string } | null = null;
+
+    for (const imageUrl of Array.from(new Set(candidates))) {
+      try {
+        const res = await fetch(imageUrl, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            Referer: `https://blog.naver.com/${blogId}/${logNo}`,
+          },
+        });
+        if (!res.ok) continue;
+
+        const buffer = Buffer.from(await res.arrayBuffer());
+        if (best && buffer.length <= best.buffer.length) continue;
+        best = {
+          buffer,
+          contentType: res.headers.get("content-type") || "image/jpeg",
+        };
+      } catch (err) {
+        console.error(`Fetching image ${index} from ${imageUrl} failed:`, err);
+      }
+    }
+
+    if (!best) {
+      console.error(`Image ${index}: every candidate URL failed`);
+      return null;
+    }
+
     try {
-      const res = await fetch(imageUrl, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          Referer: `https://blog.naver.com/${blogId}/${logNo}`,
-        },
-      });
-      if (!res.ok) return null;
-
-      const contentType = res.headers.get("content-type") || "image/jpeg";
+      const { buffer, contentType } = best;
       const ext = contentType.includes("png") ? "png" : contentType.includes("gif") ? "gif" : contentType.includes("webp") ? "webp" : "jpg";
-      const buffer = Buffer.from(await res.arrayBuffer());
-
       const filePath = `blog-images/${blogId}-${logNo}/${index}.${ext}`;
-      const file = bucket.file(filePath);
-      await file.save(buffer, {
-        metadata: { contentType },
+      await bucket.file(filePath).save(buffer, {
+        metadata: { contentType, cacheControl: "public, max-age=31536000, immutable" },
         public: true,
       });
-
       return `https://storage.googleapis.com/${bucket.name}/${filePath}`;
     } catch (err) {
       console.error(`Failed to upload image ${index}:`, err);
@@ -374,20 +421,31 @@ async function uploadNaverImages(
   type Group = { fetchUrl: string; index: number; originals: Set<string> };
   const groups = new Map<string, Group>();
 
-  const registerInline = (originalUrl: string) => {
-    if (!isNaverImage(originalUrl)) return;
-    const key = dedupKey(originalUrl);
+  /**
+   * Naver lazy-loads images: `src` carries an 80px blurred placeholder and the
+   * real one sits in `data-lazy-src`. Both spell the same path, so they collapse
+   * into one group — but every spelling has to be remembered, because whichever
+   * the stored HTML happens to carry is the one that needs rewriting.
+   */
+  const registerTag = (tag: string) => {
+    const urls = [
+      tag.match(/data-lazy-src="([^"]+)"/)?.[1],
+      tag.match(/\ssrc="([^"]+)"/)?.[1],
+    ].filter((url): url is string => !!url && isNaverImage(url));
+    if (!urls.length) return;
+
+    const key = dedupKey(urls[0]);
     let group = groups.get(key);
     if (!group) {
-      group = { fetchUrl: upgradedInlineUrl(originalUrl), index: groups.size, originals: new Set() };
+      group = { fetchUrl: upgradedInlineUrl(urls[0]), index: groups.size, originals: new Set() };
       groups.set(key, group);
     }
-    group.originals.add(originalUrl);
+    urls.forEach((url) => group.originals.add(url));
   };
 
   let match;
   while ((match = imgRegex.exec(contentHtml)) !== null) {
-    registerInline(match[1]);
+    registerTag(match[0]);
   }
 
   if (coverImageUrl && isNaverImage(coverImageUrl)) {
@@ -408,7 +466,7 @@ async function uploadNaverImages(
   for (let i = 0; i < tasks.length; i += batchSize) {
     const batch = tasks.slice(i, i + batchSize);
     const results = await Promise.all(
-      batch.map(([, g]) => uploadImage(g.fetchUrl, g.index))
+      batch.map(([, g]) => uploadImage([g.fetchUrl, ...g.originals], g.index))
     );
     results.forEach((newUrl, j) => {
       if (newUrl) uploadedByKey.set(batch[j][0], newUrl);
