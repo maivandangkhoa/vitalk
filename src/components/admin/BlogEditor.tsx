@@ -4,6 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import Youtube from '@tiptap/extension-youtube';
 import { Button } from '@/components/ui/button';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +30,7 @@ import {
   Loader2,
   Sparkles,
   X,
+  SquarePlay as VideoIcon,
 } from 'lucide-react';
 
 const AiImageDialog = lazy(() => import('@/components/admin/AiImageDialog'));
@@ -102,6 +104,10 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
       StarterKit,
       Link.configure({ openOnClick: false }),
       Image,
+      // 640x360 so the stored markup is already 16:9; index.css makes it fluid.
+      // The extension also registers a paste rule, so pasting a YouTube link on
+      // an empty line embeds it without touching the toolbar.
+      Youtube.configure({ nocookie: true, modestBranding: true, width: 640, height: 360 }),
       Placeholder.configure({ placeholder: placeholder || 'Start writing...' }),
     ],
     content,
@@ -145,6 +151,16 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
     const url = window.prompt('Enter URL:');
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
+
+  const addVideo = () => {
+    const url = window.prompt('Paste YouTube URL:');
+    if (!url?.trim()) return;
+    // setYoutubeVideo understands watch?v=, youtu.be and /shorts/, and returns
+    // false for anything it can't turn into an embed.
+    if (!editor.chain().focus().setYoutubeVideo({ src: url.trim() }).run()) {
+      toast.error('Not a valid YouTube link');
     }
   };
 
@@ -248,6 +264,7 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
 
         <ToolbarButton onClick={addLink} active={editor.isActive('link')} icon={<Link2 className="h-4 w-4" />} />
         <ToolbarButton onClick={() => setShowImageDialog(true)} icon={<ImageIcon className="h-4 w-4" />} />
+        <ToolbarButton onClick={addVideo} active={editor.isActive('youtube')} icon={<VideoIcon className="h-4 w-4" />} />
 
         <div className="mx-1 w-px bg-border" />
 

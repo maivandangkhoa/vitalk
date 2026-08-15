@@ -148,3 +148,21 @@
     font-size: 16px;
   }
 }
+
+/*
+ * YouTube embeds in rich text (blog editor + article + policy page). Tiptap
+ * hard-codes width/height on the iframe it serializes, so without this the
+ * player overflows on mobile instead of scaling. Unlayered for the same reason
+ * as the rule above: it has to outrank the typography plugin's own iframe size.
+ */
+[data-youtube-video] {
+  margin: 1.5rem 0;
+}
+
+[data-youtube-video] iframe {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 0.75rem;
+}

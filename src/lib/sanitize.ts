@@ -1,15 +1,48 @@
 import DOMPurify from 'dompurify';
 
+/** The only iframe src an article is allowed to carry: a YouTube player. */
+const YOUTUBE_EMBED = /^https:\/\/(?:www\.)?youtube(?:-nocookie)?\.com\/embed\/[\w-]+/i;
+
+let contentPurifier: typeof DOMPurify | null = null;
+
+function getContentPurifier(): typeof DOMPurify {
+  if (contentPurifier) return contentPurifier;
+  const instance = DOMPurify();
+  instance.addHook('afterSanitizeAttributes', (node) => {
+    if (node.nodeName !== 'IFRAME') return;
+    // iframes are allowed as a tag so YouTube embeds survive; everything that
+    // isn't a YouTube player goes, frame and all.
+    if (!YOUTUBE_EMBED.test(node.getAttribute('src') || '')) {
+      node.remove();
+      return;
+    }
+    // Tiptap serializes its player options onto the iframe. Pin the attributes
+    // that matter instead of trusting whatever ended up in the stored HTML.
+    node.setAttribute('loading', 'lazy');
+    node.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+    node.setAttribute('allowfullscreen', '');
+    node.setAttribute(
+      'allow',
+      'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+    );
+  });
+  contentPurifier = instance;
+  return instance;
+}
+
 /**
  * Sanitize admin-authored rich-text HTML (blog posts, policy page) before
  * rendering it with dangerouslySetInnerHTML. Defense-in-depth: the source is
  * admin-only, but this blocks stored XSS if an admin account is ever abused.
  */
 export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
+  return getContentPurifier().sanitize(html, {
     // Force links to open safely and strip javascript:/data: URIs.
-    ADD_ATTR: ['target', 'rel'],
-    FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form'],
+    // The iframe attrs are not in DOMPurify's default set; the hook above is
+    // what keeps the tag itself from being a hole.
+    ADD_TAGS: ['iframe'],
+    ADD_ATTR: ['target', 'rel', 'allow', 'allowfullscreen', 'frameborder', 'referrerpolicy'],
+    FORBID_TAGS: ['script', 'style', 'object', 'embed', 'form'],
     FORBID_ATTR: ['onerror', 'onload', 'onclick'],
   });
 }

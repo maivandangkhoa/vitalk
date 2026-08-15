@@ -115,6 +115,8 @@ Rules:
   diacritic intact. Translate only the explanation around them.
 - Preserve the HTML exactly: same tags, same order, same nesting. Translate only the text
   between the tags. Do not add, drop or rename a single tag.
+- Copy any <div data-youtube-video>...</div> block through character for character. There is
+  nothing to translate inside it, and rewriting an attribute breaks the embed.
 - Natural ${target}, the way a native teacher would write it — not a literal gloss.
 
 Answer with exactly these three tags and nothing else:
