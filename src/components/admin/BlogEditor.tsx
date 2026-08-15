@@ -47,6 +47,25 @@ function imageFilesOf(data: DataTransfer | null): File[] {
   return Array.from(data?.files ?? []).filter((f) => f.type.startsWith('image/'));
 }
 
+/**
+ * Resolves once the browser holds the decoded bitmap for `url`.
+ *
+ * A freshly inserted `<img>` has no size until its bytes arrive, so it lays out
+ * at zero height and shoves the page around a moment later. Decoding before the
+ * swap means the real image is already paintable when it replaces the preview.
+ * The timeout is a safety valve: a stalled request must not pin the preview —
+ * and with it the Save button — indefinitely.
+ */
+function preload(url: string): Promise<unknown> {
+  // Not `new Image()` — the Tiptap extension of that name is imported here.
+  const img = document.createElement('img');
+  img.src = url;
+  return Promise.race([
+    img.decode().catch(() => {}),
+    new Promise((resolve) => setTimeout(resolve, 5000)),
+  ]);
+}
+
 interface BlogEditorProps {
   content: string;
   onChange: (html: string) => void;
@@ -92,6 +111,7 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
         file,
         maxDim: MAX_DIM.article,
       });
+      await preload(url);
       const pos = uploadPreviewPos(editor, id);
       if (pos === null) return false;
       // No .focus() — the writer may well have clicked into another field

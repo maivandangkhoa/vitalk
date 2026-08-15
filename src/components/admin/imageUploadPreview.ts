@@ -31,13 +31,19 @@ interface PreviewAction {
  */
 function previewElement(previewUrl: string): HTMLElement {
   const wrap = document.createElement('span');
-  wrap.style.cssText = 'position:relative;display:inline-block;margin:1em 0';
+  // A block box with no margin of its own, so the image's `prose` margins
+  // collapse straight through it: the wrapper then sits exactly on the image
+  // and the badge can be positioned against it without knowing those margins.
+  wrap.style.cssText = 'position:relative;display:block';
   wrap.contentEditable = 'false';
 
   const img = document.createElement('img');
   img.src = previewUrl;
-  img.style.cssText =
-    'display:block;margin:0;max-height:20rem;max-width:100%;border-radius:0.5rem';
+  // Deliberately unsized. The editor's own `prose` rules give this the same box
+  // the finished image will get, so the swap doesn't move the page — anything
+  // set here, a max-height above all, turns into a jump when the real image
+  // takes over.
+  img.style.opacity = '0.6';
   wrap.appendChild(img);
 
   const badge = document.createElement('span');
@@ -95,13 +101,21 @@ export const ImageUploadPreview = Extension.create({
   },
 });
 
-/** Drops a preview at the caret. `id` identifies it for the two calls below. */
+/**
+ * Drops a preview by the caret. `id` identifies it for the two calls below.
+ *
+ * It goes at the block boundary after the caret's block, not at the caret
+ * itself: an image is a block, so it will end up a sibling of the paragraphs
+ * either way, and a preview rendered *inside* a paragraph collapses its margins
+ * against different neighbours — which moved everything below by 40px the
+ * moment the real image took over. Same place in, same place out.
+ */
 export function showUploadPreview(editor: Editor, id: string, previewUrl: string): void {
   if (editor.isDestroyed) return;
   const { tr } = editor.state;
-  editor.view.dispatch(
-    tr.setMeta(previewKey, { add: { id, pos: tr.selection.from, previewUrl } })
-  );
+  const { $from } = tr.selection;
+  const pos = $from.depth ? $from.after() : $from.pos;
+  editor.view.dispatch(tr.setMeta(previewKey, { add: { id, pos, previewUrl } }));
 }
 
 /** Where the preview sits now, after any edits made during the upload. */
