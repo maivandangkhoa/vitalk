@@ -1,6 +1,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/v2";
 import * as admin from "firebase-admin";
+import { sweepOrphanImages } from "./sweepOrphanImages";
 
 /** Signaling data is worthless once the lesson is over; keep a week for support. */
 const RETENTION_DAYS = 7;
@@ -16,46 +17,63 @@ const CONCURRENCY = 10;
  * them, they are never read again after the connection is up, and nothing else
  * would ever remove them.
  */
+/**
+ * The nightly housekeeping run.
+ *
+ * It carries the orphaned-image sweep as well, which has nothing to do with
+ * calls: giving that its own schedule would add a Cloud Scheduler job costing
+ * about a hundred times the storage it reclaims. The sweep is wrapped so that
+ * whichever of the two fails, the other still runs.
+ */
 export const cleanupOldCalls = onSchedule(
   // A recursive delete is several round trips, and the default minute was not
   // enough for a full batch of them — the run died part-way through and the
   // rest of the rooms waited for tomorrow, every day.
   { schedule: "30 3 * * *", timeZone: "Asia/Seoul", timeoutSeconds: 540 },
   async () => {
-    const cutoff = admin.firestore.Timestamp.fromMillis(
-      Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000
+    await removeFinishedCalls().catch((err) =>
+      logger.error("cleanupOldCalls: removing call rooms failed", err)
     );
-
-    const stale = await admin
-      .firestore()
-      .collection("calls")
-      .where("updatedAt", "<", cutoff)
-      .limit(BATCH_SIZE)
-      .get();
-
-    if (stale.empty) {
-      logger.info("cleanupOldCalls: nothing to remove");
-      return;
-    }
-
-    // recursiveDelete handles the subcollection, which a plain doc delete would
-    // silently orphan. A few at a time rather than one after another: each is
-    // latency, not work, and strictly sequential was what put a full batch past
-    // the timeout.
-    const firestore = admin.firestore();
-    let removed = 0;
-    for (let i = 0; i < stale.docs.length; i += CONCURRENCY) {
-      const chunk = stale.docs.slice(i, i + CONCURRENCY);
-      const results = await Promise.allSettled(
-        chunk.map((doc) => firestore.recursiveDelete(doc.ref))
-      );
-      // One room that refuses to go must not take the rest of the run with it.
-      for (const result of results) {
-        if (result.status === "fulfilled") removed++;
-        else logger.error("cleanupOldCalls: deleting a room failed", result.reason);
-      }
-    }
-
-    logger.info(`cleanupOldCalls: removed ${removed}/${stale.size} call rooms`);
+    await sweepOrphanImages().catch((err) =>
+      logger.error("cleanupOldCalls: image sweep failed", err)
+    );
   }
 );
+
+async function removeFinishedCalls(): Promise<void> {
+  const cutoff = admin.firestore.Timestamp.fromMillis(
+    Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000
+  );
+
+  const stale = await admin
+    .firestore()
+    .collection("calls")
+    .where("updatedAt", "<", cutoff)
+    .limit(BATCH_SIZE)
+    .get();
+
+  if (stale.empty) {
+    logger.info("cleanupOldCalls: nothing to remove");
+    return;
+  }
+
+  // recursiveDelete handles the subcollection, which a plain doc delete would
+  // silently orphan. A few at a time rather than one after another: each is
+  // latency, not work, and strictly sequential was what put a full batch past
+  // the timeout.
+  const firestore = admin.firestore();
+  let removed = 0;
+  for (let i = 0; i < stale.docs.length; i += CONCURRENCY) {
+    const chunk = stale.docs.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(
+      chunk.map((doc) => firestore.recursiveDelete(doc.ref))
+    );
+    // One room that refuses to go must not take the rest of the run with it.
+    for (const result of results) {
+      if (result.status === "fulfilled") removed++;
+      else logger.error("cleanupOldCalls: deleting a room failed", result.reason);
+    }
+  }
+
+  logger.info(`cleanupOldCalls: removed ${removed}/${stale.size} call rooms`);
+}

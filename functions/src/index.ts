@@ -38,7 +38,6 @@ export { onCallWritten } from "./callTriggers";
 export { sendLessonReminders } from "./reminders";
 export { cleanupOldCalls } from "./callCleanup";
 export { markBookingsCompleted } from "./completeBookings";
-export { sweepOrphanImages } from "./sweepOrphanImages";
 
 // Blog link previews (per-post Open Graph tags for crawlers)
 export { blogMeta } from "./ogBlog";

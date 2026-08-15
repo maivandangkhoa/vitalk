@@ -1,4 +1,3 @@
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/v2";
 import * as admin from "firebase-admin";
 
@@ -9,6 +8,10 @@ import * as admin from "firebase-admin";
  * deletes: an image pasted into a post and then removed, a draft abandoned
  * before it was saved, a replaced cover or avatar, a deleted post (which only
  * deletes its Firestore document) — all leave the object behind.
+ *
+ * Runs from cleanupOldCalls rather than on a schedule of its own: a second
+ * Cloud Scheduler job costs about 0.10 USD a month, roughly a hundred times the
+ * storage it reclaims here.
  */
 
 /**
@@ -110,46 +113,43 @@ export async function findOrphanImages(): Promise<OrphanReport> {
   return { orphans, inspected, referenced: referenced.size };
 }
 
-export const sweepOrphanImages = onSchedule(
-  { schedule: "0 4 * * 1", timeZone: "Asia/Seoul", timeoutSeconds: 540 },
-  async () => {
-    const { orphans, inspected, referenced } = await findOrphanImages();
+export async function sweepOrphanImages(): Promise<void> {
+  const { orphans, inspected, referenced } = await findOrphanImages();
 
-    // A scan that found nothing is far more likely to be broken than to mean
-    // the site has no images, and acting on it would empty the bucket.
-    if (referenced === 0) {
-      logger.error("sweepOrphanImages: no references found at all, refusing to delete");
-      return;
-    }
-
-    if (!orphans.length) {
-      logger.info(`sweepOrphanImages: nothing to remove (${inspected} objects)`);
-      return;
-    }
-
-    const bucket = admin.storage().bucket();
-    let removed = 0;
-    let bytes = 0;
-    for (let i = 0; i < orphans.length; i += CONCURRENCY) {
-      const chunk = orphans.slice(i, i + CONCURRENCY);
-      const results = await Promise.allSettled(
-        chunk.map((orphan) => bucket.file(orphan.name).delete())
-      );
-      results.forEach((result, index) => {
-        // One stubborn object must not take the rest of the run with it.
-        if (result.status === "fulfilled") {
-          removed++;
-          bytes += chunk[index].bytes;
-        } else {
-          logger.error(`sweepOrphanImages: ${chunk[index].name} failed`, result.reason);
-        }
-      });
-    }
-
-    logger.info(
-      `sweepOrphanImages: removed ${removed}/${orphans.length} orphans ` +
-        `(${(bytes / 1e6).toFixed(1)} MB) of ${inspected} objects, ` +
-        `${referenced} paths referenced`
-    );
+  // A scan that found nothing is far more likely to be broken than to mean the
+  // site has no images, and acting on it would empty the bucket.
+  if (referenced === 0) {
+    logger.error("sweepOrphanImages: no references found at all, refusing to delete");
+    return;
   }
-);
+
+  if (!orphans.length) {
+    logger.info(`sweepOrphanImages: nothing to remove (${inspected} objects)`);
+    return;
+  }
+
+  const bucket = admin.storage().bucket();
+  let removed = 0;
+  let bytes = 0;
+  for (let i = 0; i < orphans.length; i += CONCURRENCY) {
+    const chunk = orphans.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(
+      chunk.map((orphan) => bucket.file(orphan.name).delete())
+    );
+    results.forEach((result, index) => {
+      // One stubborn object must not take the rest of the run with it.
+      if (result.status === "fulfilled") {
+        removed++;
+        bytes += chunk[index].bytes;
+      } else {
+        logger.error(`sweepOrphanImages: ${chunk[index].name} failed`, result.reason);
+      }
+    });
+  }
+
+  logger.info(
+    `sweepOrphanImages: removed ${removed}/${orphans.length} orphans ` +
+      `(${(bytes / 1e6).toFixed(1)} MB) of ${inspected} objects, ` +
+      `${referenced} paths referenced`
+  );
+}
