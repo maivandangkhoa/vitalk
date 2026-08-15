@@ -35,6 +35,7 @@ import { useCurrencySettings } from '@/hooks/useCurrency';
 import { getDurationPrice, formatDurationPrice, isAllowedDuration } from '@/lib/pricing';
 import { ALLOWED_DURATIONS, type AllowedDuration } from '@/lib/constants';
 import { AnimatedSection } from '@/components/shared/motion';
+import { trackEvent } from '@/lib/analytics';
 import { useLocations } from '@/hooks/useLocations';
 import type { OnlinePlatform, PaymentMethod, Language } from '@/types';
 import { toast } from 'sonner';
@@ -302,6 +303,25 @@ export default function BookingPage() {
     }
   };
 
+  // GA4 e-commerce shape, shared by begin_checkout and purchase so the two
+  // ends of the funnel describe the same lesson. Always in USD: that is what
+  // the booking is written in, and a report mixing currencies sums to nothing.
+  const bookingAnalytics = () => ({
+    currency: 'USD',
+    value: getDurationPrice(selectedTeacher, selectedDuration, 'USD', config),
+    payment_type: paymentMethod,
+    items: [
+      {
+        item_id: selectedLessonData?.id,
+        item_name: selectedLessonData?.title.en,
+        item_category: lessonFormat,
+        item_variant: `${selectedDuration}min`,
+        affiliation: selectedTeacher?.name,
+        quantity: 1,
+      },
+    ],
+  });
+
   const handleConfirmBooking = async () => {
     if (!user) {
       // Save draft so we can resume at the same step after login
@@ -365,12 +385,18 @@ export default function BookingPage() {
 
       setCreatedBookingId(bookingId);
       setShowPaymentUI(true);
+      trackEvent('begin_checkout', bookingAnalytics());
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('bookingFailed'));
     }
   };
 
   const handlePaymentSuccess = () => {
+    // For PayPal and Toss this is a settled payment. For a bank transfer it is
+    // only the student saying they sent one — nothing has been verified yet,
+    // which is why payment_type rides along: revenue reports need to be able
+    // to separate the two.
+    trackEvent('purchase', { transaction_id: createdBookingId, ...bookingAnalytics() });
     setBookingComplete(true);
     setShowPaymentUI(false);
   };
