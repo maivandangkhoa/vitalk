@@ -1,5 +1,21 @@
 import type { MultiLangText } from './common';
 
+/**
+ * Where an imported post came from, so it can be re-synced.
+ *
+ * Absent on posts written here, and on everything imported before this existed
+ * — the importer used to drop blogId/logNo the moment it had the content, which
+ * left no way back to the original. Sync asks for the URL once in that case.
+ */
+export interface BlogPostSource {
+  platform: 'naver';
+  blogId: string;
+  logNo: string;
+  /** Fingerprint of the source as of the last sync; drives "has it changed?". */
+  contentHash: string;
+  syncedAt: Date | null;
+}
+
 export interface BlogPost {
   id: string;
   slug: string;
@@ -13,6 +29,7 @@ export interface BlogPost {
   createdAt: Date;
   updatedAt: Date;
   viewCount: number;
+  source?: BlogPostSource;
 }
 
 /**

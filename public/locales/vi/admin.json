@@ -405,6 +405,14 @@
       "translateTo": "Dịch sang {{count}} thứ tiếng",
       "imageNotePlaceholder": "vd: sáng hơn, bỏ cái ghế đi, chụp gần hơn…",
       "applyNote": "Chỉnh rồi sinh lại"
+    },
+    "sync": {
+      "button": "Đồng bộ từ Naver",
+      "askUrl": "Dán URL bài Naver gốc của bài này:",
+      "upToDate": "Bài trên Naver không thay đổi",
+      "updated": "Đã cập nhật bản tiếng Hàn — xem lại rồi bấm Lưu",
+      "translationsStale": "Các bản dịch ({{langs}}) giờ đã cũ hơn bản tiếng Hàn",
+      "failed": "Không đọc được bài trên Naver"
     }
   },
   "policy": {

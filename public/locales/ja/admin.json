@@ -405,6 +405,14 @@
       "translateTo": "{{count}}言語に翻訳",
       "imageNotePlaceholder": "例: もっと明るく、椅子は外して、寄って…",
       "applyNote": "直して再生成"
+    },
+    "sync": {
+      "button": "Naverから同期",
+      "askUrl": "この記事の元となったNaverブログのURLを貼り付けてください:",
+      "upToDate": "Naverの記事に変更はありません",
+      "updated": "韓国語版を更新しました — 確認して保存してください",
+      "translationsStale": "翻訳（{{langs}}）が韓国語本文より古くなりました",
+      "failed": "Naverの記事を読み取れませんでした"
     }
   },
   "policy": {

@@ -171,11 +171,16 @@ export function useSaveBlogPost() {
       data: Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt' | 'viewCount'>
     ): Promise<string> => {
       setLoading(true);
+      // Firestore rejects an explicit undefined, and `source` is absent on every
+      // post not imported from elsewhere.
+      const clean = Object.fromEntries(
+        Object.entries(data).filter(([, value]) => value !== undefined)
+      );
       try {
         if (id) {
           // Update
           await updateDoc(doc(db, 'blogPosts', id), {
-            ...data,
+            ...clean,
             updatedAt: serverTimestamp(),
           });
           return id;
@@ -183,7 +188,7 @@ export function useSaveBlogPost() {
           // Create
           const ref = doc(collection(db, 'blogPosts'));
           await setDoc(ref, {
-            ...data,
+            ...clean,
             viewCount: 0,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),

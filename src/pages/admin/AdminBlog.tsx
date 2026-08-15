@@ -69,11 +69,18 @@ export default function AdminBlog() {
     try {
       const fn = httpsCallable<
         { url: string },
-        { title: string; content: string; coverImageUrl: string }
+        {
+          title: string;
+          content: string;
+          coverImageUrl: string;
+          blogId?: string;
+          logNo?: string;
+          sourceHash?: string;
+        }
       >(functions, 'scrapeNaverBlog');
 
       const result = await fn({ url: naverUrl.trim() });
-      const { title, content, coverImageUrl } = result.data;
+      const { title, content, coverImageUrl, blogId, logNo, sourceHash } = result.data;
 
       // Create slug from title (support Unicode characters like Korean)
       const slug = title
@@ -94,6 +101,18 @@ export default function AdminBlog() {
         tags: [],
         isPublished: false,
         publishedAt: null,
+        // Keep the way back to the original, so the post can be re-synced when
+        // it is edited on Naver.
+        source:
+          blogId && logNo
+            ? {
+                platform: 'naver' as const,
+                blogId,
+                logNo,
+                contentHash: sourceHash || '',
+                syncedAt: new Date(),
+              }
+            : undefined,
       });
 
       toast.success(t('blog.importSuccess'));

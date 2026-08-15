@@ -405,6 +405,14 @@
       "translateTo": "Translate into {{count}}",
       "imageNotePlaceholder": "e.g. brighter, drop the chair, shoot it closer…",
       "applyNote": "Apply note & regenerate"
+    },
+    "sync": {
+      "button": "Sync from Naver",
+      "askUrl": "Paste the Naver blog URL this post came from:",
+      "upToDate": "Naver post is unchanged",
+      "updated": "Korean version updated — review it, then Save",
+      "translationsStale": "Translations ({{langs}}) are now older than the Korean text",
+      "failed": "Could not read the Naver post"
     }
   },
   "policy": {

@@ -5,14 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Loader2, Eye, ArrowLeft, Upload, Sparkles } from 'lucide-react';
+import { Save, Loader2, Eye, ArrowLeft, Upload, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
 import { beginUpload, usePendingUploads } from '@/lib/pendingUploads';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
 import { toAsciiSlug } from '@/lib/slug';
 import { useAdminBlogPost, useSaveBlogPost } from '@/hooks/useBlog';
 import type { TranslatedPost } from '@/lib/aiTranslate';
 import type { AiDraft } from '@/lib/aiWriter';
+import type { BlogPostSource } from '@/types/blog';
 import type { Language, MultiLangText } from '@/types';
 
 const BlogEditor = lazy(() => import('@/components/admin/BlogEditor'));
@@ -45,6 +48,8 @@ export default function AdminBlogEdit() {
   const [isPublished, setIsPublished] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [writerOpen, setWriterOpen] = useState(false);
+  const [source, setSource] = useState<BlogPostSource | undefined>();
+  const [syncing, setSyncing] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const pendingUploads = usePendingUploads();
 
@@ -96,14 +101,80 @@ export default function AdminBlogEdit() {
       setCoverImageUrl(post.coverImageUrl);
       setTags(post.tags.join(', '));
       setIsPublished(post.isPublished);
+      setSource(post.source);
     }
   }, [post]);
+
+  /**
+   * Pulls the Naver post again and drops the Korean version back in.
+   *
+   * Only `ko` and the cover are touched. The other languages are translations
+   * of the *old* Korean text, and overwriting them with Korean would be worse
+   * than leaving them stale — so it says so instead, and leaves the choice of
+   * re-translating to whoever is looking at it.
+   *
+   * Nothing is written here: the new text lands in the editor and waits for
+   * Save, like every other edit on this page.
+   */
+  const handleSyncFromNaver = async () => {
+    // Posts imported before the source was recorded have no way back, so ask
+    // once and keep the answer.
+    const url = source
+      ? `https://blog.naver.com/${source.blogId}/${source.logNo}`
+      : window.prompt(t('blog.sync.askUrl')) || '';
+    if (!url.trim()) return;
+
+    setSyncing(true);
+    try {
+      const fn = httpsCallable<
+        { url: string },
+        {
+          title: string;
+          content: string;
+          coverImageUrl: string;
+          blogId?: string;
+          logNo?: string;
+          sourceHash?: string;
+        }
+      >(functions, 'scrapeNaverBlog');
+      const { data } = await fn({ url: url.trim() });
+
+      if (source && data.sourceHash && data.sourceHash === source.contentHash) {
+        toast.info(t('blog.sync.upToDate'));
+        return;
+      }
+
+      setTitle((prev) => ({ ...prev, ko: data.title || prev.ko }));
+      setContent((prev) => ({ ...prev, ko: data.content }));
+      if (data.coverImageUrl) setCoverImageUrl(data.coverImageUrl);
+      if (data.blogId && data.logNo) {
+        setSource({
+          platform: 'naver',
+          blogId: data.blogId,
+          logNo: data.logNo,
+          contentHash: data.sourceHash || '',
+          syncedAt: new Date(),
+        });
+      }
+
+      toast.success(t('blog.sync.updated'));
+      const translated = LANGUAGES.filter((l) => l.code !== 'ko' && content[l.code].trim());
+      if (translated.length) {
+        toast.warning(t('blog.sync.translationsStale', { langs: translated.map((l) => l.label).join(', ') }));
+      }
+    } catch (err) {
+      console.error('Naver sync error:', err);
+      toast.error(t('blog.sync.failed'));
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Auto-generate slug from first available title (en > ko > vi)
   useEffect(() => {
     if (isNew) {
-      const source = title.en || title.ko || title.vi;
-      if (source) setSlug(toAsciiSlug(source) || `post-${Date.now()}`);
+      const titleSource = title.en || title.ko || title.vi;
+      if (titleSource) setSlug(toAsciiSlug(titleSource) || `post-${Date.now()}`);
     }
   }, [isNew, title.en, title.ko, title.vi]);
 
@@ -139,6 +210,7 @@ export default function AdminBlogEdit() {
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         isPublished,
         publishedAt: isPublished ? (post?.publishedAt || null) : null,
+        source,
       };
 
       const savedId = await saveBlogPost(isNew ? null : id!, postData);
@@ -164,6 +236,7 @@ export default function AdminBlogEdit() {
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         isPublished: false,
         publishedAt: null,
+        source,
       };
 
       await saveBlogPost(isNew ? null : id!, postData);
@@ -213,6 +286,16 @@ export default function AdminBlogEdit() {
             <Sparkles className="mr-2 h-4 w-4" />
             {t('blog.writer.open')}
           </Button>
+          {!isNew && (
+            <Button variant="outline" onClick={handleSyncFromNaver} disabled={syncing || saving}>
+              {syncing ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              {t('blog.sync.button')}
+            </Button>
+          )}
           {pendingUploads > 0 && (
             <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />

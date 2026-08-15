@@ -405,6 +405,14 @@
       "translateTo": "翻译成 {{count}} 种语言",
       "imageNotePlaceholder": "例: 亮一点、去掉椅子、拍近一些…",
       "applyNote": "按备注重新生成"
+    },
+    "sync": {
+      "button": "从 Naver 同步",
+      "askUrl": "请粘贴该文章的 Naver 博客原文链接：",
+      "upToDate": "Naver 原文没有变化",
+      "updated": "已更新韩文版本 — 请检查后保存",
+      "translationsStale": "译文（{{langs}}）现已落后于韩文原文",
+      "failed": "无法读取该 Naver 文章"
     }
   },
   "policy": {

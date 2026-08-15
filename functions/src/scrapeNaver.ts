@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import * as cheerio from "cheerio";
+import { createHash } from "crypto";
 
 interface ScrapeRequest {
   url: string;
@@ -26,6 +27,22 @@ interface ScrapeResult {
   title: string;
   content: string;
   coverImageUrl: string;
+  /** Which Naver post this came from, so it can be re-synced later. */
+  blogId?: string;
+  logNo?: string;
+  /**
+   * Fingerprint of what Naver holds right now.
+   *
+   * Taken from the extracted title and HTML *before* images are rehosted:
+   * our storage URLs carry a per-run index, so hashing the finished content
+   * would report a change whenever an image merely moved position.
+   */
+  sourceHash?: string;
+}
+
+/** Stable fingerprint of a scraped post. */
+function fingerprint(title: string, contentHtml: string): string {
+  return createHash("sha1").update(`${title}\n${contentHtml}`).digest("hex");
 }
 
 /**
@@ -606,6 +623,11 @@ export const scrapeNaverBlog = onCall(
           "Could not extract content. The post may be private or use an unsupported format."
         );
       }
+
+      // Fingerprint before rehosting, while the content is still Naver's own.
+      result.blogId = blogId;
+      result.logNo = logNo;
+      result.sourceHash = fingerprint(result.title, result.content);
 
       // Upload Naver images to Firebase Storage
       console.log("Uploading images to Firebase Storage...");
