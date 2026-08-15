@@ -5,9 +5,10 @@
     "subtitle": "HaviTalk is a platform that connects learners with passionate, experienced native Vietnamese teachers. Find the right teacher, book and manage your lessons with ease. Learn online or in-person, to fit your schedule and learning style.",
     "cta": "Book Your First Lesson",
     "stats": {
+      "rating": "{{rating}} Star Rating",
+      "reviews": "{{count}} Reviews",
       "teachers": "{{count}}+ Teachers",
-      "reviews": "{{count}}+ Reviews",
-      "rating": "{{rating}} Star Rating"
+      "native": "100% Native Teachers"
     }
   },
   "highlights": {

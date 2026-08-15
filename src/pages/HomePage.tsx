@@ -9,6 +9,7 @@ import {
   Quote,
   ArrowRight,
   Loader2,
+  MessageSquare,
   GraduationCap,
   Award,
   Globe,
@@ -40,6 +41,13 @@ const HIGHLIGHT_ICONS = [
   { key: 'multilingual', icon: Globe, color: 'bg-emerald-100 text-emerald-600' },
   { key: 'flexible', icon: Clock, color: 'bg-purple-100 text-purple-600' },
 ] as const;
+
+/**
+ * Below this, a count is worse than no count: it advertises how small the site
+ * still is. "3+ Teachers" invites "only three?", where the same slot spent on a
+ * quality claim invites nothing.
+ */
+const MIN_PROOF_COUNT = 10;
 
 export default function HomePage() {
   const { t } = useTranslation('home');
@@ -108,34 +116,37 @@ export default function HomePage() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
-          {/* Stats */}
-          {/* Each stat is omitted rather than shown at zero: an empty hero reads
-              as "still loading", while "0+ Reviews" reads as "nobody came". */}
+          {/* Stats — strongest proof first. The rating leads because it holds up
+              at any scale; a count only helps once it clears MIN_PROOF_COUNT, so
+              the review slot drops out below that and the teacher slot falls back
+              to a claim about the teachers rather than how many there are. */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-8 text-sm">
-            {teachers.length > 0 && (
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100">
-                  <Users className="h-4 w-4 text-indigo-600" />
-                </div>
-                <span className="font-medium">{t('hero.stats.teachers', { count: teachers.length })}</span>
-              </div>
-            )}
-            {reviewCount !== null && (
+            {averageRating && (
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100">
                   <Star className="h-4 w-4 text-amber-600" />
                 </div>
-                <span className="font-medium">{t('hero.stats.reviews', { count: reviewCount })}</span>
-              </div>
-            )}
-            {averageRating && (
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
-                  <Award className="h-4 w-4 text-emerald-600" />
-                </div>
                 <span className="font-medium">{t('hero.stats.rating', { rating: averageRating })}</span>
               </div>
             )}
+            {reviewCount !== null && reviewCount >= MIN_PROOF_COUNT && (
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
+                  <MessageSquare className="h-4 w-4 text-emerald-600" />
+                </div>
+                <span className="font-medium">{t('hero.stats.reviews', { count: reviewCount })}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100">
+                <Users className="h-4 w-4 text-indigo-600" />
+              </div>
+              <span className="font-medium">
+                {teachers.length >= MIN_PROOF_COUNT
+                  ? t('hero.stats.teachers', { count: teachers.length })
+                  : t('hero.stats.native')}
+              </span>
+            </div>
           </div>
         </AnimatedSection>
       </section>

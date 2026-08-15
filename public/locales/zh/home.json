@@ -5,9 +5,10 @@
     "subtitle": "HaviTalk 是连接学员与充满热情、经验丰富的越南语母语老师的平台。轻松找到合适的老师，预约并管理您的课程。根据您的日程和学习方式，选择在线或线下学习。",
     "cta": "预约首节课",
     "stats": {
+      "rating": "{{rating}} 星评分",
+      "reviews": "{{count}} 条评价",
       "teachers": "{{count}}+ 位老师",
-      "reviews": "{{count}}+ 条评价",
-      "rating": "{{rating}} 星评分"
+      "native": "100% 母语老师"
     }
   },
   "highlights": {

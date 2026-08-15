@@ -5,9 +5,10 @@
     "subtitle": "HaviTalk은 학습자와 열정적이고 경험 풍부한 원어민 베트남어 선생님을 연결해주는 플랫폼입니다. 나에게 맞는 선생님을 찾고, 수업 예약과 일정 관리를 손쉽게 하세요. 여러분의 일정과 학습 스타일에 맞춰 온라인 또는 대면으로 배울 수 있습니다.",
     "cta": "첫 수업 예약하기",
     "stats": {
+      "rating": "{{rating}} 별점",
+      "reviews": "리뷰 {{count}}개",
       "teachers": "{{count}}+ 선생님",
-      "reviews": "{{count}}+ 리뷰",
-      "rating": "{{rating}} 별점"
+      "native": "100% 원어민 선생님"
     }
   },
   "highlights": {

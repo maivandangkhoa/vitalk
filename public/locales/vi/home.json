@@ -5,9 +5,10 @@
     "subtitle": "HaviTalk là nền tảng kết nối người học với các giáo viên tiếng Việt bản ngữ nhiệt huyết, giàu kinh nghiệm. Tìm kiếm giáo viên phù hợp, đặt lịch và quản lý buổi học một cách dễ dàng. Học trực tuyến hoặc trực tiếp, tùy theo lịch trình và phong cách học của bạn.",
     "cta": "Đặt buổi học đầu tiên",
     "stats": {
+      "rating": "{{rating}} sao",
+      "reviews": "{{count}} Đánh giá",
       "teachers": "{{count}}+ Giáo viên",
-      "reviews": "{{count}}+ Đánh giá",
-      "rating": "{{rating}} sao"
+      "native": "100% Giáo viên bản ngữ"
     }
   },
   "highlights": {
