@@ -1,7 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import Youtube from '@tiptap/extension-youtube';
@@ -130,8 +129,15 @@ export default function BlogEditor({ content, onChange, placeholder }: BlogEdito
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Link.configure({ openOnClick: false }),
+      // Cấu hình Link QUA StarterKit, đừng đăng ký thêm `Link` riêng bên cạnh:
+      // StarterKit v3 đã tự gọi `Link.configure(options.link)` rồi, nên thêm
+      // một bản nữa là hai extension trùng tên. `resolveExtensions` chỉ cảnh
+      // báo rồi GIỮ CẢ HAI, nên plugin và input rule của Link được cài hai lượt
+      // (autolink và linkOnPaste đều bật mặc định). Trước khi sửa, Tiptap kêu
+      // 15 lần mỗi lần mở trang; sau khi sửa là 0.
+      //
+      // `RichTextField.tsx` vốn đã tránh chuyện này bằng `link: false`.
+      StarterKit.configure({ link: { openOnClick: false } }),
       Image,
       // 640x360 so the stored markup is already 16:9; index.css makes it fluid.
       // The extension also registers a paste rule, so pasting a YouTube link on
