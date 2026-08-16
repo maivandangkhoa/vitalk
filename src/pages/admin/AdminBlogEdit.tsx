@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Loader2, Eye, ArrowLeft, Upload, Sparkles, RefreshCw } from 'lucide-react';
+import { Save, Loader2, Eye, ArrowLeft, Upload, Sparkles, RefreshCw, Languages } from 'lucide-react';
 import { toast } from 'sonner';
 import { MAX_DIM, uploadPublicImage } from '@/lib/imageUpload';
 import { beginUpload, usePendingUploads } from '@/lib/pendingUploads';
@@ -20,6 +20,7 @@ import type { Language, MultiLangText } from '@/types';
 
 const BlogEditor = lazy(() => import('@/components/admin/BlogEditor'));
 const AiWriterPanel = lazy(() => import('@/components/admin/AiWriterPanel'));
+const TranslateDialog = lazy(() => import('@/components/admin/TranslateDialog'));
 
 const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'en', label: 'English' },
@@ -48,6 +49,7 @@ export default function AdminBlogEdit() {
   const [isPublished, setIsPublished] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [writerOpen, setWriterOpen] = useState(false);
+  const [translateOpen, setTranslateOpen] = useState(false);
   const [source, setSource] = useState<BlogPostSource | undefined>();
   const [syncing, setSyncing] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -286,6 +288,14 @@ export default function AdminBlogEdit() {
             <Sparkles className="mr-2 h-4 w-4" />
             {t('blog.writer.open')}
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => setTranslateOpen(true)}
+            disabled={!LANGUAGES.some((l) => content[l.code].trim())}
+          >
+            <Languages className="mr-2 h-4 w-4" />
+            {t('blog.translate.button')}
+          </Button>
           {!isNew && (
             <Button variant="outline" onClick={handleSyncFromNaver} disabled={syncing || saving}>
               {syncing ? (
@@ -433,6 +443,19 @@ export default function AdminBlogEdit() {
           </TabsContent>
         ))}
       </Tabs>
+
+      <Suspense fallback={null}>
+        <TranslateDialog
+          open={translateOpen}
+          onOpenChange={setTranslateOpen}
+          languages={LANGUAGES}
+          activeLang={activeLang}
+          title={title}
+          excerpt={excerpt}
+          content={content}
+          onTranslated={applyTranslation}
+        />
+      </Suspense>
 
       <Suspense fallback={null}>
         <AiWriterPanel

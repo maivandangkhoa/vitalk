@@ -413,6 +413,31 @@
       "updated": "Korean version updated — review it, then Save",
       "translationsStale": "Translations ({{langs}}) are now older than the Korean text",
       "failed": "Could not read the Naver post"
+    },
+    "translate": {
+      "button": "Translate",
+      "title": "Translate this post",
+      "description": "Text is translated; images and video embeds are copied across untouched.",
+      "from": "Translate from",
+      "to": "Into",
+      "noSource": "No language has any content yet — write the post first.",
+      "overwrite": "(overwrite)",
+      "reviewHint": "The result lands in the editor. Review it, then Save.",
+      "partial": "Some languages failed: {{langs}}"
+    },
+    "bulk": {
+      "button": "Translate {{count}} posts",
+      "title": "Translate the posts that are missing one",
+      "description": "{{posts}} posts still have no {{langs}} version. That is {{calls}} model calls, one post at a time.",
+      "nothingToDo": "Every Korean post already has all its translations.",
+      "timeHint": "Roughly two minutes per post. Each one is saved as it finishes, so you can close this and pick up where it stopped.",
+      "progress": "{{done}} of {{total}} posts",
+      "summary": "{{count}} translations saved.",
+      "start": "Translate {{count}} posts",
+      "stop": "Stop",
+      "close": "Close",
+      "stoppedByUser": "Stopped. Everything finished so far is saved.",
+      "stoppedQuota": "Out of model quota for this window — stopped so the rest do not fail too. Try again later."
     }
   },
   "policy": {

@@ -413,6 +413,31 @@
       "updated": "Đã cập nhật bản tiếng Hàn — xem lại rồi bấm Lưu",
       "translationsStale": "Các bản dịch ({{langs}}) giờ đã cũ hơn bản tiếng Hàn",
       "failed": "Không đọc được bài trên Naver"
+    },
+    "translate": {
+      "button": "Dịch bài này",
+      "title": "Dịch bài này",
+      "description": "Chỉ dịch phần chữ; ảnh và video nhúng được chép nguyên sang.",
+      "from": "Dịch từ",
+      "to": "Sang",
+      "noSource": "Chưa thứ tiếng nào có nội dung — viết bài trước đã.",
+      "overwrite": "(ghi đè)",
+      "reviewHint": "Kết quả vào ô soạn thảo. Xem lại rồi bấm Lưu.",
+      "partial": "Có thứ tiếng dịch hỏng: {{langs}}"
+    },
+    "bulk": {
+      "button": "Dịch {{count}} bài",
+      "title": "Dịch nốt những bài còn thiếu",
+      "description": "{{posts}} bài chưa có bản {{langs}}. Tổng cộng {{calls}} lượt gọi model, chạy tuần tự từng bài.",
+      "nothingToDo": "Mọi bài tiếng Hàn đều đã có đủ bản dịch.",
+      "timeHint": "Khoảng hai phút một bài. Mỗi bài xong là lưu ngay, nên đóng cửa sổ này rồi bấm lại vẫn chạy tiếp phần còn thiếu.",
+      "progress": "{{done}}/{{total}} bài",
+      "summary": "Đã lưu {{count}} bản dịch.",
+      "start": "Dịch {{count}} bài",
+      "stop": "Dừng",
+      "close": "Đóng",
+      "stoppedByUser": "Đã dừng. Phần chạy xong đều đã lưu.",
+      "stoppedQuota": "Hết lượt gọi model trong cửa sổ hiện tại — dừng lại để những bài sau khỏi hỏng theo. Thử lại sau."
     }
   },
   "policy": {

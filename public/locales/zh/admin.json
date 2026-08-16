@@ -413,6 +413,31 @@
       "updated": "已更新韩文版本 — 请检查后保存",
       "translationsStale": "译文（{{langs}}）现已落后于韩文原文",
       "failed": "无法读取该 Naver 文章"
+    },
+    "translate": {
+      "button": "翻译本文",
+      "title": "翻译这篇文章",
+      "description": "只翻译文字；图片和嵌入视频原样复制。",
+      "from": "源语言",
+      "to": "译成",
+      "noSource": "还没有任何语言有正文 — 请先撰写文章。",
+      "overwrite": "（覆盖）",
+      "reviewHint": "结果会进入编辑器。检查后再保存。",
+      "partial": "部分语言翻译失败：{{langs}}"
+    },
+    "bulk": {
+      "button": "翻译 {{count}} 篇",
+      "title": "批量翻译缺少译文的文章",
+      "description": "{{posts}} 篇文章还没有{{langs}}版本。共 {{calls}} 次模型调用，按篇依次进行。",
+      "nothingToDo": "所有韩文文章都已有完整译文。",
+      "timeHint": "每篇约两分钟。每完成一篇即保存，关闭后再次点击会从中断处继续。",
+      "progress": "{{total}} 篇中的 {{done}} 篇",
+      "summary": "已保存 {{count}} 份译文。",
+      "start": "翻译 {{count}} 篇",
+      "stop": "停止",
+      "close": "关闭",
+      "stoppedByUser": "已停止。已完成的部分均已保存。",
+      "stoppedQuota": "当前时段的模型额度已用完 — 已停止，以免后续文章也失败。请稍后再试。"
     }
   },
   "policy": {

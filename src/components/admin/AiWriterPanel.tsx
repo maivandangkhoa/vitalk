@@ -166,7 +166,22 @@ export default function AiWriterPanel({
       setTranslated(
         targets.filter((code) => (result.content[code] ?? '').trim().length > 0)
       );
-      toast.success(t('blog.translateSuccess'));
+      // Lượt gọi thành công KHÔNG có nghĩa là mọi thứ tiếng đều dịch được — nói
+      // đúng thứ tiếng nào hỏng, thay vì báo thành công rồi để người viết tự
+      // phát hiện một tab trống.
+      if (!result.failed.length) {
+        toast.success(t('blog.translateSuccess'));
+      } else if (result.failed.length < targets.length) {
+        toast.warning(
+          t('blog.translate.partial', {
+            langs: result.failed
+              .map((f) => languages.find((l) => l.code === f.lang)?.label ?? f.lang)
+              .join(', '),
+          })
+        );
+      } else {
+        toast.error(result.failed[0]?.reason || t('blog.translateFailed'));
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
       toast.error(message || t('blog.translateFailed'));
