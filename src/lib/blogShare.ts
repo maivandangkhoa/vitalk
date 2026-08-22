@@ -5,10 +5,18 @@
  * `functions/src/ogBlog.ts` chèn vào, nên Facebook/KakaoTalk hiện đúng ảnh bìa
  * và tiêu đề mà không cần làm gì thêm ở đây.
  */
+import { blogPostPath } from '@/lib/localeRoutes';
 
-/** Luôn dựng lại từ `origin` + slug: link chia sẻ không được mang theo `?preview=true`. */
-export function postUrl(slug: string): string {
-  return `${window.location.origin}/blog/${slug}`;
+/**
+ * Link chia sẻ mang theo ngôn ngữ đang đọc: `/ko/blog/<slug>`.
+ *
+ * Không có tiền tố thì người nhận mở ra sẽ thấy thứ tiếng máy họ đoán được,
+ * chứ không phải thứ tiếng bài mà người gửi vừa đọc — và card preview cũng vậy.
+ *
+ * Luôn dựng lại từ `origin`: link chia sẻ không được mang theo `?preview=true`.
+ */
+export function postUrl(slug: string, lang: string): string {
+  return `${window.location.origin}${blogPostPath(encodeURIComponent(slug), lang)}`;
 }
 
 export function canNativeShare(): boolean {

@@ -14,6 +14,7 @@ import { PostEngagementBar } from '@/components/blog/PostEngagementBar';
 import { CommentSection } from '@/components/blog/CommentSection';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { estimateReadTime, formatDate, pickPostLang } from '@/lib/blog';
+import { blogListPath } from '@/lib/localeRoutes';
 import type { BlogPost, Language } from '@/types';
 
 /**
@@ -84,7 +85,7 @@ export default function BlogPostPage() {
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
         <h1 className="text-2xl font-bold">{t('blog.postNotFound')}</h1>
         <p className="mt-2 text-muted-foreground">{t('blog.postNotFoundDesc')}</p>
-        <Button className="mt-4" render={<Link to="/blog" />}>
+        <Button className="mt-4" render={<Link to={blogListPath(lang)} />}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('blog.backToBlog')}
         </Button>
@@ -141,7 +142,7 @@ export default function BlogPostPage() {
       )}
 
       <AnimatedSection className={`container mx-auto max-w-3xl ${isPreview && !post.isPublished ? 'mt-12' : ''}`}>
-        <Button variant="ghost" size="sm" className="mb-6" render={<Link to="/blog" />}>
+        <Button variant="ghost" size="sm" className="mb-6" render={<Link to={blogListPath(lang)} />}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           {t('blog.backToBlog')}
         </Button>

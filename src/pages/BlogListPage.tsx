@@ -6,6 +6,7 @@ import { usePublishedPosts } from '@/hooks/useBlog';
 import { BlogPostCard } from '@/components/blog/BlogPostCard';
 import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/shared/motion';
 import { estimateReadTime, formatDate, pickPostLang } from '@/lib/blog';
+import { blogPostPath } from '@/lib/localeRoutes';
 import { cn } from '@/lib/utils';
 import type { BlogPost, Language } from '@/types';
 
@@ -27,7 +28,7 @@ function FeaturedPost({ post }: { post: BlogPost }) {
 
   return (
     <Link
-      to={`/blog/${post.slug}`}
+      to={blogPostPath(post.slug, lang)}
       className="group relative isolate block overflow-hidden rounded-3xl"
     >
       {post.coverImageUrl ? (

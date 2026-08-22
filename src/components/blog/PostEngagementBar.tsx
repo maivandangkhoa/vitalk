@@ -26,7 +26,7 @@ export function PostEngagementBar({
   imageUrl,
   commentCount,
 }: PostEngagementBarProps) {
-  const { t } = useTranslation('blog');
+  const { t, i18n } = useTranslation('blog');
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,7 +70,7 @@ export function PostEngagementBar({
         title={title}
         description={description}
         imageUrl={imageUrl}
-        url={postUrl(slug)}
+        url={postUrl(slug, i18n.language)}
       />
     </div>
   );

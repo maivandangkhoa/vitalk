@@ -161,3 +161,66 @@ không kịp biết thứ tiếng nào hỏng. Cả hai giờ đi qua ref, effec
 - Ghi chú: `BlogEditor` cảnh báo `Duplicate extension names found: ['link']` —
   StarterKit v3 đã có Link sẵn mà file còn `Link.configure()` riêng. Lỗi có sẵn từ
   trước, không thuộc việc này.
+
+
+---
+
+# Blog đa ngôn ngữ: URL riêng cho từng bản dịch (SEO + chia sẻ)
+
+## Vấn đề
+Một URL `/blog/<slug>` phục vụ cả 5 bản dịch → Google gộp thành 1 trang, chỉ index
+một bản; link chia sẻ ra ngoài mở theo ngôn ngữ máy NGƯỜI NHẬN chứ không phải
+ngôn ngữ người gửi đang đọc; card preview Facebook/Kakao luôn ra tiếng Hàn.
+
+## Quyết định thiết kế
+- **URL:** `/{lang}/blog` và `/{lang}/blog/{slug}` cho cả 5 ngôn ngữ.
+- **`/blog/...` trần vẫn sống** — mọi link đã chia sẻ trước đây đều ở dạng đó.
+  Người đọc vẫn thấy ngôn ngữ máy họ chọn; với bộ máy tìm kiếm thì canonical
+  của nó trỏ về bản `ko`, và nó không nằm trong sitemap. Không redirect theo IP
+  (Google khuyến cáo không đoán ngôn ngữ rồi chuyển hướng).
+- **x-default = `ko`** — độc giả chính của HaviTalk là người Hàn, kho bài gốc là
+  tiếng Hàn.
+- **URL thắng preference đã lưu**: mở link `/ja/blog/x` thì toàn trang sang tiếng
+  Nhật và ghi nhớ. Header tiếng Việt mà bài tiếng Nhật thì mới là sai.
+- **`blogMeta` render luôn phần chữ vào `#root`** chứ không chỉ thẻ meta. Đây là
+  điểm quyết định: nếu để JS render thì cả 5 URL đều ra cùng một thứ tiếng khi
+  Googlebot render → Google thấy trùng lặp → gộp lại, coi như công cốc.
+
+## Việc
+- [x] `src/lib/localeRoutes.ts` — nguồn sự thật cho tiền tố ngôn ngữ (client)
+- [x] `src/lib/i18n.ts` — detector đọc ngôn ngữ từ đường dẫn (đứng đầu order);
+      chặn `detectLanguageByIP()` lật ngược khi URL đã chỉ định ngôn ngữ
+- [x] `src/router/index.tsx` — sinh route `/​{lang}/blog[/:slug]` cho 5 mã
+- [x] `PublicLayout` — đồng bộ i18n khi điều hướng trong app
+- [x] Link nội bộ: BlogPostCard, FeaturedPost, back-to-blog, Header, Footer
+- [x] `LanguageSwitcher` — đổi ngôn ngữ trên trang blog thì nhảy sang URL anh em
+- [x] `postUrl(slug, lang)` + PostEngagementBar — link chia sẻ mang ngôn ngữ
+- [x] `functions/src/blogSeo.ts` — dùng chung: parse đường dẫn, pickLang theo
+      ngôn ngữ yêu cầu, canonical + hreflang, lọc HTML trước khi chèn vào shell
+- [x] `functions/src/ogBlog.ts` — OG theo ngôn ngữ, `<html lang>`, canonical,
+      hreflang, và chèn nội dung đã dịch vào `#root`
+- [x] `functions/src/sitemap.ts` + export — sitemap.xml có alternates
+- [x] `public/robots.txt` — trỏ sitemap, chặn khu vực riêng tư
+- [x] `firebase.json` — rewrite cho `/{lang}/blog`, `/blog`, `/sitemap.xml`
+- [x] Build + typecheck; deploy `blogMeta` + `sitemap`
+
+## Review — xong 2026-08-22, CHƯA deploy
+Đo bằng cách gọi thẳng handler với req/res giả (Firestore + shell thật) và lái Chrome qua CDP:
+
+- `/ko/blog/troi-oi` → canonical tự trỏ mình, hreflang `ko en zh ja` + x-default, `<html lang="ko">`,
+  5840 ký tự nội dung tiếng Hàn nằm sẵn trong HTML.
+- `/ja/blog/<bài chỉ có ko>` → canonical trỏ về bản `ko`, không khai hreflang, `<html lang="ko">`
+  (nói đúng thứ tiếng của phần chữ đang hiện), người đọc vẫn mở được bài.
+- `/blog/<slug>` trần → canonical về `ko`, không chèn nội dung, không vỡ link cũ.
+- Slug không tồn tại → **404** thay vì 200.
+- `/sitemap.xml` → 68 URL, có `xhtml:link` alternates, không có URL trần nào.
+- Trong Chrome: `/ja/...` thắng preference `ko` đã lưu; link Blog trên header và link thẻ bài
+  tự mang tiền tố đúng ngôn ngữ.
+- Bộ lọc HTML: script/iframe/onerror/`javascript:` đều bị bóc, link và ảnh hợp lệ giữ nguyên.
+
+**Số liệu đáng chú ý:** 36 bài đã đăng nhưng chỉ ko 36 · en 8 · zh 6 · ja 6 · vi 2 có bản dịch thật.
+Hạ tầng đã đủ để index 5 ngôn ngữ; việc còn lại là chạy dịch cho 28 bài còn thiếu.
+
+**Còn lại:** deploy `blogMeta` + `sitemap` (`npm run deploy:functions`) TRƯỚC khi đẩy `main`,
+vì CI chỉ deploy hosting mà rewrite `/sitemap.xml` cần function mới. Sau đó nộp sitemap trong
+Google Search Console.

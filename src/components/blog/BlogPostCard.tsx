@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BookOpen } from 'lucide-react';
 import { estimateReadTime, formatDate, pickPostLang } from '@/lib/blog';
+import { blogPostPath } from '@/lib/localeRoutes';
 import { cn } from '@/lib/utils';
 import type { BlogPost, Language } from '@/types';
 
@@ -79,7 +80,7 @@ export function BlogPostCard({ post }: { post: BlogPost }) {
 
   return (
     <Link
-      to={`/blog/${post.slug}`}
+      to={blogPostPath(post.slug, lang)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
     >
       <BlogThumb post={post} title={title} className="aspect-[16/9]" />

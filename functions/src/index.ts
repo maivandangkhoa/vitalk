@@ -41,6 +41,7 @@ export { markBookingsCompleted } from "./completeBookings";
 
 // Blog link previews (per-post Open Graph tags for crawlers)
 export { blogMeta } from "./ogBlog";
+export { sitemap } from "./sitemap";
 
 // Blog AI translation
 export { translateBlogPost } from "./translateBlog";

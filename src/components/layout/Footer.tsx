@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { blogListPath } from '@/lib/localeRoutes';
 import type { Language, MultiLangText } from '@/types';
 
 export function Footer() {
@@ -51,7 +52,7 @@ export function Footer() {
               <Link to="/book" className="text-sm text-muted-foreground transition-colors hover:text-indigo-500">
                 {t('nav.book')}
               </Link>
-              <Link to="/blog" className="text-sm text-muted-foreground transition-colors hover:text-indigo-500">
+              <Link to={blogListPath(lang)} className="text-sm text-muted-foreground transition-colors hover:text-indigo-500">
                 {t('nav.blog')}
               </Link>
               <Link to="/policy" className="text-sm text-muted-foreground transition-colors hover:text-indigo-500">

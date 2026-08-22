@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { signOut } from '@/lib/auth';
 import { inboxPathFor } from '@/lib/chat';
+import { blogListPath } from '@/lib/localeRoutes';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -28,7 +29,7 @@ const NAV_ITEMS = [
 ] as const;
 
 export function Header() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const { user, role } = useAuthStore();
   const { isMobileNavOpen, setMobileNavOpen } = useUIStore();
@@ -37,22 +38,26 @@ export function Header() {
     await signOut();
   };
 
+  // Blog nằm dưới URL có tiền tố ngôn ngữ, các trang còn lại thì không.
   const navLinks = (
     <>
-      {NAV_ITEMS.map((item) => (
-        <Link
-          key={item.key}
-          to={item.path}
-          onClick={() => setMobileNavOpen(false)}
-          className={`flex h-9 items-center rounded-xl px-3 text-sm font-medium transition-all duration-200 ${
-            location.pathname === item.path
-              ? 'bg-indigo-50 text-indigo-600'
-              : 'text-muted-foreground hover:bg-indigo-50 hover:text-indigo-600'
-          }`}
-        >
-          {t(`nav.${item.key}`)}
-        </Link>
-      ))}
+      {NAV_ITEMS.map((item) => {
+        const path = item.key === 'blog' ? blogListPath(i18n.language) : item.path;
+        return (
+          <Link
+            key={item.key}
+            to={path}
+            onClick={() => setMobileNavOpen(false)}
+            className={`flex h-9 items-center rounded-xl px-3 text-sm font-medium transition-all duration-200 ${
+              location.pathname === path
+                ? 'bg-indigo-50 text-indigo-600'
+                : 'text-muted-foreground hover:bg-indigo-50 hover:text-indigo-600'
+            }`}
+          >
+            {t(`nav.${item.key}`)}
+          </Link>
+        );
+      })}
     </>
   );
 

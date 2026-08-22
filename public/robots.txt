@@ -1,0 +1,12 @@
+# Khu vực riêng tư và trang chỉ có nghĩa khi đã đăng nhập thì không cần crawl.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-setup
+Disallow: /my-bookings
+Disallow: /messages
+Disallow: /call
+Disallow: /auth
+Disallow: /*?preview=true
+
+Sitemap: https://havitalk.com/sitemap.xml
