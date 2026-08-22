@@ -204,7 +204,7 @@ ngôn ngữ người gửi đang đọc; card preview Facebook/Kakao luôn ra ti
 - [x] `firebase.json` — rewrite cho `/{lang}/blog`, `/blog`, `/sitemap.xml`
 - [x] Build + typecheck; deploy `blogMeta` + `sitemap`
 
-## Review — xong 2026-08-22, CHƯA deploy
+## Review — LIVE 2026-08-23 (commit `ab4d351`)
 Đo bằng cách gọi thẳng handler với req/res giả (Firestore + shell thật) và lái Chrome qua CDP:
 
 - `/ko/blog/troi-oi` → canonical tự trỏ mình, hreflang `ko en zh ja` + x-default, `<html lang="ko">`,
@@ -221,6 +221,19 @@ ngôn ngữ người gửi đang đọc; card preview Facebook/Kakao luôn ra ti
 **Số liệu đáng chú ý:** 36 bài đã đăng nhưng chỉ ko 36 · en 8 · zh 6 · ja 6 · vi 2 có bản dịch thật.
 Hạ tầng đã đủ để index 5 ngôn ngữ; việc còn lại là chạy dịch cho 28 bài còn thiếu.
 
-**Còn lại:** deploy `blogMeta` + `sitemap` (`npm run deploy:functions`) TRƯỚC khi đẩy `main`,
-vì CI chỉ deploy hosting mà rewrite `/sitemap.xml` cần function mới. Sau đó nộp sitemap trong
-Google Search Console.
+### Đã deploy và đo lại trên domain thật
+`npm run deploy:functions` (tạo `sitemap`, cập nhật `blogMeta`) rồi push `main` → CI run 32580804212.
+
+- `/ko/blog/troi-oi`, `/ja/…`, `/en/blog` → 200, canonical tự trỏ mình, hreflang đủ cụm,
+  `<html lang>` đúng, ~4.1–4.4k ký tự nội dung đã dịch nằm sẵn trong HTML.
+- `/blog/troi-oi` trần → canonical về bản `ko`. `/ko/blog/<slug sai>` → 404.
+- `/sitemap.xml` → `application/xml`, 68 URL, có alternates. `/robots.txt` → nội dung thật.
+- Chrome: React mount đè sạch (không còn `.ssr`, đúng một `<h1>`, header đủ), ngôn ngữ theo URL.
+
+**Phát hiện ngoài dự tính:** `havitalk.com` nằm sau Cloudflare, nó chèn khối "Content Signals
+Policy" vào đầu `/robots.txt`. Trước khi deploy, origin không có robots.txt nên Cloudflare trả về
+khối comment đó cộng nguyên trang index.html — giờ đã là robots.txt thật.
+
+**Còn lại (cần tài khoản của Khoa):** nộp `https://havitalk.com/sitemap.xml` trong Google Search
+Console. Và quan trọng hơn: **28/36 bài chưa có bản dịch nào ngoài `ko`** — hạ tầng chỉ đưa được
+vào index những gì thật sự tồn tại.
